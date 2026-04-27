@@ -1,0 +1,3381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>immidit — Prescription System</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* ══════════════════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════════════════ */
+    :root {
+      --orange: #F5621E;
+      --orange-dim: rgba(245, 98, 30, 0.12);
+      --orange-bdr: rgba(245, 98, 30, 0.25);
+      --amber: #F5A623;
+      --purple: #4A3F6B;
+      --purple-lt: #6B5E9E;
+      --bg: #0C0B14;
+      --bg2: #121020;
+      --surf: #181626;
+      --surf2: #1F1C30;
+      --surf3: #272439;
+      --surf4: #2F2B44;
+      --border: rgba(255, 255, 255, 0.07);
+      --border2: rgba(255, 255, 255, 0.12);
+      --text: #EEEBf8;
+      --text-muted: #8B87AA;
+      --text-dim: #504C6E;
+      --success: #2ECC71;
+      --danger: #E74C3C;
+      --info: #3498DB;
+      --warn: #F39C12;
+      --grad: linear-gradient(135deg, #F5621E 0%, #F5A623 100%);
+      --grad-soft: linear-gradient(135deg, rgba(245, 98, 30, 0.15) 0%, rgba(245, 166, 35, 0.08) 100%);
+      --shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 18px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-size: 14px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   TYPOGRAPHY
+══════════════════════════════════════════════════════ */
+    h1,
+    h2,
+    h3 {
+      font-family: 'DM Serif Display', serif;
+      line-height: 1.2;
+    }
+
+    code,
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--surf4);
+      border-radius: 2px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   FORM ELEMENTS
+══════════════════════════════════════════════════════ */
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 13px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--orange-bdr);
+      box-shadow: 0 0 0 3px rgba(245, 98, 30, 0.08);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    select option {
+      background: var(--surf2);
+      color: var(--text);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+      line-height: 1.55;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field-row {
+      display: grid;
+      gap: 12px;
+    }
+
+    .field-row.c2 {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .field-row.c3 {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .field-row.c4 {
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════════════ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--grad);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(245, 98, 30, 0.3);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--surf2);
+      color: var(--text);
+      border-color: var(--border2);
+    }
+
+    .btn-danger-soft {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .btn-danger-soft:hover {
+      background: rgba(231, 76, 60, 0.22);
+    }
+
+    .btn-success-soft {
+      background: rgba(46, 204, 113, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+
+    .btn-success-soft:hover {
+      background: rgba(46, 204, 113, 0.2);
+    }
+
+    .btn-info-soft {
+      background: rgba(52, 152, 219, 0.1);
+      color: var(--info);
+      border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+
+    .btn-info-soft:hover {
+      background: rgba(52, 152, 219, 0.2);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .btn-lg {
+      padding: 12px 28px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .btn-full {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: 6px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════════════════ */
+    .card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-bottom: 16px;
+    }
+
+    .card-sm {
+      padding: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--orange-dim);
+      border: 1px solid var(--orange-bdr);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .card-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════════════════ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: rgba(18, 16, 32, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .topbar-logo {
+      height: 30px;
+    }
+
+    .topbar-tag {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--orange);
+      opacity: 0.8;
+      padding: 3px 8px;
+      border: 1px solid var(--orange-bdr);
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .topbar-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .topbar-tab {
+      padding: 6px 16px;
+      border-radius: 7px;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .topbar-tab:hover {
+      color: var(--text);
+      background: var(--surf2);
+    }
+
+    .topbar-tab.active {
+      background: var(--surf3);
+      color: var(--text);
+    }
+
+    .topbar-user {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 12px;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12.5px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    .logout-btn {
+      font-size: 11px;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: color 0.15s;
+      padding: 0;
+      background: none;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .logout-btn:hover {
+      color: var(--danger);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════════════════ */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 52px);
+    }
+
+    .sidebar {
+      background: var(--surf);
+      border-right: 1px solid var(--border);
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      position: sticky;
+      top: 52px;
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 12px 10px 5px;
+    }
+
+    .sidebar-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.14s;
+      text-align: left;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .sidebar-btn:hover {
+      background: var(--surf2);
+      color: var(--text);
+    }
+
+    .sidebar-btn.active {
+      background: var(--orange-dim);
+      border-color: var(--orange-bdr);
+      color: var(--orange);
+    }
+
+    .sidebar-ico {
+      font-size: 15px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .sidebar-badge {
+      margin-left: auto;
+      background: var(--orange);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      min-width: 18px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 14px 10px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .sidebar-doctor-info {
+      font-size: 11.5px;
+    }
+
+    .sidebar-doctor-name {
+      font-weight: 600;
+      font-size: 12.5px;
+      color: var(--text);
+    }
+
+    .sidebar-doctor-reg {
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      margin-top: 2px;
+    }
+
+    .content {
+      padding: 28px;
+      overflow-y: auto;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .page-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   LOGIN SCREEN
+══════════════════════════════════════════════════════ */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(245, 98, 30, 0.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(74, 63, 107, 0.12) 0%, transparent 50%),
+        var(--bg);
+    }
+
+    .login-wrap {
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 44px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--grad);
+    }
+
+    .login-logo-wrap {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .login-logo {
+      height: 44px;
+    }
+
+    .login-tagline {
+      font-size: 11.5px;
+      color: var(--text-dim);
+      letter-spacing: 0.4px;
+      margin-top: 8px;
+    }
+
+    .login-heading {
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .role-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 22px;
+      background: var(--surf2);
+      border-radius: 9px;
+      padding: 5px;
+    }
+
+    .role-opt {
+      padding: 9px;
+      border-radius: 7px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .role-opt.sel {
+      background: var(--surf4);
+      color: var(--text);
+      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .error-msg {
+      background: rgba(231, 76, 60, 0.1);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      color: var(--danger);
+      margin-bottom: 14px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   PROFILE COMPLETION (first login)
+══════════════════════════════════════════════════════ */
+    .profile-screen {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 20% 60%, rgba(245, 98, 30, 0.06) 0%, transparent 50%),
+        var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .profile-card {
+      width: 100%;
+      max-width: 640px;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .profile-banner {
+      background: var(--grad);
+      padding: 28px 32px;
+      position: relative;
+    }
+
+    .profile-banner-logo {
+      height: 30px;
+      filter: brightness(0) invert(1);
+      opacity: 0.9;
+    }
+
+    .profile-banner h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: #fff;
+      margin-top: 14px;
+    }
+
+    .profile-banner p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-top: 4px;
+    }
+
+    .profile-steps {
+      display: flex;
+      gap: 6px;
+      padding: 16px 32px;
+      background: var(--surf2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-step {
+      flex: 1;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      padding: 6px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .profile-step.done {
+      color: var(--success);
+    }
+
+    .profile-step.active {
+      color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .profile-body {
+      padding: 32px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   SIGNATURE PAD
+══════════════════════════════════════════════════════ */
+    .sig-container {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .sig-container canvas {
+      display: block;
+      width: 100%;
+      height: 90px;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    .sig-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .sig-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--grad);
+    }
+
+    .stat-label {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-family: 'DM Serif Display', serif;
+      line-height: 1;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .stat-orange .stat-value {
+      color: var(--orange);
+    }
+
+    .stat-green .stat-value {
+      color: var(--success);
+    }
+
+    .stat-blue .stat-value {
+      color: var(--info);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   TABLE
+══════════════════════════════════════════════════════ */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .data-table thead th {
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: var(--surf2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--surf2);
+    }
+
+    .data-table tbody td {
+      padding: 12px 14px;
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   PILLS & TAGS
+══════════════════════════════════════════════════════ */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .pill-green {
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+
+    .pill-orange {
+      background: var(--orange-dim);
+      color: var(--orange);
+      border: 1px solid var(--orange-bdr);
+    }
+
+    .pill-red {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--danger);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+
+    .pill-blue {
+      background: rgba(52, 152, 219, 0.12);
+      color: var(--info);
+      border: 1px solid rgba(52, 152, 219, 0.2);
+    }
+
+    .pill-gray {
+      background: var(--surf3);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: var(--surf3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 3px;
+    }
+
+    .tag-del {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      transition: color 0.15s;
+    }
+
+    .tag-del:hover {
+      color: var(--danger);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   MEDICINE ROWS
+══════════════════════════════════════════════════════ */
+    .med-row {
+      display: grid;
+      grid-template-columns: 2.5fr 1fr 0.7fr 1fr auto;
+      gap: 8px;
+      align-items: end;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .med-row-header {
+      display: grid;
+      grid-template-columns: 2.5fr 1fr 0.7fr 1fr auto;
+      gap: 8px;
+      padding: 0 0 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .med-col-hdr {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .add-row-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      width: 100%;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.15s;
+      margin-top: 4px;
+    }
+
+    .add-row-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   VITAL CHIPS
+══════════════════════════════════════════════════════ */
+    .vital-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .vital-chip {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 13px;
+    }
+
+    .vital-chip label {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+
+    .vital-chip input {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      box-shadow: none;
+    }
+
+    .vital-chip input:focus {
+      border: none;
+      box-shadow: none;
+    }
+
+    .vital-unit {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   RX CARDS (list view)
+══════════════════════════════════════════════════════ */
+    .rx-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .rx-card:hover {
+      border-color: var(--border2);
+    }
+
+    .rx-card-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 18px;
+      cursor: pointer;
+    }
+
+    .rx-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--orange);
+      margin-bottom: 3px;
+    }
+
+    .rx-patient-name {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .rx-meta {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .rx-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .rx-body {
+      display: none;
+      padding: 0 18px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rx-body.open {
+      display: block;
+      padding-top: 14px;
+    }
+
+    .rx-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .rx-detail-item label {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    .rx-detail-item p {
+      font-size: 13px;
+    }
+
+    .chevron {
+      transition: transform 0.2s;
+      display: inline-block;
+      color: var(--text-dim);
+    }
+
+    .chevron.open {
+      transform: rotate(180deg);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   SECTION DIVIDER IN FORMS
+══════════════════════════════════════════════════════ */
+    .form-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0 16px;
+    }
+
+    .form-section span {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .form-section::before,
+    .form-section::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   ACTION BAR
+══════════════════════════════════════════════════════ */
+    .action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 18px 0;
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   MODAL / OVERLAY
+══════════════════════════════════════════════════════ */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .modal-hdr {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--surf);
+      z-index: 10;
+    }
+
+    .modal-hdr h3 {
+      font-size: 17px;
+    }
+
+    .modal-body {
+      padding: 22px 24px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .modal-close:hover {
+      background: var(--surf2);
+      color: var(--danger);
+    }
+
+    .modal-footer {
+      padding: 14px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   DOCTOR CARD (admin view)
+══════════════════════════════════════════════════════ */
+    .doctor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .doctor-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color 0.2s;
+    }
+
+    .doctor-card:hover {
+      border-color: var(--border2);
+    }
+
+    .doctor-card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .doctor-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: var(--orange-dim);
+      border: 1px solid var(--orange-bdr);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .doctor-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .doctor-name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .doctor-spec {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .doctor-reg {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    .doctor-card-actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   CREDENTIAL BOX
+══════════════════════════════════════════════════════ */
+    .cred-box {
+      background: var(--surf2);
+      border: 1px solid var(--orange-bdr);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .cred-box-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--orange);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .cred-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+
+    .cred-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .cred-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .cred-warn {
+      font-size: 11px;
+      color: var(--warn);
+      margin-top: 10px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 999;
+      padding: 11px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: slideUp 0.3s ease;
+      max-width: 320px;
+    }
+
+    .toast.show {
+      display: flex;
+    }
+
+    .toast-success {
+      background: rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      color: var(--success);
+    }
+
+    .toast-error {
+      background: rgba(231, 76, 60, 0.15);
+      border: 1px solid rgba(231, 76, 60, 0.3);
+      color: var(--danger);
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(14px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    /* ══════════════════════════════════════════════════════
+   PDF PREVIEW OVERLAY
+══════════════════════════════════════════════════════ */
+    .pdf-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .pdf-modal-wrap {
+      width: 100%;
+      max-width: 700px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .pdf-modal-bar {
+      background: var(--surf3);
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pdf-preview-content {
+      background: #f5f4f0;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════════════════ */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon {
+      font-size: 44px;
+      margin-bottom: 14px;
+      opacity: 0.35;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   UTILITIES
+══════════════════════════════════════════════════════ */
+    .text-orange {
+      color: var(--orange);
+    }
+
+    .text-muted {
+      color: var(--text-muted);
+    }
+
+    .text-dim {
+      color: var(--text-dim);
+    }
+
+    .text-success {
+      color: var(--success);
+    }
+
+    .text-danger {
+      color: var(--danger);
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .flex {
+      display: flex;
+    }
+
+    .flex-center {
+      display: flex;
+      align-items: center;
+    }
+
+    .gap-8 {
+      gap: 8px;
+    }
+
+    .gap-12 {
+      gap: 12px;
+    }
+
+    .mt-4 {
+      margin-top: 4px;
+    }
+
+    .mt-8 {
+      margin-top: 8px;
+    }
+
+    .mt-16 {
+      margin-top: 16px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.5);
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- APP ROOT -->
+  <div id="app"></div>
+
+  <script>
+    'use strict';
+
+    /* ══════════════════════════════════════════════════════
+       IMMIDIT LOGO (base64 placeholder — loads from file path)
+    ══════════════════════════════════════════════════════ */
+    const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbwYrRfGbdwUKFPaOQ-PRKn70Gc-rmtz6PsktdBCFgfMvsxMk2gpMRMtjnPkG4ssItorFA/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+
+    /* ══════════════════════════════════════════════════════
+       DATABASE (localStorage)
+    ══════════════════════════════════════════════════════ */
+    const DB = {
+      get: (k, def = null) => { try { const v = localStorage.getItem('immidit_' + k); return v ? JSON.parse(v) : def; } catch { return def; } },
+      set: (k, v) => { try { localStorage.setItem('immidit_' + k, JSON.stringify(v)); } catch (e) { console.error(e); } },
+      del: (k) => { try { localStorage.removeItem('immidit_' + k); } catch (e) { console.error(e); } },
+    };
+
+    // Seed admin account
+    if (!DB.get('admin')) {
+      DB.set('admin', { username: 'admin', password: 'immidit@2026' });
+    }
+
+    // Doctors: array of { id, username, password, profileComplete, profile: {...}, active, createdAt }
+    if (!DB.get('doctors')) {
+      // Seed one demo doctor
+      DB.set('doctors', [{
+        id: 'DOC001',
+        username: 'dr.priya',
+        password: 'Priya@123',
+        profileComplete: true,
+        active: true,
+        createdAt: new Date().toISOString(),
+        profile: {
+          name: 'Dr. Priya Sharma',
+          regId: 'MCI-DL-45231',
+          specialty: 'General Physician & Internal Medicine',
+          qualification: 'MBBS, MD (Internal Medicine)',
+          experience: '11',
+          phone: '+91 98765 43210',
+          bio: 'Experienced physician specialising in internal medicine and infectious diseases.',
+          signature: null,
+          avatarInitials: 'PS',
+        }
+      }]);
+    }
+
+    // Prescriptions
+    if (!DB.get('prescriptions')) {
+      DB.set('prescriptions', []);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       CLOUD SYNC (Google Sheets)
+    ══════════════════════════════════════════════════════ */
+    const SYNC = {
+      active: false,
+      async post(data) {
+        if (!SHEET_API) return { error: 'No API configured' };
+        this.active = true;
+        try {
+          const resp = await fetch(SHEET_API, {
+            method: 'POST',
+            mode: 'no-cors', // Apps Script requires no-cors for simple posts or it might fail on preflight
+            body: JSON.stringify(data)
+          });
+          // with no-cors we can't see the response, but the data reaches Google
+          return { ok: true };
+        } catch (e) {
+          console.error('Sync error:', e);
+          return { error: e };
+        } finally {
+          this.active = false;
+        }
+      },
+      // Real Apps Script fetch for data pulling
+      async pull() {
+        if (!SHEET_API) return;
+        try {
+          const resp = await fetch(SHEET_API + '?action=pull');
+          const data = await resp.json();
+          if (data.error) throw data.error;
+
+          // Update local storage with cloud data
+          if (data.admin) DB.set('admin', data.admin);
+          if (data.doctors) DB.set('doctors', data.doctors);
+          if (data.prescriptions) DB.set('prescriptions', data.prescriptions);
+
+          console.log('Cloud sync successful:', data.synced);
+          return true;
+        } catch (e) {
+          console.warn('Pull failed, using local cache:', e);
+          return false;
+        }
+      },
+      pushDoctors() { this.post({ action: 'saveDoctors', data: getDoctors() }); },
+      pushRx(rx, isUpdate = false) { this.post({ action: isUpdate ? 'updatePrescription' : 'addPrescription', data: rx }); },
+      pushDraft(docId, data) { this.post({ action: 'saveDraft', doctorId: docId, data: data }); },
+      delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); }
+    };
+
+    /* ══════════════════════════════════════════════════════
+       APP STATE
+    ══════════════════════════════════════════════════════ */
+    const APP = {
+      view: 'login',        // login | profile_complete | doctor | admin
+      role: null,           // 'doctor' | 'admin'
+      currentDoctor: null,  // doctor object
+      section: 'new',       // sidebar section
+      expandedRx: null,
+      previewRx: null,
+      showModal: null,       // 'add_doctor' | 'view_creds' | 'reset_pass'
+      modalData: null,
+      loginRole: 'doctor',
+      loginError: '',
+      profileStep: 1,       // 1 = basic, 2 = credentials, 3 = signature
+
+      // form state
+      formMeds: [{ name: '', dosage: '', days: '', timing: 'After food' }],
+      formLabTests: [],
+      formDiagTests: [],
+      formReferrals: [],
+      editingRxId: null,
+    };
+
+    /* ══════════════════════════════════════════════════════
+       SESSION PERSISTENCE — survive page refresh
+    ══════════════════════════════════════════════════════ */
+    function saveSession() {
+      if (APP.role === 'doctor' && APP.currentDoctor) {
+        DB.set('session', { role: 'doctor', doctorId: APP.currentDoctor.id });
+      } else if (APP.role === 'admin') {
+        DB.set('session', { role: 'admin' });
+      } else {
+        DB.del('session');
+      }
+    }
+
+    function restoreSession() {
+      const sess = DB.get('session');
+      if (!sess) return false;
+      if (sess.role === 'admin') {
+        APP.view = 'admin'; APP.role = 'admin'; APP.section = 'dashboard';
+        return true;
+      }
+      if (sess.role === 'doctor' && sess.doctorId) {
+        const docs = getDoctors();
+        const doc = docs.find(d => d.id === sess.doctorId && d.active);
+        if (doc && doc.profileComplete) {
+          APP.currentDoctor = doc; APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new';
+          restoreDraft();  // restore any in-progress prescription
+          return true;
+        }
+      }
+      DB.del('session');
+      return false;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       DRAFT AUTO-SAVE — never lose a prescription in progress
+    ══════════════════════════════════════════════════════ */
+    let _draftTimer = null;
+
+    function saveDraft() {
+      if (APP.view !== 'doctor' || APP.section !== 'new') return;
+      // Gather current form values if DOM is available
+      const draft = {
+        patient: {
+          name: document.getElementById('p-name')?.value || '',
+          phone: document.getElementById('p-phone')?.value || '',
+          age: document.getElementById('p-age')?.value || '',
+          gender: document.getElementById('p-gender')?.value || '',
+          address: document.getElementById('p-addr')?.value || '',
+        },
+        visitDate: document.getElementById('p-date')?.value || '',
+        vitals: {
+          bp: document.getElementById('v-bp')?.value || '',
+          pulse: document.getElementById('v-pulse')?.value || '',
+          temp: document.getElementById('v-temp')?.value || '',
+          spo2: document.getElementById('v-spo2')?.value || '',
+          weight: document.getElementById('v-weight')?.value || '',
+          rr: document.getElementById('v-rr')?.value || '',
+        },
+        chiefConcerns: document.getElementById('cc')?.value || '',
+        observations: document.getElementById('obs')?.value || '',
+        diagnosis: document.getElementById('diag')?.value || '',
+        suggestions: document.getElementById('sug')?.value || '',
+        recheckDate: document.getElementById('recheck')?.value || '',
+        recheckNote: document.getElementById('recheck-note')?.value || '',
+        formMeds: APP.formMeds,
+        formLabTests: APP.formLabTests,
+        formDiagTests: APP.formDiagTests,
+        formReferrals: APP.formReferrals,
+        editingRxId: APP.editingRxId,
+        savedAt: new Date().toISOString(),
+      };
+      // Only save if there's actual content
+      const hasContent = draft.patient.name || draft.chiefConcerns || draft.diagnosis ||
+        draft.formMeds.some(m => m.name);
+      if (hasContent) {
+        DB.set('draft_rx', draft);
+        if (APP.currentDoctor) SYNC.pushDraft(APP.currentDoctor.id, draft);
+      }
+    }
+
+    function restoreDraft() {
+      const draft = DB.get('draft_rx');
+      if (!draft) return;
+      // Only restore if draft is less than 24 hours old
+      if (draft.savedAt) {
+        const age = Date.now() - new Date(draft.savedAt).getTime();
+        if (age > 24 * 60 * 60 * 1000) { DB.del('draft_rx'); return; }
+      }
+      APP.formMeds = draft.formMeds || [{ name: '', dosage: '', days: '', timing: 'After food' }];
+      APP.formLabTests = draft.formLabTests || [];
+      APP.formDiagTests = draft.formDiagTests || [];
+      APP.formReferrals = draft.formReferrals || [];
+      APP.editingRxId = draft.editingRxId || null;
+      // Store draft data for form population after render
+      APP._pendingDraft = draft;
+    }
+
+    function applyDraftToForm() {
+      const draft = APP._pendingDraft;
+      if (!draft) return;
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      setVal('p-name', draft.patient?.name);
+      setVal('p-phone', draft.patient?.phone);
+      setVal('p-age', draft.patient?.age);
+      setVal('p-gender', draft.patient?.gender);
+      setVal('p-addr', draft.patient?.address);
+      setVal('p-date', draft.visitDate);
+      setVal('v-bp', draft.vitals?.bp);
+      setVal('v-pulse', draft.vitals?.pulse);
+      setVal('v-temp', draft.vitals?.temp);
+      setVal('v-spo2', draft.vitals?.spo2);
+      setVal('v-weight', draft.vitals?.weight);
+      setVal('v-rr', draft.vitals?.rr);
+      setVal('cc', draft.chiefConcerns);
+      setVal('obs', draft.observations);
+      setVal('diag', draft.diagnosis);
+      setVal('sug', draft.suggestions);
+      setVal('recheck', draft.recheckDate);
+      setVal('recheck-note', draft.recheckNote);
+      APP._pendingDraft = null;
+      toast('Draft restored from your last session');
+    }
+
+    function clearDraft() {
+      DB.del('draft_rx');
+      if (APP.currentDoctor) SYNC.delDraft(APP.currentDoctor.id);
+      APP._pendingDraft = null;
+    }
+
+    function startDraftAutoSave() {
+      if (_draftTimer) clearInterval(_draftTimer);
+      _draftTimer = setInterval(saveDraft, 5000); // save every 5 seconds
+    }
+
+    /* ══════════════════════════════════════════════════════
+       AUTOCOMPLETE — remember patients and medicines
+    ══════════════════════════════════════════════════════ */
+    function getAutocompleteData() {
+      const rxs = getRxs();
+      const names = new Set(), phones = new Set(), meds = new Set();
+      rxs.forEach(rx => {
+        if (rx.patient?.name) names.add(rx.patient.name);
+        if (rx.patient?.phone) phones.add(rx.patient.phone);
+        (rx.medicines || []).forEach(m => { if (m.name) meds.add(m.name); });
+      });
+      return { names: [...names], phones: [...phones], meds: [...meds] };
+    }
+
+    function buildDatalistHTML() {
+      const ac = getAutocompleteData();
+      return `
+    <datalist id="ac-patient-names">${ac.names.map(n => `<option value="${n}">`).join('')}</datalist>
+    <datalist id="ac-patient-phones">${ac.phones.map(p => `<option value="${p}">`).join('')}</datalist>
+    <datalist id="ac-med-names">${ac.meds.map(m => `<option value="${m}">`).join('')}</datalist>
+  `;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       HELPERS
+    ══════════════════════════════════════════════════════ */
+    const fmtDate = iso => { try { return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return iso; } };
+    const fmtDate2 = d => { try { const [y, m, day] = d.split('-'); return new Date(y, m - 1, day).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return d; } };
+    const genId = pre => pre + '-' + Date.now().toString().slice(-6);
+    const getDoctors = () => DB.get('doctors', []);
+    const getRxs = () => DB.get('prescriptions', []);
+    const saveDoctors = d => { DB.set('doctors', d); SYNC.pushDoctors(); };
+    const saveRxs = r => { DB.set('prescriptions', r); }; // normally we push individual Rxs
+    const addPrescription = rx => {
+      const rxs = getRxs();
+      rxs.unshift(rx);
+      DB.set('prescriptions', rxs);
+      SYNC.pushRx(rx, false);
+    };
+    const updatePrescription = rx => {
+      const rxs = getRxs();
+      const idx = rxs.findIndex(r => r.id === rx.id);
+      if (idx !== -1) {
+        rxs[idx] = rx;
+        DB.set('prescriptions', rxs);
+        SYNC.pushRx(rx, true);
+      }
+    };
+
+    function toast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
+      t.className = 'toast show toast-' + type;
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       RENDER ENGINE
+    ══════════════════════════════════════════════════════ */
+    function render() {
+      const app = document.getElementById('app');
+      if (APP.view === 'login') { app.innerHTML = renderLogin(); bindLogin(); }
+      else if (APP.view === 'profile_complete') { app.innerHTML = renderProfileComplete(); bindProfileComplete(); }
+      else if (APP.view === 'doctor') { app.innerHTML = renderDoctorApp(); bindDoctorApp(); }
+      else if (APP.view === 'admin') { app.innerHTML = renderAdminApp(); bindAdminApp(); }
+
+      if (APP.previewRx) mountPdfPreview(APP.previewRx);
+      if (APP.showModal) mountModal();
+    }
+
+    /* ══════════════════════════════════════════════════════
+       LOGIN
+    ══════════════════════════════════════════════════════ */
+    function renderLogin() {
+      const r = APP.loginRole;
+      return `
+  <div class="login-screen">
+    <div class="login-wrap">
+      <div class="login-box">
+        <div class="login-logo-wrap">
+          <img class="login-logo" src="${LOGO_SRC}" onerror="this.style.display='none'">
+          <div class="login-tagline">Prescription System · Powered by immidit</div>
+        </div>
+
+        <div class="role-toggle">
+          <button class="role-opt ${r === 'doctor' ? 'sel' : ''}" onclick="APP.loginRole='doctor';APP.loginError='';render()">🩺 Doctor</button>
+          <button class="role-opt ${r === 'admin' ? 'sel' : ''}" onclick="APP.loginRole='admin';APP.loginError='';render()">🛡️ Admin</button>
+        </div>
+
+        <h3 class="login-heading">${r === 'doctor' ? 'Doctor Login' : 'Admin Login'}</h3>
+
+        ${r === 'doctor' ? `
+          <div class="field"><label>Username</label><input id="l-user" placeholder="Provided by admin" autocomplete="off"></div>
+          <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="••••••••"></div>
+        ` : `
+          <div class="field"><label>Admin Username</label><input id="l-user" placeholder="admin" autocomplete="off"></div>
+          <div class="field"><label>Password</label><input id="l-pass" type="password" placeholder="••••••••"></div>
+        `}
+
+        ${APP.loginError ? `<div class="error-msg">${APP.loginError}</div>` : ''}
+
+        <button class="btn btn-primary btn-full btn-lg" id="login-submit">
+          ${r === 'doctor' ? 'Login to Prescription System' : 'Access Admin Panel'}
+        </button>
+
+        ${r === 'doctor' ? `<p style="font-size:11.5px;color:var(--text-dim);text-align:center;margin-top:14px;">Contact your immidit admin to get login credentials.</p>` : ''}
+      </div>
+    </div>
+  </div>`;
+    }
+
+    function bindLogin() {
+      const submit = () => {
+        const user = document.getElementById('l-user')?.value.trim();
+        const pass = document.getElementById('l-pass')?.value;
+        if (!user || !pass) { APP.loginError = 'Please enter both fields.'; render(); return; }
+
+        if (APP.loginRole === 'admin') {
+          const admin = DB.get('admin');
+          if (user === admin.username && pass === admin.password) {
+            APP.view = 'admin'; APP.role = 'admin'; APP.loginError = ''; APP.section = 'dashboard';
+            saveSession(); render();
+          } else { APP.loginError = 'Invalid admin credentials.'; render(); }
+        } else {
+          const doctors = getDoctors();
+          const doc = doctors.find(d => d.username === user && d.password === pass && d.active);
+          if (!doc) { APP.loginError = 'Invalid credentials or account inactive.'; render(); return; }
+          APP.currentDoctor = doc;
+          APP.loginError = '';
+          if (!doc.profileComplete) { APP.view = 'profile_complete'; APP.profileStep = 1; render(); }
+          else { APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new'; saveSession(); render(); }
+        }
+      };
+      document.getElementById('login-submit')?.addEventListener('click', submit);
+      document.getElementById('l-pass')?.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+    }
+
+    /* ══════════════════════════════════════════════════════
+       PROFILE COMPLETION (first login)
+    ══════════════════════════════════════════════════════ */
+    let sigCtx = null, sigCanvas = null, sigDrawing = false;
+
+    function renderProfileComplete() {
+      const step = APP.profileStep;
+      const doc = APP.currentDoctor;
+      const p = doc.profile || {};
+      const steps = ['Basic Info', 'Credentials', 'Signature'];
+
+      return `
+  <div class="profile-screen">
+    <div class="profile-card">
+      <div class="profile-banner">
+        <img class="profile-banner-logo" src="${LOGO_SRC}" onerror="this.style.display='none'">
+        <h2>Complete Your Doctor Profile</h2>
+        <p>Your admin has created your account. Please complete your profile before accessing the prescription system.</p>
+      </div>
+
+      <div class="profile-steps">
+        ${steps.map((s, i) => `<div class="profile-step ${i + 1 < step ? 'done' : i + 1 === step ? 'active' : ''}">${i + 1 < step ? '✓ ' : ''}${s}</div>`).join('')}
+      </div>
+
+      <div class="profile-body">
+        ${step === 1 ? `
+          <h3 style="font-size:17px;margin-bottom:18px;">Basic Information</h3>
+          <div class="field-row c2">
+            <div class="field"><label>Full Name (with Dr.)</label><input id="pf-name" placeholder="Dr. Full Name" value="${p.name || ''}"></div>
+            <div class="field"><label>Medical Registration ID</label><input id="pf-reg" placeholder="MCI-XXXXX" value="${p.regId || ''}"></div>
+          </div>
+          <div class="field-row c2">
+            <div class="field"><label>Specialty</label>
+              <select id="pf-spec">
+                ${['General Physician', 'Pediatrician', 'Internal Medicine', 'Cardiologist', 'Orthopedic', 'Dermatologist', 'ENT Specialist', 'Gynecologist', 'Neurologist', 'Pulmonologist', 'Other'].map(s => `<option ${(p.specialty || '') == s ? 'selected' : ''}>${s}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field"><label>Years of Experience</label><input id="pf-exp" type="number" placeholder="10" value="${p.experience || ''}"></div>
+          </div>
+          <div class="field"><label>Qualifications</label><input id="pf-qual" placeholder="MBBS, MD (Internal Medicine)" value="${p.qualification || ''}"></div>
+          <div class="field"><label>Contact Number</label><input id="pf-phone" placeholder="+91 XXXXX XXXXX" value="${p.phone || ''}"></div>
+          <div class="field"><label>Brief Bio (optional)</label><textarea id="pf-bio" placeholder="Brief professional summary...">${p.bio || ''}</textarea></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:18px;">
+            <button class="btn btn-primary" id="pf-next1">Next: Signature →</button>
+          </div>
+        ` : step === 2 ? `
+          <h3 style="font-size:17px;margin-bottom:6px;">Your Digital Signature</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px;">Draw your signature below. It will appear on every prescription you generate.</p>
+          <div class="field">
+            <label>Draw Signature</label>
+            <div class="sig-container">
+              <canvas id="sig-canvas" width="560" height="90"></canvas>
+              <div class="sig-bar">
+                <span class="sig-hint">Draw with mouse or finger</span>
+                <button class="btn btn-ghost btn-sm" onclick="clearSig()">Clear</button>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:11.5px;color:var(--text-dim);margin-top:8px;">You can skip this and add later from your profile settings.</p>
+          <div style="display:flex;justify-content:space-between;margin-top:18px;">
+            <button class="btn btn-ghost" id="pf-back2">← Back</button>
+            <button class="btn btn-primary" id="pf-finish">Complete Profile ✓</button>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  </div>`;
+    }
+
+    function bindProfileComplete() {
+      if (APP.profileStep === 1) {
+        document.getElementById('pf-next1')?.addEventListener('click', () => {
+          const name = document.getElementById('pf-name').value.trim();
+          const reg = document.getElementById('pf-reg').value.trim();
+          if (!name || !reg) { toast('Name and Registration ID are required.', 'error'); return; }
+          const doctors = getDoctors();
+          const idx = doctors.findIndex(d => d.id === APP.currentDoctor.id);
+          doctors[idx].profile = {
+            name, regId: reg,
+            specialty: document.getElementById('pf-spec').value,
+            experience: document.getElementById('pf-exp').value,
+            qualification: document.getElementById('pf-qual').value,
+            phone: document.getElementById('pf-phone').value,
+            bio: document.getElementById('pf-bio').value,
+            signature: null,
+            avatarInitials: name.split(' ').filter(w => w.length > 0).slice(0, 2).map(w => w[0].toUpperCase()).join(''),
+          };
+          saveDoctors(doctors);
+          APP.currentDoctor = doctors[idx];
+          APP.profileStep = 2;
+          render();
+        });
+      }
+
+      if (APP.profileStep === 2) {
+        const canvas = document.getElementById('sig-canvas');
+        if (canvas) {
+          sigCanvas = canvas;
+          sigCtx = canvas.getContext('2d');
+          sigCtx.strokeStyle = '#F5621E';
+          sigCtx.lineWidth = 2.2;
+          sigCtx.lineCap = 'round';
+          sigCtx.lineJoin = 'round';
+          const pt = e => ({ x: e.offsetX, y: e.offsetY });
+          const tpt = e => { const r = canvas.getBoundingClientRect(), sx = canvas.width / r.width, sy = canvas.height / r.height; return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy }; };
+          canvas.onmousedown = e => { sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(pt(e).x, pt(e).y); };
+          canvas.onmousemove = e => { if (!sigDrawing) return; sigCtx.lineTo(pt(e).x, pt(e).y); sigCtx.stroke(); };
+          canvas.onmouseup = () => sigDrawing = false;
+          canvas.onmouseleave = () => sigDrawing = false;
+          canvas.ontouchstart = e => { e.preventDefault(); sigDrawing = true; const p = tpt(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); };
+          canvas.ontouchmove = e => { e.preventDefault(); if (!sigDrawing) return; const p = tpt(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke(); };
+          canvas.ontouchend = () => sigDrawing = false;
+        }
+
+        document.getElementById('pf-back2')?.addEventListener('click', () => { APP.profileStep = 1; render(); });
+        document.getElementById('pf-finish')?.addEventListener('click', () => {
+          const sig = sigCanvas ? sigCanvas.toDataURL() : null;
+          const doctors = getDoctors();
+          const idx = doctors.findIndex(d => d.id === APP.currentDoctor.id);
+          doctors[idx].profile.signature = sig;
+          doctors[idx].profileComplete = true;
+          saveDoctors(doctors);
+          APP.currentDoctor = doctors[idx];
+          APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new'; saveSession();
+          toast('Profile complete! Welcome to immidit Rx.');
+          render();
+        });
+      }
+    }
+
+    function clearSig() {
+      if (sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       DOCTOR APP
+    ══════════════════════════════════════════════════════ */
+    function renderDoctorApp() {
+      const doc = APP.currentDoctor;
+      const p = doc.profile;
+      const myRxs = getRxs().filter(r => r.doctorId === doc.id);
+      const s = APP.section;
+
+      return `
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img class="topbar-logo" src="${LOGO_SRC}" onerror="this.style.display='none'">
+      <span class="topbar-tag">Rx System</span>
+    </div>
+    <div class="topbar-nav">
+      <button class="topbar-tab ${s === 'new' ? 'active' : ''}" onclick="APP.section='new';APP.editingRxId=null;resetForm();render()">✏️ New Prescription</button>
+      <button class="topbar-tab ${s === 'my' ? 'active' : ''}" onclick="APP.section='my';render()">📋 My Prescriptions</button>
+    </div>
+    <div class="topbar-user">
+      <span class="status-dot"></span>
+      <span>${p.name}</span>
+      <span style="color:var(--text-dim)">·</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">Write</div>
+      <button class="sidebar-btn ${s === 'new' ? 'active' : ''}" onclick="APP.section='new';APP.editingRxId=null;resetForm();render()">
+        <span class="sidebar-ico">📝</span> New Prescription
+      </button>
+
+      <div class="sidebar-section">Records</div>
+      <button class="sidebar-btn ${s === 'my' ? 'active' : ''}" onclick="APP.section='my';render()">
+        <span class="sidebar-ico">📋</span> My Prescriptions
+        <span class="sidebar-badge">${myRxs.length}</span>
+      </button>
+
+      <div class="sidebar-section">Account</div>
+      <button class="sidebar-btn ${s === 'profile' ? 'active' : ''}" onclick="APP.section='profile';render()">
+        <span class="sidebar-ico">👤</span> My Profile
+      </button>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-doctor-info">
+          <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Logged in as</div>
+          <div class="sidebar-doctor-name">${p.name}</div>
+          <div class="sidebar-doctor-reg">${p.regId}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${p.specialty}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" id="doctor-content">
+      ${s === 'new' ? renderNewRx() : s === 'my' ? renderMyRxs(myRxs) : renderDoctorProfile()}
+    </div>
+  </div>`;
+    }
+
+    function renderDoctorProfile() {
+      const p = APP.currentDoctor.profile;
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">My Profile</h1><div class="page-sub">Your public information on all prescriptions</div></div>
+  </div>
+  <div class="card" style="max-width:560px;">
+    <div class="card-header">
+      <div class="doctor-avatar" style="width:56px;height:56px;font-size:22px;border-radius:14px;">
+        ${p.signature ? '' : p.avatarInitials || '👤'}
+      </div>
+      <div>
+        <div class="card-title" style="font-size:17px;">${p.name}</div>
+        <div class="card-sub">${p.specialty} · ${p.experience} yrs experience</div>
+        <div class="mono text-dim" style="font-size:11px;margin-top:3px;">${p.regId}</div>
+      </div>
+    </div>
+    <div class="field-row c2">
+      <div class="field"><label>Qualification</label><input value="${p.qualification}" id="up-qual"></div>
+      <div class="field"><label>Experience (yrs)</label><input type="number" value="${p.experience}" id="up-exp"></div>
+    </div>
+    <div class="field"><label>Contact</label><input value="${p.phone}" id="up-phone"></div>
+    <div class="field"><label>Bio</label><textarea id="up-bio">${p.bio || ''}</textarea></div>
+    <div class="field">
+      <label>Signature</label>
+      <div class="sig-container">
+        <canvas id="sig-canvas" width="480" height="90"></canvas>
+        <div class="sig-bar">
+          <span class="sig-hint">${p.signature ? 'Redraw to update' : 'Draw your signature'}</span>
+          <button class="btn btn-ghost btn-sm" onclick="clearSig()">Clear</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-bar" style="margin-top:10px;">
+      <button class="btn btn-primary" id="save-profile-btn">Save Changes</button>
+    </div>
+  </div>`;
+    }
+
+    function renderNewRx() {
+      const editing = APP.editingRxId;
+      let rx = null;
+      if (editing) rx = getRxs().find(r => r.id === editing);
+
+      const v = rx?.vitals || {};
+      const meds = APP.formMeds;
+      const labTags = APP.formLabTests.map((t, i) => `<span class="tag">🧫 ${t}<button class="tag-del" onclick="removeTag('lab',${i})">×</button></span>`).join('');
+      const diagTags = APP.formDiagTests.map((t, i) => `<span class="tag">📡 ${t}<button class="tag-del" onclick="removeTag('diag',${i})">×</button></span>`).join('');
+      const refRows = APP.formReferrals.map((r, i) => `
+    <div class="med-row" style="grid-template-columns:1.5fr 1.5fr 2fr auto;" id="ref-row-${i}">
+      <div class="field" style="margin:0"><input placeholder="Specialist" id="ref-spec-${i}" value="${r.specialist || ''}" oninput="APP.formReferrals[${i}].specialist=this.value"></div>
+      <div class="field" style="margin:0"><input placeholder="Hospital / Clinic" id="ref-hosp-${i}" value="${r.hospital || ''}" oninput="APP.formReferrals[${i}].hospital=this.value"></div>
+      <div class="field" style="margin:0"><input placeholder="Reason for referral" id="ref-reason-${i}" value="${r.reason || ''}" oninput="APP.formReferrals[${i}].reason=this.value"></div>
+      <button class="btn btn-danger-soft btn-icon" onclick="removeRef(${i})">✕</button>
+    </div>`).join('');
+
+      return `
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">${editing ? 'Edit Prescription' : 'New Prescription'}</h1>
+      <div class="page-sub">${editing ? 'Modifying ' + editing : 'Fill all sections and generate a PDF'}</div>
+    </div>
+    <div class="mono text-dim" style="font-size:12px;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+  </div>
+
+  <!-- PATIENT -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">👤</div><div><div class="card-title">Patient Details</div><div class="card-sub">Basic patient information</div></div></div>
+    <div class="field-row c2">
+      <div class="field"><label>Full Name</label><input id="p-name" placeholder="Patient full name" value="${rx?.patient?.name || ""}" list="ac-patient-names" autocomplete="off"></div>
+      <div class="field"><label>Phone Number</label><input id="p-phone" placeholder="10-digit mobile" value="${rx?.patient?.phone || ""}" list="ac-patient-phones" autocomplete="off"></div>
+    </div>
+    <div class="field-row c3">
+      <div class="field"><label>Age (years)</label><input id="p-age" type="number" placeholder="0" value="${rx?.patient?.age || ''}"></div>
+      <div class="field"><label>Gender</label><select id="p-gender"><option value="">Select</option>${['Male', 'Female', 'Other'].map(g => `<option ${rx?.patient?.gender === g ? 'selected' : ''}>${g}</option>`).join('')}</select></div>
+      <div class="field"><label>Date of Visit</label><input type="date" id="p-date" value="${rx?.visitDate || new Date().toISOString().split('T')[0]}"></div>
+    </div>
+    <div class="field"><label>Address</label><input id="p-addr" placeholder="Sector, Gurugram" value="${rx?.patient?.address || ''}"></div>
+  </div>
+
+  <!-- VITALS -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">💓</div><div><div class="card-title">Vitals at Visit</div><div class="card-sub">Measured at time of consultation</div></div></div>
+    <div class="vital-grid">
+      <div class="vital-chip"><label>BLOOD PRESSURE</label><input id="v-bp" placeholder="120/80" value="${v.bp || ''}"><div class="vital-unit">mmHg</div></div>
+      <div class="vital-chip"><label>PULSE RATE</label><input id="v-pulse" placeholder="72" value="${v.pulse || ''}"><div class="vital-unit">bpm</div></div>
+      <div class="vital-chip"><label>TEMPERATURE</label><input id="v-temp" placeholder="98.6" value="${v.temp || ''}"><div class="vital-unit">deg F</div></div>
+      <div class="vital-chip"><label>SpO2</label><input id="v-spo2" placeholder="99" value="${v.spo2 || ''}"><div class="vital-unit">%</div></div>
+      <div class="vital-chip"><label>WEIGHT</label><input id="v-weight" placeholder="70" value="${v.weight || ''}"><div class="vital-unit">kg</div></div>
+      <div class="vital-chip"><label>RESP. RATE</label><input id="v-rr" placeholder="16" value="${v.rr || ''}"><div class="vital-unit">br/min</div></div>
+    </div>
+  </div>
+
+  <!-- CHIEF CONCERNS -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🗣️</div><div><div class="card-title">Chief Concerns</div><div class="card-sub">Patient's primary complaints</div></div></div>
+    <textarea id="cc" placeholder="Fever since 3 days, body ache, sore throat...">${rx?.chiefConcerns || ''}</textarea>
+  </div>
+
+  <!-- CLINICAL NOTES -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🔬</div><div><div class="card-title">Clinical Notes</div><div class="card-sub">Observations and diagnosis</div></div></div>
+    <div class="field"><label>Observations</label><textarea id="obs" placeholder="Clinical examination findings...">${rx?.observations || ''}</textarea></div>
+    <div class="field"><label>Diagnosis</label><textarea id="diag" style="min-height:52px;" placeholder="Primary and secondary diagnoses...">${rx?.diagnosis || ''}</textarea></div>
+  </div>
+
+  <!-- MEDICINES -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">💊</div><div><div class="card-title">Medicines</div><div class="card-sub">M = Morning · A = Afternoon · E = Evening · N = Night</div></div></div>
+    <div class="med-row-header">
+      <div class="med-col-hdr">Medicine Name</div>
+      <div class="med-col-hdr">Dosage (M-A-E-N)</div>
+      <div class="med-col-hdr">Days</div>
+      <div class="med-col-hdr">Timing</div>
+      <div></div>
+    </div>
+    <div id="med-list">
+      ${meds.map((m, i) => renderMedRow(m, i)).join('')}
+    </div>
+    <button class="add-row-btn" onclick="addMed()">+ Add Medicine</button>
+  </div>
+
+  <!-- SUGGESTIONS -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">💡</div><div><div class="card-title">Advice & Suggestions</div></div></div>
+    <textarea id="sug" placeholder="Rest, fluids, diet instructions...">${rx?.suggestions || ''}</textarea>
+  </div>
+
+  <!-- INVESTIGATIONS -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🧪</div><div><div class="card-title">Investigations</div><div class="card-sub">Lab and diagnostic tests</div></div></div>
+    <div class="form-section"><span>Laboratory Tests</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="new-lab" placeholder="e.g. CBC with ESR, HbA1c, Lipid Profile...">
+      <button class="btn btn-ghost" onclick="addTag('lab')">Add</button>
+    </div>
+    <div id="lab-tags">${labTags}</div>
+
+    <div class="form-section" style="margin-top:16px;"><span>Diagnostic / Imaging</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
+      <input id="new-diag" placeholder="e.g. X-Ray Chest PA, ECG, USG Abdomen...">
+      <button class="btn btn-ghost" onclick="addTag('diag')">Add</button>
+    </div>
+    <div id="diag-tags">${diagTags}</div>
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">🔀</div><div><div class="card-title">Referral</div><div class="card-sub">If specialist consultation required</div></div></div>
+    <div id="ref-list">${refRows}</div>
+    <button class="add-row-btn" onclick="addRef()">+ Add Referral</button>
+  </div>
+
+  <!-- RECHECK -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">📅</div><div><div class="card-title">Follow-up / Recheck</div></div></div>
+    <div class="field-row c2">
+      <div class="field"><label>Recheck Date</label><input type="date" id="recheck" value="${rx?.recheckDate || ''}"></div>
+      <div class="field"><label>Follow-up Note</label><input id="recheck-note" placeholder="Instructions for next visit..." value="${rx?.recheckNote || ''}"></div>
+    </div>
+  </div>
+
+  ${buildDatalistHTML()}
+
+  <div class="action-bar">
+    <button class="btn btn-ghost" onclick="clearDraft();resetForm();render()">Clear</button>
+    <button class="btn btn-primary" onclick="savePrescription()">
+      ${editing ? '💾 Update & Preview' : '📄 Generate Prescription'}
+    </button>
+  </div>`;
+    }
+
+    function renderMedRow(m, i) {
+      return `
+  <div class="med-row" id="med-row-${i}">
+    <div class="field" style="margin:0"><input placeholder="Tab. Paracetamol 650 mg" id="med-name-${i}" value="${m.name}" oninput="updateMed(${i},'name',this.value)" list="ac-med-names" autocomplete="off"></div>
+    <div class="field" style="margin:0"><input placeholder="1-0-1 or 1-0-1-1" id="med-dose-${i}" value="${m.dosage}" oninput="updateMed(${i},'dosage',this.value)"></div>
+    <div class="field" style="margin:0"><input type="number" placeholder="5" id="med-days-${i}" value="${m.days}" oninput="updateMed(${i},'days',this.value)"></div>
+    <div class="field" style="margin:0">
+      <select id="med-tim-${i}" onchange="updateMed(${i},'timing',this.value)">
+        ${['After food', 'Before food', 'With food', 'Before bed', 'SOS', 'Empty stomach'].map(o => `<option ${m.timing === o ? 'selected' : ''}>${o}</option>`).join('')}
+      </select>
+    </div>
+    <button class="btn btn-danger-soft btn-icon" onclick="removeMed(${i})">✕</button>
+  </div>`;
+    }
+
+    function renderMyRxs(rxs) {
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">My Prescriptions</h1><div class="page-sub">${rxs.length} prescription${rxs.length !== 1 ? 's' : ''} issued by you</div></div>
+  </div>
+  ${rxs.length === 0 ? `<div class="empty-state"><div class="icon">📋</div><p>No prescriptions yet. Write your first one.</p></div>` :
+          rxs.map(rx => renderRxCard(rx, true)).join('')}`;
+    }
+
+    function renderRxCard(rx, canEdit) {
+      const open = APP.expandedRx === rx.id;
+      return `
+  <div class="rx-card">
+    <div class="rx-card-hdr" onclick="toggleExpand('${rx.id}')">
+      <div>
+        <div class="rx-id">${rx.id}</div>
+        <div class="rx-patient-name">${rx.patient.name} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${rx.patient.age}Y, ${rx.patient.gender}</span></div>
+        <div class="rx-meta">${rx.doctorName} · ${fmtDate(rx.createdAt)}${rx.edited ? ' · <span class="pill pill-blue" style="font-size:10px;">Edited</span>' : ''}</div>
+      </div>
+      <div class="rx-actions">
+        <span class="pill pill-green">Active</span>
+        ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editRx('${rx.id}')">✏️ Edit</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();APP.previewRx=getRx('${rx.id}');render()">📄 PDF</button>
+        <span class="chevron ${open ? 'open' : ''}">▾</span>
+      </div>
+    </div>
+    <div class="rx-body ${open ? 'open' : ''}">
+      <div class="rx-detail-grid">
+        <div class="rx-detail-item"><label>DIAGNOSIS</label><p>${rx.diagnosis || '—'}</p></div>
+        <div class="rx-detail-item"><label>CHIEF CONCERNS</label><p>${rx.chiefConcerns || '—'}</p></div>
+        <div class="rx-detail-item"><label>RECHECK</label><p>${rx.recheckDate ? fmtDate2(rx.recheckDate) : '—'}</p></div>
+        <div class="rx-detail-item"><label>BP / PULSE</label><p>${rx.vitals?.bp || '—'} · ${rx.vitals?.pulse || '—'} bpm</p></div>
+        <div class="rx-detail-item"><label>MEDICINES</label><p>${rx.medicines?.length || 0} prescribed</p></div>
+        <div class="rx-detail-item"><label>LAB TESTS</label><p>${(rx.labTests || []).join(', ') || '—'}</p></div>
+      </div>
+      ${rx.referral?.length ? `<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">🔀 Referral: ${rx.referral.map(r => r.specialist).join(', ')}</div>` : ''}
+    </div>
+  </div>`;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ADMIN APP
+    ══════════════════════════════════════════════════════ */
+    function renderAdminApp() {
+      const s = APP.section;
+      const doctors = getDoctors();
+      const rxs = getRxs();
+      const today = new Date().toDateString();
+      const todayRxs = rxs.filter(r => new Date(r.createdAt).toDateString() === today).length;
+      const activeDocs = doctors.filter(d => d.active && d.profileComplete).length;
+
+      return `
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img class="topbar-logo" src="${LOGO_SRC}" onerror="this.style.display='none'">
+      <span class="topbar-tag">Admin</span>
+    </div>
+    <div class="topbar-user">
+      <span class="status-dot" style="background:var(--info);box-shadow:0 0 6px var(--info)"></span>
+      <span>Administrator</span>
+      <span style="color:var(--text-dim)">·</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">Overview</div>
+      <button class="sidebar-btn ${s === 'dashboard' ? 'active' : ''}" onclick="APP.section='dashboard';render()">
+        <span class="sidebar-ico">📊</span> Dashboard
+      </button>
+      <div class="sidebar-section">Doctors</div>
+      <button class="sidebar-btn ${s === 'doctors' ? 'active' : ''}" onclick="APP.section='doctors';render()">
+        <span class="sidebar-ico">🩺</span> Manage Doctors
+        <span class="sidebar-badge">${doctors.length}</span>
+      </button>
+      <div class="sidebar-section">Prescriptions</div>
+      <button class="sidebar-btn ${s === 'allrx' ? 'active' : ''}" onclick="APP.section='allrx';render()">
+        <span class="sidebar-ico">📋</span> All Prescriptions
+        <span class="sidebar-badge">${rxs.length}</span>
+      </button>
+    </div>
+
+    <div class="content">
+      ${s === 'dashboard' ? renderAdminDash(doctors, rxs, todayRxs, activeDocs) :
+          s === 'doctors' ? renderAdminDoctors(doctors) :
+            renderAdminRxs(rxs)}
+    </div>
+  </div>`;
+    }
+
+    function renderAdminDash(doctors, rxs, todayRxs, activeDocs) {
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Dashboard</h1><div class="page-sub">System overview for immidit Prescription Platform</div></div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card stat-orange"><div class="stat-label">Total Prescriptions</div><div class="stat-value">${rxs.length}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${todayRxs}</div><div class="stat-sub">${new Date().toLocaleDateString('en-IN', { weekday: 'long' })}</div></div>
+    <div class="stat-card stat-green"><div class="stat-label">Active Doctors</div><div class="stat-value">${activeDocs}</div><div class="stat-sub">Profile complete</div></div>
+    <div class="stat-card stat-blue"><div class="stat-label">Pending Profiles</div><div class="stat-value">${doctors.filter(d => !d.profileComplete).length}</div><div class="stat-sub">First login pending</div></div>
+  </div>
+  <div class="page-header" style="margin-top:8px;">
+    <div><h2 style="font-size:18px;">Recent Prescriptions</h2></div>
+    <button class="btn btn-ghost btn-sm" onclick="APP.section='allrx';render()">View All →</button>
+  </div>
+  ${rxs.length === 0 ? `<div class="empty-state"><div class="icon">📋</div><p>No prescriptions yet.</p></div>` :
+          rxs.slice(0, 6).map(rx => renderRxCard(rx, false)).join('')}`;
+    }
+
+    function renderAdminDoctors(doctors) {
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Manage Doctors</h1><div class="page-sub">Create accounts and manage doctor access</div></div>
+    <button class="btn btn-primary" onclick="APP.showModal='add_doctor';APP.modalData={};render()">+ Add Doctor</button>
+  </div>
+
+  ${doctors.length === 0 ? `<div class="empty-state"><div class="icon">🩺</div><p>No doctors yet. Add your first doctor.</p></div>` : `
+  <div class="doctor-grid">
+    ${doctors.map(d => renderDoctorCard(d)).join('')}
+  </div>`}`;
+    }
+
+    function renderDoctorCard(d) {
+      const p = d.profile || {};
+      const rxCount = getRxs().filter(r => r.doctorId === d.id).length;
+      return `
+  <div class="doctor-card">
+    <div class="doctor-card-top">
+      <div class="doctor-avatar">
+        ${p.avatarInitials || '👤'}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="doctor-name">${p.name || d.username}</div>
+        <div class="doctor-spec">${p.specialty || 'Profile incomplete'}</div>
+        <div class="doctor-reg">${d.id} · @${d.username}</div>
+        <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+          ${d.active ? `<span class="pill pill-green">Active</span>` : `<span class="pill pill-red">Inactive</span>`}
+          ${d.profileComplete ? `<span class="pill pill-blue">${rxCount} Rx</span>` : `<span class="pill pill-gray">Profile Pending</span>`}
+        </div>
+      </div>
+    </div>
+    <div class="doctor-card-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showCreds('${d.id}')">🔑 Credentials</button>
+      <button class="btn btn-info-soft btn-sm" onclick="resetPassword('${d.id}')">🔄 Reset Pass</button>
+      <button class="btn ${d.active ? 'btn-danger-soft' : 'btn-success-soft'} btn-sm" onclick="toggleDoctor('${d.id}')">
+        ${d.active ? '🚫 Deactivate' : '✓ Activate'}
+      </button>
+    </div>
+  </div>`;
+    }
+
+    function renderAdminRxs(rxs) {
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">All Prescriptions</h1><div class="page-sub">${rxs.length} total records</div></div>
+  </div>
+  ${rxs.length === 0 ? `<div class="empty-state"><div class="icon">📋</div><p>No prescriptions yet.</p></div>` :
+          rxs.map(rx => renderRxCard(rx, false)).join('')}`;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ADMIN ACTIONS
+    ══════════════════════════════════════════════════════ */
+    function mountModal() {
+      const existing = document.getElementById('app-modal');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay'; overlay.id = 'app-modal';
+
+      if (APP.showModal === 'add_doctor') {
+        overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-hdr">
+        <h3>Add New Doctor</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px;">Create login credentials for the doctor. They will complete their profile on first login.</p>
+        <div class="field-row c2">
+          <div class="field"><label>Username</label><input id="m-user" placeholder="dr.name (unique)" autocomplete="off"></div>
+          <div class="field"><label>Temporary Password</label><input id="m-pass" placeholder="Min 6 characters" type="text"></div>
+        </div>
+        <div class="field"><label>Display Name (optional)</label><input id="m-name" placeholder="Dr. Full Name"></div>
+        <div class="field"><label>Medical Reg. ID (optional)</label><input id="m-reg" placeholder="MCI-XXXXX"></div>
+        <div id="m-error" style="display:none;" class="error-msg"></div>
+        <div id="m-success" style="display:none;" class="cred-box">
+          <div class="cred-box-title">🎉 Doctor Account Created</div>
+          <div class="cred-row"><span class="cred-label">Username</span><span class="cred-value" id="cred-u"></span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value" id="cred-p"></span></div>
+          <div class="cred-warn">⚠ Share these credentials securely. Doctor must change password after first login.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" id="m-submit">Create Account</button>
+      </div>
+    </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('m-submit').addEventListener('click', createDoctor);
+
+      } else if (APP.showModal === 'view_creds') {
+        const d = APP.modalData;
+        overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-hdr"><h3>Login Credentials</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <div class="cred-box">
+          <div class="cred-box-title">Doctor Access Credentials</div>
+          <div class="cred-row"><span class="cred-label">Doctor</span><span class="cred-value">${d.profile?.name || d.username}</span></div>
+          <div class="cred-row"><span class="cred-label">Username</span><span class="cred-value">${d.username}</span></div>
+          <div class="cred-row"><span class="cred-label">Password</span><span class="cred-value">${d.password}</span></div>
+          <div class="cred-row"><span class="cred-label">Doctor ID</span><span class="cred-value">${d.id}</span></div>
+          <div class="cred-warn">Share credentials securely. Never share via unencrypted email.</div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal()">Done</button></div>
+    </div>`;
+        document.body.appendChild(overlay);
+
+      } else if (APP.showModal === 'reset_pass') {
+        overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-hdr"><h3>Reset Password</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Set a new temporary password for <b>${APP.modalData.profile?.name || APP.modalData.username}</b>.</p>
+        <div class="field"><label>New Password</label><input id="new-pass" placeholder="Min 6 characters" type="text"></div>
+        <div id="rp-error" style="display:none;" class="error-msg"></div>
+        <div id="rp-success" class="cred-box" style="display:none;">
+          <div class="cred-box-title">✓ Password Reset</div>
+          <div class="cred-row"><span class="cred-label">Username</span><span class="cred-value">${APP.modalData.username}</span></div>
+          <div class="cred-row"><span class="cred-label">New Password</span><span class="cred-value" id="rp-new-val"></span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" id="rp-submit">Reset Password</button>
+      </div>
+    </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('rp-submit').addEventListener('click', doResetPass);
+      }
+    }
+
+    function createDoctor() {
+      const username = document.getElementById('m-user').value.trim().toLowerCase();
+      const password = document.getElementById('m-pass').value.trim();
+      const name = document.getElementById('m-name').value.trim();
+      const reg = document.getElementById('m-reg').value.trim();
+      const errEl = document.getElementById('m-error');
+
+      if (!username || !password) { errEl.textContent = 'Username and password are required.'; errEl.style.display = 'block'; return; }
+      if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+      const docs = getDoctors();
+      if (docs.find(d => d.username === username)) { errEl.textContent = 'Username already exists. Choose another.'; errEl.style.display = 'block'; return; }
+
+      const id = genId('DOC');
+      const newDoc = {
+        id, username, password,
+        profileComplete: false,
+        active: true,
+        createdAt: new Date().toISOString(),
+        profile: {
+          name: name || '',
+          regId: reg || '',
+          specialty: '',
+          qualification: '',
+          experience: '',
+          phone: '',
+          bio: '',
+          signature: null,
+          avatarInitials: name ? name.split(' ').filter(w => w).slice(0, 2).map(w => w[0].toUpperCase()).join('') : username.substring(0, 2).toUpperCase(),
+        }
+      };
+      docs.push(newDoc);
+      saveDoctors(docs);
+
+      errEl.style.display = 'none';
+      document.getElementById('m-submit').disabled = true;
+      document.getElementById('m-submit').textContent = 'Created ✓';
+      document.getElementById('cred-u').textContent = username;
+      document.getElementById('cred-p').textContent = password;
+      document.getElementById('m-success').style.display = 'block';
+      toast('Doctor account created successfully!');
+    }
+
+    function showCreds(id) {
+      const d = getDoctors().find(doc => doc.id === id);
+      APP.showModal = 'view_creds'; APP.modalData = d; render();
+    }
+
+    function resetPassword(id) {
+      const d = getDoctors().find(doc => doc.id === id);
+      APP.showModal = 'reset_pass'; APP.modalData = d; render();
+    }
+
+    function doResetPass() {
+      const newPass = document.getElementById('new-pass').value.trim();
+      const errEl = document.getElementById('rp-error');
+      if (!newPass || newPass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; errEl.style.display = 'block'; return; }
+      const docs = getDoctors();
+      const idx = docs.findIndex(d => d.id === APP.modalData.id);
+      docs[idx].password = newPass;
+      saveDoctors(docs);
+      errEl.style.display = 'none';
+      document.getElementById('rp-new-val').textContent = newPass;
+      document.getElementById('rp-success').style.display = 'block';
+      document.getElementById('rp-submit').disabled = true;
+      toast('Password reset successfully!');
+    }
+
+    function toggleDoctor(id) {
+      const docs = getDoctors();
+      const idx = docs.findIndex(d => d.id === id);
+      docs[idx].active = !docs[idx].active;
+      saveDoctors(docs);
+      toast(docs[idx].active ? 'Doctor activated.' : 'Doctor deactivated.');
+      render();
+    }
+
+    function closeModal() { APP.showModal = null; APP.modalData = null; const el = document.getElementById('app-modal'); if (el) el.remove(); render(); }
+
+    /* ══════════════════════════════════════════════════════
+       PRESCRIPTION FORM ACTIONS
+    ══════════════════════════════════════════════════════ */
+    function addMed() {
+      APP.formMeds.push({ name: '', dosage: '', days: '', timing: 'After food' });
+      const list = document.getElementById('med-list');
+      if (list) { const d = document.createElement('div'); d.innerHTML = renderMedRow(APP.formMeds[APP.formMeds.length - 1], APP.formMeds.length - 1); list.appendChild(d.firstElementChild); }
+    }
+    function removeMed(i) { APP.formMeds.splice(i, 1); const el = document.getElementById('med-row-' + i); if (el) el.remove(); }
+    function updateMed(i, field, val) { if (APP.formMeds[i]) APP.formMeds[i][field] = val; }
+
+    function addTag(type) {
+      const inp = document.getElementById(type === 'lab' ? 'new-lab' : 'new-diag');
+      const val = inp?.value.trim(); if (!val) return;
+      const arr = type === 'lab' ? APP.formLabTests : APP.formDiagTests;
+      arr.push(val);
+      const container = document.getElementById(type + '-tags');
+      if (container) {
+        const i = arr.length - 1;
+        const icon = type === 'lab' ? '🧫' : '📡';
+        const span = document.createElement('span'); span.className = 'tag'; span.id = type + '-tag-' + i;
+        span.innerHTML = `${icon} ${val}<button class="tag-del" onclick="removeTag('${type}',${i})">×</button>`;
+        container.appendChild(span);
+      }
+      inp.value = '';
+    }
+
+    function removeTag(type, i) {
+      if (type === 'lab') APP.formLabTests.splice(i, 1);
+      else APP.formDiagTests.splice(i, 1);
+      const el = document.getElementById(type + '-tag-' + i); if (el) el.remove();
+    }
+
+    function addRef() {
+      APP.formReferrals.push({ specialist: '', hospital: '', reason: '' });
+      const list = document.getElementById('ref-list');
+      if (list) {
+        const i = APP.formReferrals.length - 1;
+        const d = document.createElement('div');
+        d.innerHTML = `<div class="med-row" style="grid-template-columns:1.5fr 1.5fr 2fr auto;" id="ref-row-${i}">
+      <div class="field" style="margin:0"><input placeholder="Specialist" id="ref-spec-${i}" oninput="APP.formReferrals[${i}].specialist=this.value"></div>
+      <div class="field" style="margin:0"><input placeholder="Hospital / Clinic" id="ref-hosp-${i}" oninput="APP.formReferrals[${i}].hospital=this.value"></div>
+      <div class="field" style="margin:0"><input placeholder="Reason" id="ref-reason-${i}" oninput="APP.formReferrals[${i}].reason=this.value"></div>
+      <button class="btn btn-danger-soft btn-icon" onclick="removeRef(${i})">✕</button>
+    </div>`;
+        list.appendChild(d.firstElementChild);
+      }
+    }
+    function removeRef(i) { APP.formReferrals.splice(i, 1); const el = document.getElementById('ref-row-' + i); if (el) el.remove(); }
+
+    function gatherForm() {
+      // Flush any pending test inputs that weren't Add-ed via button
+      ['new-lab', 'new-diag'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el?.value.trim()) {
+          addTag(id === 'new-lab' ? 'lab' : 'diag');
+        }
+      });
+
+      const meds = [];
+      document.querySelectorAll('[id^="med-name-"]').forEach((el, i) => {
+        meds.push({ name: el.value, dosage: document.getElementById(`med-dose-${i}`)?.value || '', days: document.getElementById(`med-days-${i}`)?.value || '', timing: document.getElementById(`med-tim-${i}`)?.value || '' });
+      });
+      const refs = [];
+      document.querySelectorAll('[id^="ref-spec-"]').forEach((el, i) => {
+        refs.push({ specialist: el.value, hospital: document.getElementById(`ref-hosp-${i}`)?.value || '', reason: document.getElementById(`ref-reason-${i}`)?.value || '' });
+      });
+      return {
+        patient: { name: document.getElementById('p-name')?.value || '', phone: document.getElementById('p-phone')?.value || '', age: document.getElementById('p-age')?.value || '', gender: document.getElementById('p-gender')?.value || '', address: document.getElementById('p-addr')?.value || '' },
+        visitDate: document.getElementById('p-date')?.value || '',
+        vitals: { bp: document.getElementById('v-bp')?.value || '', pulse: document.getElementById('v-pulse')?.value || '', temp: document.getElementById('v-temp')?.value || '', spo2: document.getElementById('v-spo2')?.value || '', weight: document.getElementById('v-weight')?.value || '', rr: document.getElementById('v-rr')?.value || '' },
+        chiefConcerns: document.getElementById('cc')?.value || '',
+        observations: document.getElementById('obs')?.value || '',
+        diagnosis: document.getElementById('diag')?.value || '',
+        suggestions: document.getElementById('sug')?.value || '',
+        medicines: meds,
+        labTests: APP.formLabTests.slice(),
+        diagnosticTests: APP.formDiagTests.slice(),
+        referral: refs,
+        recheckDate: document.getElementById('recheck')?.value || '',
+        recheckNote: document.getElementById('recheck-note')?.value || '',
+      };
+    }
+
+    function resetForm() {
+      APP.formMeds = [{ name: '', dosage: '', days: '', timing: 'After food' }];
+      APP.formLabTests = []; APP.formDiagTests = []; APP.formReferrals = [];
+      APP.editingRxId = null;
+      clearDraft();
+    }
+
+    function savePrescription() {
+      const data = gatherForm();
+      if (!data.patient.name) { toast('Patient name is required.', 'error'); return; }
+      const doc = APP.currentDoctor;
+
+      if (APP.editingRxId) {
+        const rx = getRx(APP.editingRxId);
+        if (rx) {
+          const updated = { ...rx, ...data, edited: true, editedAt: new Date().toISOString() };
+          updatePrescription(updated);
+          APP.previewRx = updated;
+        }
+      } else {
+        const rx = {
+          id: genId('RX'),
+          doctorId: doc.id, doctorName: doc.profile.name, doctorReg: doc.profile.regId,
+          doctorSpec: doc.profile.specialty, doctorQual: doc.profile.qualification,
+          doctorSignature: doc.profile.signature,
+          createdAt: new Date().toISOString(), edited: false,
+          ...data
+        };
+        addPrescription(rx);
+        APP.previewRx = rx;
+      }
+
+      resetForm();
+      toast(APP.editingRxId ? 'Prescription updated!' : 'Prescription saved!');
+      render();
+    }
+
+    function editRx(id) {
+      const rx = getRxs().find(r => r.id === id);
+      if (!rx) return;
+      APP.editingRxId = id;
+      APP.formMeds = rx.medicines?.slice() || [{ name: '', dosage: '', days: '', timing: 'After food' }];
+      APP.formLabTests = rx.labTests?.slice() || [];
+      APP.formDiagTests = rx.diagnosticTests?.slice() || [];
+      APP.formReferrals = rx.referral?.slice() || [];
+      APP.section = 'new';
+      render();
+    }
+
+    function toggleExpand(id) { APP.expandedRx = APP.expandedRx === id ? null : id; render(); }
+    function getRx(id) { return getRxs().find(r => r.id === id); }
+
+    /* ══════════════════════════════════════════════════════
+       DOCTOR PROFILE SAVE
+    ══════════════════════════════════════════════════════ */
+    function bindDoctorApp() {
+      // Bind profile save
+      document.getElementById('save-profile-btn')?.addEventListener('click', () => {
+        const docs = getDoctors();
+        const idx = docs.findIndex(d => d.id === APP.currentDoctor.id);
+        const sig = sigCanvas ? sigCanvas.toDataURL() : docs[idx].profile.signature;
+        docs[idx].profile = {
+          ...docs[idx].profile,
+          qualification: document.getElementById('up-qual')?.value || docs[idx].profile.qualification,
+          experience: document.getElementById('up-exp')?.value || docs[idx].profile.experience,
+          phone: document.getElementById('up-phone')?.value || docs[idx].profile.phone,
+          bio: document.getElementById('up-bio')?.value || docs[idx].profile.bio,
+          signature: sig,
+        };
+        saveDoctors(docs);
+        APP.currentDoctor = docs[idx];
+        toast('Profile saved successfully!');
+      });
+
+      // Bind signature pad if on profile
+      if (APP.section === 'profile') {
+        const canvas = document.getElementById('sig-canvas');
+        if (canvas) {
+          sigCanvas = canvas; sigCtx = canvas.getContext('2d');
+          sigCtx.strokeStyle = '#F5621E'; sigCtx.lineWidth = 2.2; sigCtx.lineCap = 'round';
+          // Restore existing sig
+          const existingSig = APP.currentDoctor.profile.signature;
+          if (existingSig) { const img = new Image(); img.onload = () => sigCtx.drawImage(img, 0, 0, canvas.width, canvas.height); img.src = existingSig; }
+          const pt = e => ({ x: e.offsetX, y: e.offsetY });
+          canvas.onmousedown = e => { sigDrawing = true; sigCtx.beginPath(); sigCtx.moveTo(pt(e).x, pt(e).y); };
+          canvas.onmousemove = e => { if (!sigDrawing) return; sigCtx.lineTo(pt(e).x, pt(e).y); sigCtx.stroke(); };
+          canvas.onmouseup = () => sigDrawing = false;
+          canvas.onmouseleave = () => sigDrawing = false;
+        }
+      }
+
+      // Apply draft if pending (after DOM is ready)
+      if (APP.section === 'new' && APP._pendingDraft) {
+        setTimeout(applyDraftToForm, 50);
+      }
+
+      // Start draft auto-save timer
+      if (APP.section === 'new') {
+        startDraftAutoSave();
+      }
+    }
+
+    function bindAdminApp() { }
+
+    /* ══════════════════════════════════════════════════════
+       PDF PREVIEW & DOWNLOAD
+    ══════════════════════════════════════════════════════ */
+    function mountPdfPreview(rx) {
+      const existing = document.getElementById('pdf-overlay');
+      if (existing) existing.remove();
+      const ov = document.createElement('div');
+      ov.className = 'pdf-overlay'; ov.id = 'pdf-overlay';
+      ov.innerHTML = `
+  <div class="pdf-modal-wrap">
+    <div class="pdf-modal-bar">
+      <div style="font-weight:600;font-size:13.5px;">📄 ${rx.id} — ${rx.patient.name}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="downloadPDF()">⬇ Download PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="closePdfPreview()">✕ Close</button>
+      </div>
+    </div>
+    <div class="pdf-preview-content" id="pdf-preview-html">
+      ${buildPreviewHTML(rx)}
+    </div>
+  </div>`;
+      document.body.appendChild(ov);
+      window._previewRx = rx;
+    }
+
+    function closePdfPreview() {
+      APP.previewRx = null;
+      const el = document.getElementById('pdf-overlay'); if (el) el.remove();
+    }
+
+    /* ══════════════════════════════════════════════════════
+       PDF PREVIEW HTML  (matches reference PDF exactly)
+    ══════════════════════════════════════════════════════ */
+    function buildPreviewHTML(rx) {
+      const meds = rx.medicines || [], labs = rx.labTests || [], diags = rx.diagnosticTests || [], refs = rx.referral || [];
+      const LOGO_SRC = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png';
+
+      const sec = (label) => `<div style="display:flex;align-items:center;gap:6px;margin:14px 0 7px;">
+    <span style="font-size:8.5px;font-weight:700;color:#F5621E;text-transform:uppercase;letter-spacing:1.1px;white-space:nowrap;">${label}</span>
+    <div style="flex:1;height:0.5px;background:linear-gradient(90deg,#F5621E,rgba(245,98,30,0.15));"></div>
+  </div>`;
+
+      return `<div style="background:#fff;padding:32px 36px;font-family:'DM Sans',sans-serif;color:#1a1a2e;font-size:12px;line-height:1.6;">
+
+    <!-- TOP BAR -->
+    <div style="height:3.5px;background:linear-gradient(90deg,#F5621E,#F5A623);margin:-32px -36px 22px;"></div>
+
+    <!-- HEADER: Logo + RX ID -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+      <div>
+        <img src="${LOGO_SRC}" style="height:42px;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <div style="display:none;font-size:22px;font-weight:800;color:#F5621E;">immidit</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:8px;font-weight:700;color:#F5621E;letter-spacing:1.5px;text-transform:uppercase;">PRESCRIPTION</div>
+        <div style="font-size:16px;font-weight:800;font-family:monospace;color:#1a1a2e;">${rx.id}</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">${fmtDate(rx.createdAt)}</div>
+      </div>
+    </div>
+
+    <!-- ORANGE DIVIDER -->
+    <div style="height:0.6px;background:#F5621E;margin-bottom:12px;"></div>
+
+    <!-- DOCTOR | CONTACT -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#1a1a2e;">${rx.doctorName}</div>
+        <div style="font-size:11px;font-style:italic;color:#4A3F6B;margin-top:1px;">${rx.doctorSpec || ''}</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">${rx.doctorQual || ''}  ·  Reg: ${rx.doctorReg}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:11.5px;font-weight:700;color:#1a1a2e;"><span style="color:#F5621E;">immidit</span>  Care. Immediately.</div>
+        <div style="font-size:10px;color:#888;margin-top:2px;">immidit.com  ·  care@immidit.com</div>
+        <div style="font-size:11.5px;font-weight:700;color:#F5621E;margin-top:2px;">+91 92179 22339</div>
+        <div style="font-size:10px;color:#888;">Sector 56 & nearby, Gurugram, Haryana</div>
+      </div>
+    </div>
+    <div style="height:0.4px;background:#eee;margin-bottom:4px;"></div>
+
+    <!-- PATIENT -->
+    ${sec('PATIENT DETAILS')}
+    <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:7px;padding:10px 13px 12px;display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;margin-bottom:4px;">
+      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">PATIENT NAME</div><div style="font-weight:700;font-size:14px;">${rx.patient.name}</div></div>
+      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">AGE / GENDER</div><div style="font-weight:600;font-size:11px;">${rx.patient.age}Y · ${rx.patient.gender}</div></div>
+      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">CONTACT</div><div style="font-weight:600;font-size:11px;">${rx.patient.phone || '—'}</div></div>
+      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">ADDRESS</div><div style="font-size:11px;">${rx.patient.address || '—'}</div></div>
+    </div>
+
+    <!-- VITALS -->
+    ${sec('VITALS AT VISIT')}
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:4px;">
+      ${[['BP', rx.vitals?.bp, 'mmHg'], ['Pulse', rx.vitals?.pulse, 'bpm'], ['Temp', rx.vitals?.temp, 'deg F'], ['SpO2', rx.vitals?.spo2, '%'], ['Weight', rx.vitals?.weight, 'kg'], ['RR', rx.vitals?.rr, 'br/min']].map(([l, v, u]) => `
+      <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:6px;padding:8px 4px;text-align:center;">
+        <div style="font-size:7.5px;color:#aaa;text-transform:uppercase;margin-bottom:2px;">${l}</div>
+        <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:1px;">${v || '—'}</div>
+        <div style="font-size:7.5px;color:#bbb;">${u}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- CHIEF CONCERNS -->
+    ${rx.chiefConcerns ? sec('CHIEF CONCERNS') + '<div style="padding:9px 12px;background:#fff3ee;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;border:0.5px solid #f5d0c0;font-size:11.5px;margin-bottom:4px;">' + rx.chiefConcerns + '</div>' : ''}
+
+    <!-- CLINICAL NOTES -->
+    ${(rx.observations || rx.diagnosis) ? sec('CLINICAL NOTES') + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
+      ${rx.observations ? `<div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;padding:9px 11px;">
+        <div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:5px;">OBSERVATIONS</div>
+        <div style="font-size:11.5px;">${rx.observations}</div></div>` : ''}
+      ${rx.diagnosis ? `<div style="background:#fff3ee;border:0.5px solid #f5d0c0;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;padding:9px 11px;">
+        <div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:5px;">DIAGNOSIS</div>
+        <div style="font-size:12px;font-weight:700;">${rx.diagnosis.replace(/\n/g, '<br>')}</div></div>` : ''}
+    </div>` : ''}
+
+    <!-- MEDICINES -->
+    ${meds.length ? sec('MEDICINES  (M=Morning | A=Afternoon | E=Evening | N=Night)') + `
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:4px;">
+      <thead><tr style="background:#f9f8f5;">
+        ${['#', 'MEDICINE NAME', 'DOSAGE', 'DAYS', 'TIMING'].map(h => `<th style="text-align:left;padding:7px 9px;font-size:8px;letter-spacing:0.8px;text-transform:uppercase;color:#888;font-weight:700;border-bottom:2px solid #F5621E;">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${meds.map((m, i) => `<tr style="background:${i % 2 === 0 ? '#fff' : '#f9f8f5'};border-bottom:0.5px solid #eee;">
+          <td style="padding:7px 9px;color:#bbb;">${i + 1}</td>
+          <td style="padding:7px 9px;font-weight:600;">${m.name}</td>
+          <td style="padding:7px 9px;font-family:monospace;color:#F5621E;font-weight:700;">${m.dosage}</td>
+          <td style="padding:7px 9px;">${m.days} days</td>
+          <td style="padding:7px 9px;color:#555;">${m.timing}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>` : ''}
+
+    <!-- SUGGESTIONS -->
+    ${rx.suggestions ? sec('ADVICE & SUGGESTIONS') + `<div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;padding:9px 12px;font-size:11.5px;margin-bottom:4px;">${rx.suggestions.replace(/\n/g, '<br>')}</div>` : ''}
+
+    <!-- INVESTIGATIONS -->
+    ${(labs.length || diags.length) ? sec('INVESTIGATIONS') + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
+      ${labs.length ? `<div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;overflow:hidden;">
+        <div style="padding:7px 10px 5px;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;border-bottom:0.5px solid #e8e8e8;">LABORATORY TESTS</div>
+        ${labs.map(t => `<div style="padding:5px 10px;border-bottom:0.5px solid #f0f0f0;font-size:11px;"><span style="color:#F5621E;margin-right:4px;">»</span>${t}</div>`).join('')}
+      </div>` : ''}
+      ${diags.length ? `<div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;overflow:hidden;">
+        <div style="padding:7px 10px 5px;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;border-bottom:0.5px solid #e8e8e8;">DIAGNOSTIC / IMAGING</div>
+        ${diags.map(t => `<div style="padding:5px 10px;border-bottom:0.5px solid #f0f0f0;font-size:11px;"><span style="color:#F5621E;margin-right:4px;">»</span>${t}</div>`).join('')}
+      </div>` : ''}
+    </div>` : ''}
+
+    <!-- REFERRAL -->
+    ${refs.length ? sec('REFERRAL') + refs.map(r => `
+    <div style="background:#fff3ee;border:0.5px solid #f5d0c0;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;padding:9px 12px;margin-bottom:6px;display:grid;grid-template-columns:1fr 1.4fr 2fr;gap:10px;font-size:11.5px;">
+      <div><div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:3px;">SPECIALIST</div><div style="font-weight:700;">${r.specialist}</div></div>
+      <div><div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:3px;">HOSPITAL / CLINIC</div><div>${r.hospital || '—'}</div></div>
+      <div><div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:3px;">REASON</div><div>${r.reason || '—'}</div></div>
+    </div>`).join('') : ''}
+
+    <!-- RECHECK -->
+    ${rx.recheckDate ? `
+    <div style="background:#eef9f4;border:0.5px solid #b7e4cd;border-left:3px solid #2ecc71;border-radius:0 6px 6px 0;padding:10px 14px;display:flex;align-items:center;gap:16px;margin:8px 0;">
+      <div>
+        <div style="font-size:8px;font-weight:700;color:#2ecc71;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;">FOLLOW-UP / RECHECK</div>
+        <div style="font-size:14px;font-weight:700;">${fmtDate2(rx.recheckDate)}</div>
+      </div>
+      ${rx.recheckNote ? `<div style="font-size:10.5px;color:#555;font-style:italic;">${rx.recheckNote}</div>` : ''}
+    </div>` : ''}
+
+    <!-- SIGNATURE -->
+    <div style="display:flex;justify-content:flex-end;margin:14px 0 16px;">
+      <div style="text-align:right;">
+        ${rx.doctorSignature ? `<img src="${rx.doctorSignature}" style="height:40px;border-bottom:0.5px solid #ccc;display:block;margin-bottom:4px;margin-left:auto;">` : '<div style="height:40px;width:130px;border-bottom:0.5px solid #ccc;margin-bottom:4px;margin-left:auto;"></div>'}
+        <div style="font-size:10.5px;font-weight:700;">${rx.doctorName}</div>
+        <div style="font-size:10px;font-style:italic;color:#666;">${rx.doctorSpec || ''}</div>
+        <div style="font-size:9px;color:#aaa;font-family:monospace;">Reg. No: ${rx.doctorReg}</div>
+        <div style="font-size:9px;color:#bbb;margin-top:2px;">Doctor's Signature &amp; Stamp</div>
+      </div>
+    </div>
+
+    <!-- SERVICES PANEL -->
+    <div style="border-top:0.5px solid #eee;padding-top:14px;margin-bottom:12px;">
+      ${sec('OUR SERVICES — CARE AT HOME IN 10 MINUTES')}
+
+      <!-- How immidit works -->
+      <div style="background:#f4f3fa;border:0.5px solid #ddd8ee;border-left:3px solid #4A3F6B;border-radius:0 5px 5px 0;padding:9px 12px;margin-bottom:8px;font-size:11px;line-height:1.6;color:#1a1a2e;">
+        <b>How immidit works:</b> A background-verified nurse arrives at your door — equipped with clinical tools and connected live to a registered doctor for real-time teleconsultation, diagnosis and prescription.
+        <span style="color:#F5621E;font-weight:700;"> No waiting rooms. No travel. Care in 10 minutes.</span>
+      </div>
+
+      <!-- 3 pillars -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:8px;">
+        ${[
+          ['Verified Professionals', 'Every nurse is background-checked and clinically trained. Doctors are MCI-registered with verified credentials.'],
+          ['Fair & Transparent Pricing', 'Full cost shown upfront — no hidden charges. Consultation, nurse visit and tests priced clearly before you confirm.'],
+          ['10-Minute Arrival', 'Hyperlocal operations in Sector 56 & nearby Gurugram. Nurse dispatched immediately on booking confirmation.'],
+        ].map(([title, body]) => `
+        <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-top:2px solid #F5621E;border-radius:0 0 5px 5px;padding:8px 9px;">
+          <div style="font-size:8.5px;font-weight:700;color:#F5621E;margin-bottom:4px;">${title}</div>
+          <div style="font-size:8px;color:#666;line-height:1.5;">${body}</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- 6 service cards -->
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-bottom:8px;">
+        ${[['Rx', 'Nurse +\nTeleconsult', '499'], ['Vacc', 'Vaccination', '249'], ['Lab', 'Lab Tests\nat Home', '299'], ['Care', 'Wound\nCare', '499'], ['IV', 'IV\nTherapy', '399'], ['ECG', 'ECG\nat Home', '699']].map(([icon, name, price]) => `
+        <div style="background:#fff;border:0.5px solid #e8e8e8;border-top:2px solid #F5621E;border-radius:0 0 5px 5px;padding:6px 3px 7px;text-align:center;">
+          <div style="background:#F5621E;color:#fff;font-size:8px;font-weight:700;border-radius:3px;padding:2px 5px;display:inline-block;margin-bottom:4px;font-family:monospace;">${icon}</div>
+          <div style="font-size:8px;font-weight:600;color:#1a1a2e;margin-bottom:3px;line-height:1.3;">${name.replace(/\n/g, '<br>')}</div>
+          <div style="font-size:8.5px;color:#F5621E;font-weight:700;">from Rs.${price}</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- CTA strip with logo -->
+      <div style="background:#fff3ee;border:0.5px solid #f5d0c0;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;padding:8px 12px;display:flex;align-items:center;gap:12px;">
+        <img src="${LOGO_SRC}" style="height:32px;flex-shrink:0;" onerror="this.style.display='none'">
+        <div style="font-size:10px;color:#555;">
+          <b style="color:#F5621E;">Book now →</b>
+          &nbsp; WhatsApp / Call <b style="color:#F5621E;">+91 92179 22339</b>
+          &nbsp;·&nbsp; <b style="color:#F5621E;">immidit.com</b>
+          &nbsp;·&nbsp; care@immidit.com
+          &nbsp;·&nbsp; Sector 56 & nearby, Gurugram, Haryana
+        </div>
+      </div>
+    </div>
+
+    <!-- T&C -->
+    <div style="border-top:0.5px solid #eee;padding-top:10px;margin-bottom:8px;">
+      <div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Terms &amp; Conditions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;">
+        ${[
+          ['1. Validity', 'This prescription is valid for 30 days from date of issue unless otherwise specified by the treating doctor.'],
+          ['2. Authenticity', 'Issued by an MCI-registered practitioner via immidit (Antarlaapika Pvt Ltd). Digitally generated and clinically valid.'],
+          ['3. Medicines', 'Purchase only from a licensed pharmacy. Do not alter dosage without consulting the prescribing doctor.'],
+          ['4. Lab Tests', 'Investigations are advisory. Conduct at an NABL-accredited laboratory. Patients may choose any certified lab.'],
+          ['5. Follow-up', 'Recheck date is advisory. Seek immediate care if symptoms worsen before the scheduled visit.'],
+          ['6. Referral', 'Referral is based on clinical assessment. Patients may freely seek a second opinion. immidit does not mandate any specific hospital.'],
+          ['7. Privacy', 'Patient data is processed per Indian healthcare data privacy norms and not shared without explicit consent.'],
+          ['8. Liability', 'immidit is a healthcare access platform. Clinical decisions rest solely with the prescribing registered medical practitioner.'],
+          ['9. Emergency', 'This prescription does not substitute emergency care. Call 112 or visit the nearest hospital in any emergency.'],
+          ['10. Feedback', 'care@immidit.com  ·  +91 92179 22339  ·  immidit.com'],
+        ].map(([t, d]) => `<div style="font-size:8px;color:#888;line-height:1.5;padding:2px 0;"><b style="color:#555;">${t}:</b> ${d}</div>`).join('')}
+      </div>
+    </div>
+
+    <!-- FOOTER with logo -->
+    <div style="border-top:1.5px solid #F5621E;padding-top:10px;display:flex;align-items:flex-start;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img src="${LOGO_SRC}" style="height:36px;" onerror="this.style.display='none'">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#1a1a2e;">immidit  ·  Antarlaapika Pvt Ltd</div>
+          <div style="font-size:9px;color:#aaa;">Sector 56 & nearby, Gurugram, Haryana</div>
+          <div style="font-size:9px;color:#aaa;">care@immidit.com  ·  immidit.com  ·  +91 92179 22339</div>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:9px;color:#aaa;">Prescription ID: <b style="color:#1a1a2e;">${rx.id}</b></div>
+        <div style="font-size:9px;color:#aaa;">Date: ${fmtDate(rx.createdAt)}</div>
+        <div style="font-size:9px;color:#aaa;">immidit Digital Health Records</div>
+      </div>
+    </div>
+
+  </div>`;
+    }
+
+
+    async function downloadPDF() {
+      const rx = window._previewRx; if (!rx) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const W = 210, M = 15, CW = W - 2 * M, H = 297;
+      let y = 0;
+
+      const ORG = [245, 98, 30], DRK = [26, 26, 46], PUR = [74, 63, 107],
+        GRY = [102, 102, 102], LGR = [187, 187, 187], XGR = [232, 232, 232],
+        BG = [249, 248, 245], WRM = [255, 243, 238], GRN = [238, 249, 244],
+        GR2 = [46, 204, 113], WHT = [255, 255, 255], BRDORG = [245, 208, 192], BRDGRN = [183, 228, 205];
+
+      const newPage = () => { doc.addPage(); y = 15; };
+      const guard = (need) => { if (y + need > H - 18) newPage(); };
+      const setF = (st, sz, col) => { doc.setFont('helvetica', st); doc.setFontSize(sz); doc.setTextColor(...col); };
+      const fillR = (x, yy, w, h, col, r = 2) => { doc.setFillColor(...col); r ? doc.roundedRect(x, yy, w, h, r, r, 'F') : doc.rect(x, yy, w, h, 'F'); };
+      const strokeR = (x, yy, w, h, col, r = 2, lw = 0.3) => { doc.setDrawColor(...col); doc.setLineWidth(lw); r ? doc.roundedRect(x, yy, w, h, r, r, 'S') : doc.rect(x, yy, w, h, 'S'); };
+      const hline = (yy, col, lw = 0.3) => { doc.setDrawColor(...col); doc.setLineWidth(lw); doc.line(M, yy, W - M, yy); };
+      const vbar = (x, yy, y2, col, lw = 0.7) => { doc.setDrawColor(...(col || ORG)); doc.setLineWidth(lw); doc.line(x, yy, x, y2); };
+      const secTitle = (label) => {
+        guard(10);
+        setF('bold', 6.5, ORG); doc.text(label, M, y + 4);
+        const tw = doc.getTextWidth(label);
+        doc.setDrawColor(...ORG); doc.setLineWidth(0.35); doc.line(M + tw + 3, y + 3, W - M, y + 3);
+        y += 8;
+      };
+
+      // Load logo for embedding
+      let logoB64 = null;
+      try {
+        const imgEl = document.createElement('img');
+        await new Promise((res, rej) => { imgEl.onload = res; imgEl.onerror = rej; imgEl.src = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png'; imgEl.crossOrigin = 'anonymous'; });
+        const cvs = document.createElement('canvas'); cvs.width = imgEl.naturalWidth; cvs.height = imgEl.naturalHeight;
+        const ctx2 = cvs.getContext('2d'); ctx2.fillStyle = '#ffffff'; ctx2.fillRect(0, 0, cvs.width, cvs.height);
+        ctx2.drawImage(imgEl, 0, 0); logoB64 = cvs.toDataURL('image/png');
+      } catch (e) { logoB64 = null; }
+
+      const addLogo = (x, yy, w, h) => { if (logoB64) { try { doc.addImage(logoB64, 'PNG', x, yy, w, h); } catch (e) { } } };
+
+      // ── TOP BAR ────────────────────────────────────────────────────────────────
+      fillR(0, 0, W, 3.5, ORG, 0); y = 5;
+
+      // ── HEADER ─────────────────────────────────────────────────────────────────
+      addLogo(M, y, 44, 18.8);
+      if (!logoB64) { setF('bold', 20, ORG); doc.text('immidit', M, y + 10); setF('normal', 7, GRY); doc.text('Care. Immediately.', M, y + 16); }
+      setF('bold', 6.5, ORG); doc.text('PRESCRIPTION', W - M, y + 5, { align: 'right' });
+      setF('bold', 15, DRK); doc.text(rx.id, W - M, y + 12, { align: 'right' });
+      setF('normal', 8, GRY); doc.text(fmtDate(rx.createdAt), W - M, y + 18, { align: 'right' });
+      y += 23; hline(y, ORG, 0.55); y += 4;
+
+      // ── DOCTOR | CONTACT ───────────────────────────────────────────────────────
+      setF('bold', 12, DRK); doc.text(rx.doctorName, M, y + 5);
+      setF('oblique', 8, PUR); doc.text(rx.doctorSpec || '', M, y + 10);
+      setF('normal', 7.5, GRY); doc.text((rx.doctorQual || '') + '  ·  Reg: ' + rx.doctorReg, M, y + 15);
+      setF('bold', 8, DRK); doc.text('immidit  Care. Immediately.', W - M, y + 5, { align: 'right' });
+      setF('normal', 7.5, GRY); doc.text('immidit.com  ·  care@immidit.com', W - M, y + 10, { align: 'right' });
+      setF('bold', 8.5, ORG); doc.text('+91 92179 22339', W - M, y + 15, { align: 'right' });
+      setF('normal', 7.5, GRY); doc.text('Sector 56 & nearby, Gurugram, Haryana', W - M, y + 20, { align: 'right' });
+      y += 25; hline(y, XGR, 0.3); y += 5;
+
+      // ── PATIENT ────────────────────────────────────────────────────────────────
+      secTitle('PATIENT DETAILS'); guard(17);
+      fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
+      const pcols = [M + 4, M + 4 + CW * 0.32, M + 4 + CW * 0.56, M + 4 + CW * 0.72];
+      ['PATIENT NAME', 'AGE / GENDER', 'CONTACT', 'ADDRESS'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
+      [rx.patient.name, rx.patient.age + 'Y · ' + rx.patient.gender, rx.patient.phone || '—', rx.patient.address || '—']
+        .forEach((v, i) => { setF('bold', i === 0 ? 11 : 9, DRK); doc.text(doc.splitTextToSize(v, CW * 0.28)[0], pcols[i], y + 10.5); });
+      [CW * 0.32, CW * 0.56, CW * 0.72].forEach(x => { doc.setDrawColor(...XGR); doc.setLineWidth(0.3); doc.line(M + x, y, M + x, y + 15); });
+      y += 19;
+
+      // ── VITALS ─────────────────────────────────────────────────────────────────
+      secTitle('VITALS AT VISIT'); guard(17);
+      [['BP', rx.vitals?.bp, 'mmHg'], ['Pulse', rx.vitals?.pulse, 'bpm'], ['Temp', rx.vitals?.temp, 'deg F'], ['SpO2', rx.vitals?.spo2, '%'], ['Weight', rx.vitals?.weight, 'kg'], ['RR', rx.vitals?.rr, 'br/min']]
+        .forEach(([l, v, u], i) => {
+          const vx = M + i * (CW / 6);
+          fillR(vx + 0.5, y, CW / 6 - 1, 15, BG, 1.5); strokeR(vx + 0.5, y, CW / 6 - 1, 15, XGR, 1.5);
+          setF('bold', 5.5, LGR); doc.text(l, vx + CW / 12, y + 4, { align: 'center' });
+          setF('bold', 11, DRK); doc.text(v || '—', vx + CW / 12, y + 10, { align: 'center' });
+          setF('normal', 6, LGR); doc.text(u, vx + CW / 12, y + 14, { align: 'center' });
+        }); y += 19;
+
+      // ── CHIEF CONCERNS ─────────────────────────────────────────────────────────
+      if (rx.chiefConcerns) {
+        secTitle('CHIEF CONCERNS');
+        const lines = doc.splitTextToSize(rx.chiefConcerns, CW - 12), bh = lines.length * 4.2 + 10;
+        guard(bh + 4); fillR(M, y, CW, bh, WRM); strokeR(M, y, CW, bh, BRDORG); vbar(M, y, y + bh, ORG);
+        setF('normal', 8.5, DRK); doc.text(lines, M + 5, y + 6.5); y += bh + 5;
+      }
+
+      // ── CLINICAL NOTES ─────────────────────────────────────────────────────────
+      if (rx.observations || rx.diagnosis) {
+        secTitle('CLINICAL NOTES');
+        const half = (CW - 4) / 2;
+        const obsL = rx.observations ? doc.splitTextToSize(rx.observations, half - 10) : [];
+        const diagL = rx.diagnosis ? doc.splitTextToSize(rx.diagnosis, half - 10) : [];
+        const bh = Math.max(obsL.length, diagL.length) * 4.2 + 14; guard(bh + 4);
+        if (rx.observations) { fillR(M, y, half, bh, BG); strokeR(M, y, half, bh, XGR); setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5); setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10); }
+        if (rx.diagnosis) { const dx = M + half + 4; fillR(dx, y, half, bh, WRM); strokeR(dx, y, half, bh, BRDORG); vbar(dx, y, y + bh, ORG); setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', dx + 5, y + 5); setF('bold', 9.5, DRK); doc.text(diagL, dx + 5, y + 10); }
+        y += bh + 5;
+      }
+
+      // ── MEDICINES ──────────────────────────────────────────────────────────────
+      if (rx.medicines?.length) {
+        secTitle('MEDICINES  (M=Morning | A=Afternoon | E=Evening | N=Night)'); guard(12);
+        const cols = [M, M + 7, M + 80, M + 107, M + 124];
+        fillR(M, y, CW, 8, BG, 0); strokeR(M, y, CW, 8, XGR, 0);
+        setF('bold', 6, GRY);['#', 'MEDICINE NAME', 'DOSAGE', 'DAYS', 'TIMING'].forEach((h, i) => doc.text(h, cols[i] + 1, y + 5));
+        doc.setDrawColor(...ORG); doc.setLineWidth(0.5); doc.line(M, y + 8, W - M, y + 8); y += 9;
+        rx.medicines.forEach((m, i) => {
+          guard(9); fillR(M, y, CW, 8, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 8, XGR, 0, 0.2);
+          setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 5.5);
+          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(m.name, 66)[0], cols[1] + 1, y + 5.5);
+          setF('bold', 9, ORG); doc.text(m.dosage, cols[2] + 1, y + 5.5);
+          setF('bold', 8.5, DRK); doc.text(m.days + ' days', cols[3] + 1, y + 5.5);
+          setF('normal', 8.5, DRK); doc.text(m.timing, cols[4] + 1, y + 5.5);
+          y += 8;
+        }); y += 4;
+      }
+
+      // ── SUGGESTIONS ────────────────────────────────────────────────────────────
+      if (rx.suggestions) {
+        secTitle('ADVICE & SUGGESTIONS');
+        const sl = doc.splitTextToSize(rx.suggestions.replace(/\n/g, ' · '), CW - 10), sh = sl.length * 4.2 + 10;
+        guard(sh + 4); fillR(M, y, CW, sh, BG); strokeR(M, y, CW, sh, XGR);
+        setF('normal', 8.5, DRK); doc.text(sl, M + 5, y + 6.5); y += sh + 5;
+      }
+
+      // ── INVESTIGATIONS ─────────────────────────────────────────────────────────
+      const labs = rx.labTests || [], diags = rx.diagnosticTests || [];
+      if (labs.length || diags.length) {
+        secTitle('INVESTIGATIONS');
+        const half = (CW - 4) / 2;
+        const drawTests = (tests, x, w, label) => {
+          const bh = tests.length * 7 + 13; guard(bh);
+          fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
+          setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 5);
+          tests.forEach((t, i) => {
+            fillR(x + 4, y + 8 + i * 7, w - 8, 6, WHT, 1); strokeR(x + 4, y + 8 + i * 7, w - 8, 6, XGR, 1, 0.2);
+            setF('normal', 8, DRK); doc.text('» ' + doc.splitTextToSize(t, w - 14)[0], x + 7, y + 8 + i * 7 + 4.2);
+          });
+          return bh;
+        };
+        const h1 = drawTests(labs, M, half, 'LABORATORY TESTS');
+        const h2 = drawTests(diags, M + half + 4, half, 'DIAGNOSTIC / IMAGING');
+        y += Math.max(h1, h2) + 5;
+      }
+
+      // ── REFERRAL ───────────────────────────────────────────────────────────────
+      if (rx.referral?.length) {
+        secTitle('REFERRAL');
+        rx.referral.forEach(r => {
+          const rlines = doc.splitTextToSize(r.reason || '—', CW * 0.4 - 8), bh = Math.max(rlines.length * 4.2 + 12, 16);
+          guard(bh + 3); fillR(M, y, CW, bh, WRM); strokeR(M, y, CW, bh, BRDORG); vbar(M, y, y + bh, ORG);
+          const c = [M + 4, M + 4 + CW * 0.23, M + 4 + CW * 0.23 + CW * 0.35];
+          [['SPECIALIST', r.specialist, 'bold', 9], ['HOSPITAL / CLINIC', r.hospital || '—', 'normal', 8.5], ['REASON', r.reason || '—', 'normal', 8]]
+            .forEach(([lbl, val, st, fs], i) => {
+              setF('bold', 5.5, ORG); doc.text(lbl, c[i], y + 4);
+              setF(st, fs, DRK); doc.text(doc.splitTextToSize(val, CW * (i === 2 ? 0.38 : 0.2))[0], c[i], y + 9);
+              if (i < 2) { doc.setDrawColor(...BRDORG); doc.setLineWidth(0.3); doc.line(c[i + 1] - 2, y, c[i + 1] - 2, y + bh); }
+            });
+          y += bh + 4;
+        });
+      }
+
+      // ── RECHECK ────────────────────────────────────────────────────────────────
+      if (rx.recheckDate) {
+        guard(16); fillR(M, y, CW, 14, GRN); strokeR(M, y, CW, 14, BRDGRN); vbar(M, y, y + 14, GR2);
+        setF('bold', 5.5, GR2); doc.text('FOLLOW-UP / RECHECK', M + 5, y + 4.5);
+        setF('bold', 12, DRK); doc.text(fmtDate2(rx.recheckDate), M + 5, y + 11);
+        if (rx.recheckNote) { setF('oblique', 7.5, GRY); doc.text(doc.splitTextToSize(rx.recheckNote, CW * 0.55)[0], M + 58, y + 8); }
+        y += 18;
+      }
+
+      // ── SIGNATURE ──────────────────────────────────────────────────────────────
+      guard(25);
+      if (rx.doctorSignature) { try { doc.addImage(rx.doctorSignature, 'PNG', W - M - 44, y, 44, 11); } catch (e) { } }
+      doc.setDrawColor(...LGR); doc.setLineWidth(0.35); doc.line(W - M - 46, y + 12, W - M, y + 12);
+      setF('bold', 8.5, DRK); doc.text(rx.doctorName, W - M, y + 17, { align: 'right' });
+      setF('oblique', 7.5, GRY); doc.text(rx.doctorSpec || '', W - M, y + 22, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('Reg. No: ' + rx.doctorReg, W - M, y + 27, { align: 'right' });
+      setF('normal', 7, LGR); doc.text("Doctor's Signature & Stamp", W - M, y + 31, { align: 'right' });
+      y += 35;
+
+      // ── SERVICES PANEL ─────────────────────────────────────────────────────────
+      guard(85); hline(y, XGR, 0.35); y += 5;
+      secTitle('OUR SERVICES — CARE AT HOME IN 10 MINUTES');
+
+      const howTxt = 'How immidit works: A background-verified nurse arrives at your door — equipped with clinical tools and connected live to a registered doctor for real-time teleconsultation, diagnosis and prescription.  No waiting rooms. No travel. Care in 10 minutes.';
+      const howL = doc.splitTextToSize(howTxt, CW - 10), howH = howL.length * 4.2 + 10;
+      guard(howH + 4);
+      fillR(M, y, CW, howH, [244, 243, 250]); strokeR(M, y, CW, howH, [221, 216, 238]); vbar(M, y, y + howH, PUR);
+      setF('bold', 8, DRK); doc.text('How immidit works:', M + 5, y + 6);
+      setF('normal', 8, DRK); doc.text(howL, M + 5, y + 6);
+      y += howH + 4;
+
+      const pillarsData = [
+        ['Verified Professionals', 'Every nurse is background-checked and clinically trained. Doctors are MCI-registered with verified credentials.'],
+        ['Fair & Transparent Pricing', 'Full cost shown upfront — no hidden charges. Consultation, nurse visit and tests priced clearly.'],
+        ['10-Minute Arrival', 'Hyperlocal in Sector 56 & nearby Gurugram. Nurse dispatched immediately on booking confirmation.'],
+      ];
+      const pw = (CW - 8) / 3, ptexts = pillarsData.map(([, b]) => doc.splitTextToSize(b, pw - 6));
+      const pbh = Math.max(...ptexts.map(l => l.length)) * 4 + 14; guard(pbh + 4);
+      pillarsData.forEach(([title,], i) => {
+        const px = M + i * (pw + 4);
+        fillR(px, y, pw, pbh, BG); strokeR(px, y, pw, pbh, XGR);
+        doc.setDrawColor(...ORG); doc.setLineWidth(1.5); doc.line(px, y, px + pw, y);
+        setF('bold', 7.5, ORG); doc.text(title, px + 4, y + 7);
+        setF('normal', 7, GRY); doc.text(ptexts[i], px + 4, y + 12);
+      }); y += pbh + 5;
+
+      const svcData = [['Rx', 'Nurse+Teleconsult', '499'], ['Vacc', 'Vaccination', '249'], ['Lab', 'Lab Tests at Home', '299'], ['Care', 'Wound Care', '499'], ['IV', 'IV Therapy', '399'], ['ECG', 'ECG at Home', '699']];
+      const sw = CW / 6; guard(23);
+      svcData.forEach(([icon, name, price], i) => {
+        const sx = M + i * sw + 0.5;
+        fillR(sx, y, sw - 1, 21, WHT); strokeR(sx, y, sw - 1, 21, XGR);
+        doc.setDrawColor(...ORG); doc.setLineWidth(1.5); doc.line(sx, y, sx + sw - 1, y);
+        fillR(sx + (sw - 1) / 2 - 8, y + 2, 16, 7, ORG, 1.5);
+        setF('bold', 7, WHT); doc.text(icon, sx + sw / 2, y + 7, { align: 'center' });
+        setF('bold', 6, DRK); doc.text(name, sx + sw / 2, y + 14, { align: 'center' });
+        setF('bold', 7, ORG); doc.text('Rs.' + price, sx + sw / 2, y + 19.5, { align: 'center' });
+      }); y += 25;
+
+      // CTA strip with logo
+      guard(14); fillR(M, y, CW, 13, WRM); strokeR(M, y, CW, 13, BRDORG); vbar(M, y, y + 13, ORG);
+      addLogo(M + 3, y + 1.5, 20, 8.5);
+      if (!logoB64) { setF('bold', 9, ORG); doc.text('immidit', M + 4, y + 8); }
+      setF('bold', 8, ORG); doc.text('Book now \u2192', M + 28, y + 8.5);
+      setF('normal', 7.5, GRY); doc.text('WhatsApp / Call  +91 92179 22339  \u00b7  immidit.com  \u00b7  care@immidit.com  \u00b7  Sector 56 & nearby, Gurugram', M + 52, y + 8.5);
+      y += 17;
+
+      // ── TERMS & CONDITIONS ─────────────────────────────────────────────────────
+      guard(55); hline(y, XGR, 0.3); y += 5;
+      secTitle('TERMS & CONDITIONS');
+      const tcData = [
+        ['1. Validity', 'Valid for 30 days from date of issue unless otherwise specified by the treating doctor.'],
+        ['2. Authenticity', 'Issued by an MCI-registered practitioner via immidit (Antarlaapika Pvt Ltd). Digitally generated and clinically valid.'],
+        ['3. Medicines', 'Purchase only from a licensed pharmacy. Do not alter dosage without consulting the prescribing doctor.'],
+        ['4. Lab Tests', 'Investigations are advisory. Conduct at an NABL-accredited laboratory. Patients may choose any certified lab.'],
+        ['5. Follow-up', 'Recheck date is advisory. Seek immediate care if symptoms worsen before the scheduled visit.'],
+        ['6. Referral', 'Referral is based on clinical assessment. Patients may freely seek a second opinion. immidit does not mandate any specific hospital.'],
+        ['7. Privacy', 'Patient data is processed per Indian healthcare data privacy norms and not shared without explicit consent.'],
+        ['8. Liability', 'immidit is a healthcare access platform. Clinical decisions rest solely with the prescribing registered medical practitioner.'],
+        ['9. Emergency', 'This prescription does not substitute emergency care. Call 112 or visit nearest hospital in any emergency.'],
+        ['10. Feedback', 'care@immidit.com  \u00b7  +91 92179 22339  \u00b7  immidit.com'],
+      ];
+      const tcw = (CW - 6) / 2; let lty = y, rty = y;
+      tcData.forEach(([t, d], i) => {
+        const col = i % 2, cx = M + (col * (tcw + 6)), rowY = col === 0 ? lty : rty;
+        const fullL = doc.splitTextToSize(t + ': ' + d, tcw);
+        fullL.forEach((ln, li) => { setF(li === 0 ? 'bold' : 'normal', 6, li === 0 ? [85, 85, 85] : GRY); doc.text(ln, cx, rowY + li * 3.8 + 3); });
+        const bh = fullL.length * 3.8 + 4;
+        if (col === 0) lty += bh; else rty += bh;
+      }); y = Math.max(lty, rty) + 6;
+
+      // ── FOOTER ─────────────────────────────────────────────────────────────────
+      guard(20); hline(y, ORG, 0.55); y += 5;
+      addLogo(M, y, 24, 10.2);
+      if (!logoB64) { setF('bold', 8.5, DRK); doc.text('immidit', M, y + 7); }
+      setF('bold', 8.5, DRK); doc.text('immidit  \u00b7  Antarlaapika Pvt Ltd', M + 27, y + 4);
+      setF('normal', 7, LGR); doc.text('Sector 56 & nearby, Gurugram, Haryana', M + 27, y + 9);
+      setF('normal', 7, LGR); doc.text('care@immidit.com  \u00b7  immidit.com  \u00b7  +91 92179 22339', M + 27, y + 14);
+      setF('normal', 7, LGR); doc.text('Prescription ID: ', W - M - 50, y + 4);
+      setF('bold', 7, DRK); doc.text(rx.id, W - M, y + 4, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('Date: ' + fmtDate(rx.createdAt), W - M, y + 9, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('immidit Digital Health Records', W - M, y + 14, { align: 'right' });
+
+      doc.save('immidit_' + rx.id + '_' + rx.patient.name.replace(/\s+/g, '_') + '.pdf');
+      toast('PDF downloaded!');
+    }
+
+    /* ══════════════════════════════════════════════════════
+       AUTH
+    ══════════════════════════════════════════════════════ */
+    function logout() {
+      if (_draftTimer) clearInterval(_draftTimer);
+      saveDraft();  // save any in-progress work before logging out
+      DB.del('session');
+      APP.view = 'login'; APP.role = null; APP.currentDoctor = null;
+      APP.loginError = ''; APP.loginRole = 'doctor';
+      resetForm(); render();
+    }
+
+    /* ══════════════════════════════════════════════════════
+       BOOT — restore session if available
+    ══════════════════════════════════════════════════════ */
+    async function boot() {
+      const root = document.getElementById('app');
+      if (SHEET_API) {
+        root.innerHTML = `
+      <div style="height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--text-dim);">
+        <img src="${LOGO_SRC}" style="width:60px;margin-bottom:20px;opacity:0.5;">
+        <div style="font-size:13px;letter-spacing:1px;text-transform:uppercase;">Connecting to immidit cloud...</div>
+      </div>
+    `;
+        await SYNC.pull();
+      }
+
+      restoreSession();
+      render();
+    }
+
+    boot();
+  </script>
+</body>
+
+</html>
