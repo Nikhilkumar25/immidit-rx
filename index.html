@@ -3537,7 +3537,8 @@
       rx.orderLines[idx].status = status;
       if (status === 'administered') {
         const nurseEl = document.getElementById('nurse-' + rxId);
-        rx.orderLines[idx].administeredBy = nurseEl?.value || '';
+        if (!nurseEl?.value) { toast('Please select a nurse first.', 'error'); return; }
+        rx.orderLines[idx].administeredBy = nurseEl.value;
         rx.orderLines[idx].administeredAt = new Date().toISOString();
       }
       if (status === 'accepted' || status === 'declined') {
@@ -3743,7 +3744,13 @@
     <div class="report-card">
       <div class="report-card-hdr">
         <span style="font-size:16px;">${l.icon}</span>
-        <div style="flex:1;"><div style="font-weight:600;">${l.details}</div><div style="font-size:11px;color:var(--text-muted);">Uploaded ${l.reportUploadedAt ? fmtDate(l.reportUploadedAt) : ''}</div></div>
+        <div style="flex:1;">
+          <div style="font-weight:600;">${l.details}</div>
+          <div style="font-size:11px;color:var(--text-muted);">
+            Uploaded ${l.reportUploadedAt ? fmtDate(l.reportUploadedAt) : ''} 
+            ${l.administeredBy ? ' · Administered by ' + (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : ''}
+          </div>
+        </div>
         <span class="pill pill-green" style="font-size:10px;">📊 Report Available</span>
       </div>
       <div class="report-card-body">
@@ -4174,8 +4181,8 @@
         y += 8;
       };
 
-      // Load logo for embedding
-      let logoB64 = null;
+      // Load logo and QR for embedding
+      let logoB64 = null, qrB64 = null;
       try {
         const imgEl = document.createElement('img');
         await new Promise((res, rej) => { imgEl.onload = res; imgEl.onerror = rej; imgEl.src = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png'; imgEl.crossOrigin = 'anonymous'; });
@@ -4183,6 +4190,14 @@
         const ctx2 = cvs.getContext('2d'); ctx2.fillStyle = '#ffffff'; ctx2.fillRect(0, 0, cvs.width, cvs.height);
         ctx2.drawImage(imgEl, 0, 0); logoB64 = cvs.toDataURL('image/png');
       } catch (e) { logoB64 = null; }
+
+      try {
+        const cloudUrl = SHEET_API + '?action=viewRx&id=' + rx.id;
+        const qrImg = document.createElement('img');
+        await new Promise((res, rej) => { qrImg.onload = res; qrImg.onerror = rej; qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(cloudUrl)}`; qrImg.crossOrigin = 'anonymous'; });
+        const cvs = document.createElement('canvas'); cvs.width = 150; cvs.height = 150;
+        const ctx2 = cvs.getContext('2d'); ctx2.drawImage(qrImg, 0, 0); qrB64 = cvs.toDataURL('image/png');
+      } catch (e) { qrB64 = null; }
 
       const addLogo = (x, yy, w, h) => { if (logoB64) { try { doc.addImage(logoB64, 'PNG', x, yy, w, h); } catch (e) { } } };
 
@@ -4302,15 +4317,15 @@
         setF('bold', 6, GRY);['#', 'PROCEDURE', 'INSTRUCTIONS', 'QTY'].forEach((h, i) => doc.text(h, cols[i] + 1, y + 5));
         doc.setDrawColor(...ORG); doc.setLineWidth(0.5); doc.line(M, y + 8, W - M, y + 8); y += 9;
         rx.procedures.forEach((p, i) => {
-          guard(9); fillR(M, y, CW, 8, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 8, XGR, 0, 0.2);
-          setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 5.5);
+          guard(10); fillR(M, y, CW, 9, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 9, XGR, 0, 0.2);
+          setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 6);
           const pt = PROCEDURE_TYPES.find(t => t.value === p.type)?.label || p.type;
-          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(pt, 66)[0], cols[1] + 1, y + 5.5);
-          setF('normal', 8.5, DRK); doc.text(doc.splitTextToSize(p.details || '—', 82)[0], cols[2] + 1, y + 5.5);
-          setF('bold', 9, ORG); doc.text(String(p.quantity || 1), cols[3] + 1, y + 5.5);
-          y += 8;
+          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(pt, 66)[0], cols[1] + 1, y + 6);
+          setF('normal', 8.5, DRK); doc.text(doc.splitTextToSize(p.details || '—', 82)[0], cols[2] + 1, y + 6);
+          setF('bold', 9, ORG); doc.text(String(p.quantity || 1), cols[3] + 1, y + 6);
+          y += 9;
         });
-        if (rx.procInstructions) { guard(10); setF('oblique', 7.5, GRY); doc.text('Note to Nurse: ' + doc.splitTextToSize(rx.procInstructions, CW - 10)[0], M + 2, y + 5); y += 8; }
+        if (rx.procInstructions) { guard(10); setF('oblique', 7.5, GRY); doc.text('Note: ' + doc.splitTextToSize(rx.procInstructions, CW - 10)[0], M + 2, y + 5); y += 8; }
         y += 4;
       }
 
@@ -4336,13 +4351,16 @@
         secTitle('CASE EXECUTION & REPORTS');
         const half = (CW - 4) / 2;
         const drawExec = (lines, x, w, label) => {
-          const bh = lines.length * 8 + 10; guard(bh + 5);
+          const bh = lines.length * 11 + 12; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
           setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
           lines.forEach((l, i) => {
-            const ly = y + 9 + i * 8;
-            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 35)[0], x + 5, ly);
+            const ly = y + 10 + i * 11;
+            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 38)[0], x + 5, ly);
             
+            const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
+            if (nName) { setF('normal', 5.5, GRY); doc.text('By ' + nName, x + 5, ly + 3.8); }
+
             const st = l.status.toUpperCase().replace('_',' ');
             const isDone = l.status==='administered'||l.status==='report_uploaded';
             setF('bold', 6, isDone?[46,204,113]:[136,136,136]);
@@ -4350,29 +4368,30 @@
 
             if (l.reportUrl) {
               setF('normal', 5.5, ORG);
-              doc.text('View Report \u2197', x + w - 5, ly + 3, { align: 'right' });
-              doc.link(x + w - 20, ly + 1, 15, 3, { url: l.reportUrl });
+              doc.text('View Report \u2197', x + w - 5, ly + 3.8, { align: 'right' });
+              doc.link(x + w - 20, ly + 1.5, 15, 3, { url: l.reportUrl });
             }
           });
           return bh;
         };
         const drawInterp = (lines, x, w, label) => {
           const interps = lines.filter(l => l.interpretation);
-          const bh = Math.max(interps.length * 10 + 10, 20); guard(bh + 5);
+          const bh = Math.max(interps.length * 14 + 12, 30); guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
           setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
-          if (!interps.length) { setF('normal', 7, LGR); doc.text('No interpretations.', x + w/2, y + 12, { align:'center' }); }
+          if (!interps.length) { setF('normal', 7.5, LGR); doc.text('No clinical interpretations added.', x + w/2, y + 15, { align:'center' }); }
           else {
             interps.forEach((l, i) => {
-              setF('bold', 6, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, y + 9 + i * 10);
-              setF('normal', 7.5, DRK); doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, y + 13 + i * 10);
+              const iy = y + 10 + i * 14;
+              setF('bold', 6.5, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
+              setF('normal', 8, DRK); doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, iy + 4.5);
             });
           }
           return bh;
         };
         const h1 = drawExec(rx.orderLines, M, half, 'ADMINISTRATION STATUS');
         const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'CLINICAL INTERPRETATIONS');
-        y += Math.max(h1, h2) + 5;
+        y += Math.max(h1, h2) + 8;
       }
 
       // ── RECHECK ────────────────────────────────────────────────────────────────
@@ -4530,11 +4549,19 @@
         setF('normal', 7.5, DRK);
         doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
         
-        // Use Google Charts for a quick QR code
-        try {
-          const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(cloudUrl)}&choe=UTF-8`;
-          doc.addImage(qrUrl, 'PNG', W - M - 28, y + 2, 25, 25);
-        } catch(e) {}
+        // Add QR Code
+        guard(40);
+        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
+        setF('bold', 8, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 8);
+        setF('normal', 7.5, DRK);
+        doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
+        
+        if (qrB64) {
+          try { doc.addImage(qrB64, 'PNG', W - M - 28, y + 2, 25, 25); } catch(e) {}
+        } else {
+          setF('normal', 6, LGR); doc.text('Digital ID:', W - M - 28, y + 10);
+          setF('bold', 7, DRK); doc.text(rx.id, W - M - 28, y + 15);
+        }
         
         setF('bold', 6.5, ORG);
         doc.text('SCAN TO VIEW CASE', W - M - 15.5, y + 28, { align:'center' });
