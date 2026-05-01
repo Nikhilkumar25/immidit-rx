@@ -4336,14 +4336,23 @@
         secTitle('CASE EXECUTION & REPORTS');
         const half = (CW - 4) / 2;
         const drawExec = (lines, x, w, label) => {
-          const bh = lines.length * 6 + 10; guard(bh + 5);
+          const bh = lines.length * 8 + 10; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
           setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
           lines.forEach((l, i) => {
-            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 25)[0], x + 5, y + 9 + i * 6);
+            const ly = y + 9 + i * 8;
+            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 35)[0], x + 5, ly);
+            
             const st = l.status.toUpperCase().replace('_',' ');
-            setF('bold', 6.5, l.status==='administered'||l.status==='report_uploaded'?[46,204,113]:[136,136,136]);
-            doc.text(st, x + w - 5, y + 9 + i * 6, { align: 'right' });
+            const isDone = l.status==='administered'||l.status==='report_uploaded';
+            setF('bold', 6, isDone?[46,204,113]:[136,136,136]);
+            doc.text(st, x + w - 5, ly, { align: 'right' });
+
+            if (l.reportUrl) {
+              setF('normal', 5.5, ORG);
+              doc.text('View Report \u2197', x + w - 5, ly + 3, { align: 'right' });
+              doc.link(x + w - 20, ly + 1, 15, 3, { url: l.reportUrl });
+            }
           });
           return bh;
         };
@@ -4483,6 +4492,53 @@
       setF('bold', 7, DRK); doc.text(rx.id, W - M, y + 4, { align: 'right' });
       setF('normal', 7, LGR); doc.text('Date: ' + fmtDate(rx.createdAt), W - M, y + 9, { align: 'right' });
       setF('normal', 7, LGR); doc.text('immidit Digital Health Records', W - M, y + 14, { align: 'right' });
+
+      // ── DIGITAL APPENDIX (Optional New Page) ───────────────────────────────────
+      const reports = (rx.orderLines || []).filter(l => l.reportUrl);
+      if (reports.length > 0) {
+        newPage();
+        secTitle('DIGITAL APPENDIX — LAB REPORTS & DIAGNOSTICS');
+        setF('normal', 8, GRY);
+        doc.text('The following medical reports are securely stored in the immidit cloud. Click the links below to view original documents.', M, y + 2);
+        y += 10;
+
+        reports.forEach((r, i) => {
+          guard(25);
+          fillR(M, y, CW, 20, BG); strokeR(M, y, CW, 20, XGR);
+          vbar(M, y, y + 20, ORG);
+          
+          setF('bold', 9, DRK); doc.text(r.details, M + 5, y + 7);
+          setF('normal', 7, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '—'), M + 5, y + 11);
+          
+          setF('bold', 8, ORG);
+          doc.text('OPEN ORIGINAL DOCUMENT \u2197', M + 5, y + 16);
+          doc.link(M + 5, y + 13, 50, 5, { url: r.reportUrl });
+
+          if (r.interpretation) {
+            const intL = doc.splitTextToSize('Clinical Interpretation: ' + r.interpretation, CW * 0.5);
+            setF('oblique', 7.5, DRK);
+            doc.text(intL, M + CW * 0.45, y + 7);
+          }
+          y += 24;
+        });
+
+        // Add QR Code (placeholder for actual cloud link)
+        guard(40);
+        const cloudUrl = SHEET_API + '?action=viewRx&id=' + rx.id;
+        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
+        setF('bold', 8, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 8);
+        setF('normal', 7.5, DRK);
+        doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
+        
+        // Use Google Charts for a quick QR code
+        try {
+          const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${encodeURIComponent(cloudUrl)}&choe=UTF-8`;
+          doc.addImage(qrUrl, 'PNG', W - M - 28, y + 2, 25, 25);
+        } catch(e) {}
+        
+        setF('bold', 6.5, ORG);
+        doc.text('SCAN TO VIEW CASE', W - M - 15.5, y + 28, { align:'center' });
+      }
 
       doc.save('immidit_' + rx.id + '_' + rx.patient.name.replace(/\s+/g, '_') + '.pdf');
       toast('PDF downloaded!');
