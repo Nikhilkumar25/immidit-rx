@@ -4290,9 +4290,9 @@
       // ── SUGGESTIONS ────────────────────────────────────────────────────────────
       if (rx.suggestions) {
         secTitle('ADVICE & SUGGESTIONS');
-        const sl = doc.splitTextToSize(rx.suggestions.replace(/\n/g, ' · '), CW - 10), sh = sl.length * 4.2 + 10;
-        guard(sh + 4); fillR(M, y, CW, sh, BG); strokeR(M, y, CW, sh, XGR);
-        setF('normal', 8.5, DRK); doc.text(sl, M + 5, y + 6.5); y += sh + 5;
+        const sl = doc.splitTextToSize(rx.suggestions.replace(/[^\x00-\x7F]/g, "").replace(/\n/g, ' · '), CW - 10), sh = sl.length * 4.5 + 10;
+        guard(sh + 5); fillR(M, y, CW, sh, BG); strokeR(M, y, CW, sh, XGR);
+        setF('normal', 9, DRK); doc.text(sl, M + 5, y + 6.5); y += sh + 6;
       }
 
       // ── INVESTIGATIONS ─────────────────────────────────────────────────────────
@@ -4528,42 +4528,39 @@
       const reportsList = (rx.orderLines || []).filter(l => l.reportUrl);
       if (reportsList.length > 0) {
         newPage();
-        secTitle('DIGITAL APPENDIX -- LAB REPORTS');
-        setF('normal', 9, GRY);
-        doc.text('The following medical reports are securely stored in the immidit cloud.', M, y + 2);
-        y += 12;
+        fillR(M, y, CW, 12, ORG, 0); 
+        setF('bold', 8, WHT); doc.text('CLINICAL APPENDIX -- DIAGNOSTIC REPORTS', M + CW/2, y + 7.5, { align: 'center' });
+        y += 18;
 
         reportsList.forEach((r, i) => {
-          guard(35);
-          fillR(M, y, CW, 24, BG); strokeR(M, y, CW, 24, XGR);
-          vbar(M, y, y + 24, ORG);
+          guard(40);
+          fillR(M, y, CW, 30, i % 2 === 0 ? BG : WHT); 
+          strokeR(M, y, CW, 30, XGR, 1.5, 0.2);
+          vbar(M, y, y + 30, ORG, 1.5);
           
-          const cleanDet = fitText(r.details, CW - 65, 9.5, 'bold', DRK);
-          doc.text(cleanDet, M + 5, y + 8);
-          setF('normal', 7.5, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 5, y + 13);
+          const cleanDet = fitText(r.details, CW - 75, 10, 'bold', DRK);
+          doc.text(cleanDet, M + 6, y + 9);
+          setF('normal', 7.5, LGR); doc.text('FILE REFERENCE: ' + (r.reportUrl.split('id=')[1]?.substring(0,12) || 'REF-' + i), M + 6, y + 14);
+          setF('normal', 7.5, GRY); doc.text('UPLOADED: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 6, y + 19);
           
           setF('bold', 8.5, ORG);
-          doc.text('OPEN DOCUMENT', M + 5, y + 19);
-          doc.link(M + 5, y + 15, 45, 6, { url: r.reportUrl });
+          doc.text('OPEN ORIGINAL DOCUMENT', M + 6, y + 25);
+          doc.link(M + 6, y + 21, 45, 6, { url: r.reportUrl });
 
           if (r.interpretation) {
-            const intL = doc.splitTextToSize('Note: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW * 0.45);
+            const intL = doc.splitTextToSize('DOCTOR\'S NOTE: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW * 0.45);
             setF('oblique', 8, DRK);
-            doc.text(intL, M + CW - 5, y + 8, { align: 'right' });
+            doc.text(intL, M + CW - 6, y + 9, { align: 'right' });
           }
-          y += 28;
+          y += 35;
         });
 
-        guard(45);
-        fillR(M, y, CW, 25, WRM); strokeR(M, y, CW, 25, BRDORG);
-        setF('bold', 9, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 9);
-        setF('normal', 8.5, DRK);
-        doc.text('Access the full patient record, imaging, and history.', M + 5, y + 16);
-        
-        guard(20);
-        fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
-        setF('bold', 8, ORG); doc.text('DIGITAL CASE ID:', M + 5, y + 9);
-        setF('bold', 12, DRK); doc.text(rx.id, M + CW - 5, y + 10, { align: 'right' });
+        guard(50);
+        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
+        setF('bold', 9, ORG); doc.text('SECURE DIGITAL CASE FOLDER', M + CW/2, y + 10, { align: 'center' });
+        setF('normal', 8, DRK);
+        doc.text('This folder contains the complete case history, including all diagnostic imaging and lab results.', M + CW/2, y + 18, { align: 'center' });
+        setF('bold', 14, DRK); doc.text('CASE ID: ' + rx.id, M + CW/2, y + 26, { align: 'center' });
       }
 
       // ── MERGE ATTACHMENTS (PDFs) ──────────────────────────────────────────────
