@@ -1512,6 +1512,371 @@
       filter: invert(0.5);
       cursor: pointer;
     }
+
+    /* ══════════════════════════════════════════════════════
+   STATUS PILLS (extended)
+══════════════════════════════════════════════════════ */
+    .pill-amber {
+      background: rgba(243, 156, 18, 0.12);
+      color: var(--warn);
+      border: 1px solid rgba(243, 156, 18, 0.25);
+    }
+
+    .pill-purple {
+      background: rgba(142, 68, 173, 0.12);
+      color: #A66BBF;
+      border: 1px solid rgba(142, 68, 173, 0.25);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   PROCEDURE ROWS
+══════════════════════════════════════════════════════ */
+    .proc-row {
+      display: grid;
+      grid-template-columns: 1.2fr 2.5fr 0.6fr auto;
+      gap: 8px;
+      align-items: end;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .proc-row-header {
+      display: grid;
+      grid-template-columns: 1.2fr 2.5fr 0.6fr auto;
+      gap: 8px;
+      padding: 0 0 6px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   OPERATIONS DASHBOARD
+══════════════════════════════════════════════════════ */
+    .ops-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .ops-stat {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .ops-stat:hover, .ops-stat.active {
+      border-color: var(--orange-bdr);
+      background: var(--orange-dim);
+    }
+
+    .ops-stat-val {
+      font-size: 26px;
+      font-family: 'DM Serif Display', serif;
+      font-weight: 700;
+    }
+
+    .ops-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-top: 4px;
+    }
+
+    .ops-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .ops-card-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surf2);
+    }
+
+    .ops-card-body {
+      padding: 14px 18px;
+    }
+
+    .order-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .order-line:last-child {
+      border-bottom: none;
+    }
+
+    .order-line-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      background: var(--surf3);
+    }
+
+    .order-line-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .order-line-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .order-line-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .order-line-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .nurse-select {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   REPORT CARDS
+══════════════════════════════════════════════════════ */
+    .report-card {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .report-card-hdr {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--surf3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .report-card-body {
+      padding: 14px 16px;
+    }
+
+    .report-img-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px;
+      text-align: center;
+      margin-bottom: 12px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .report-img-wrap img {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 4px;
+    }
+
+    .report-img-wrap:hover::after {
+      content: '🔍 Click to zoom';
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+    }
+
+    .report-zoom-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      padding: 20px;
+    }
+
+    .report-zoom-overlay img {
+      max-width: 95%;
+      max-height: 95vh;
+      object-fit: contain;
+    }
+
+    /* ══════════════════════════════════════════════════════
+   UPLOAD AREA
+══════════════════════════════════════════════════════ */
+    .upload-area {
+      border: 2px dashed var(--border2);
+      border-radius: var(--radius);
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surf2);
+    }
+
+    .upload-area:hover {
+      border-color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .upload-icon {
+      font-size: 32px;
+      margin-bottom: 8px;
+      opacity: 0.5;
+    }
+
+    .upload-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .upload-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .upload-preview {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surf3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+    }
+
+    .upload-preview-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: var(--bg);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   FOLLOW-UP SECTION
+══════════════════════════════════════════════════════ */
+    .followup-section {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      margin-top: 18px;
+    }
+
+    .exec-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .exec-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+    }
+
+    .exec-item.done {
+      border-color: rgba(46,204,113,0.25);
+      background: rgba(46,204,113,0.06);
+    }
+
+    .exec-item.declined {
+      border-color: rgba(231,76,60,0.25);
+      background: rgba(231,76,60,0.06);
+    }
+
+    /* ══════════════════════════════════════════════════════
+   FILTER BAR
+══════════════════════════════════════════════════════ */
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .filter-bar input, .filter-bar select {
+      width: auto;
+      min-width: 180px;
+    }
+
+    .filter-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .filter-tab:hover {
+      background: var(--surf2);
+    }
+
+    .filter-tab.active {
+      background: var(--orange-dim);
+      border-color: var(--orange-bdr);
+      color: var(--orange);
+    }
   </style>
 </head>
 
@@ -1531,6 +1896,44 @@
     ══════════════════════════════════════════════════════ */
     const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
     const SHEET_API = 'https://script.google.com/macros/s/AKfycbwYrRfGbdwUKFPaOQ-PRKn70Gc-rmtz6PsktdBCFgfMvsxMk2gpMRMtjnPkG4ssItorFA/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+
+    /* ══════════════════════════════════════════════════════
+       NURSE ROSTER & PROCEDURE TYPES
+    ══════════════════════════════════════════════════════ */
+    const NURSE_LIST = [
+      { id: 'N001', name: 'Nurse Rekha', phone: '+91 98765 00001' },
+      { id: 'N002', name: 'Nurse Sunita', phone: '+91 98765 00002' },
+      { id: 'N003', name: 'Nurse Meena', phone: '+91 98765 00003' },
+      { id: 'N004', name: 'Nurse Kavita', phone: '+91 98765 00004' },
+      { id: 'N005', name: 'Nurse Pooja', phone: '+91 98765 00005' },
+    ];
+
+    const PROCEDURE_TYPES = [
+      { value: 'injection_im', label: '💉 Injection (IM)', icon: '💉' },
+      { value: 'injection_iv', label: '💉 Injection (IV)', icon: '💉' },
+      { value: 'injection_sc', label: '💉 Injection (SC)', icon: '💉' },
+      { value: 'iv_drip', label: '🩸 IV Drip / Infusion', icon: '🩸' },
+      { value: 'wound_dressing', label: '🩹 Wound Dressing', icon: '🩹' },
+      { value: 'nebulization', label: '🌡️ Nebulization', icon: '🌡️' },
+      { value: 'vaccination', label: '💉 Vaccination', icon: '💉' },
+      { value: 'catheter_care', label: '🔌 Catheter Care', icon: '🔌' },
+      { value: 'vital_monitoring', label: '📋 Vital Monitoring', icon: '📋' },
+      { value: 'ecg', label: '❤️ ECG', icon: '❤️' },
+      { value: 'blood_draw', label: '🧪 Blood Draw', icon: '🧪' },
+      { value: 'other', label: '🔧 Other Procedure', icon: '🔧' },
+    ];
+
+    const ORDER_ICONS = {
+      procedure: '💉', lab_test: '🧪', diagnostic_test: '📡', referral: '🔀'
+    };
+
+    const STATUS_CONFIG = {
+      active:           { label: 'Active', pill: 'pill-green', icon: '✅' },
+      pending_actions:  { label: 'Pending Actions', pill: 'pill-amber', icon: '⏳' },
+      reports_ready:    { label: 'Reports Ready', pill: 'pill-blue', icon: '📊' },
+      executed:         { label: 'Executed', pill: 'pill-green', icon: '✅' },
+      case_complete:    { label: 'Case Complete', pill: 'pill-purple', icon: '🟣' },
+    };
 
     /* ══════════════════════════════════════════════════════
        DATABASE (localStorage)
@@ -1645,7 +2048,16 @@
       formLabTests: [],
       formDiagTests: [],
       formReferrals: [],
+      formProcedures: [],
+      formProcInstructions: '',
       editingRxId: null,
+
+      // operations state (admin)
+      opsFilter: 'all',       // all | pending | to_administer | reports_pending | complete
+      opsSearch: '',
+
+      // doctor review
+      reviewingRxId: null,    // prescription being reviewed for reports
     };
 
     /* ══════════════════════════════════════════════════════
@@ -2093,6 +2505,12 @@
         <span class="sidebar-badge">${myRxs.length}</span>
       </button>
 
+      <div class="sidebar-section">Review</div>
+      <button class="sidebar-btn ${s === 'review' ? 'active' : ''}" onclick="APP.section='review';render()">
+        <span class="sidebar-ico">📊</span> Reports & Follow-Up
+        ${(() => { const rr = myRxs.filter(r => r.status === 'reports_ready').length; return rr ? `<span class="sidebar-badge" style="background:var(--info);color:#fff;">${rr}</span>` : ''; })()}
+      </button>
+
       <div class="sidebar-section">Account</div>
       <button class="sidebar-btn ${s === 'profile' ? 'active' : ''}" onclick="APP.section='profile';render()">
         <span class="sidebar-ico">👤</span> My Profile
@@ -2109,7 +2527,7 @@
     </div>
 
     <div class="content" id="doctor-content">
-      ${s === 'new' ? renderNewRx() : s === 'my' ? renderMyRxs(myRxs) : renderDoctorProfile()}
+      ${s === 'new' ? renderNewRx() : s === 'my' ? renderMyRxs(myRxs) : s === 'review' ? renderDoctorReview(myRxs) : renderDoctorProfile()}
     </div>
   </div>`;
     }
@@ -2162,6 +2580,7 @@
       const meds = APP.formMeds;
       const labTags = APP.formLabTests.map((t, i) => `<span class="tag">🧫 ${t}<button class="tag-del" onclick="removeTag('lab',${i})">×</button></span>`).join('');
       const diagTags = APP.formDiagTests.map((t, i) => `<span class="tag">📡 ${t}<button class="tag-del" onclick="removeTag('diag',${i})">×</button></span>`).join('');
+      const procs = APP.formProcedures;
       const refRows = APP.formReferrals.map((r, i) => `
     <div class="med-row" style="grid-template-columns:1.5fr 1.5fr 2fr auto;" id="ref-row-${i}">
       <div class="field" style="margin:0"><input placeholder="Specialist" id="ref-spec-${i}" value="${r.specialist || ''}" oninput="APP.formReferrals[${i}].specialist=this.value"></div>
@@ -2234,6 +2653,25 @@
       ${meds.map((m, i) => renderMedRow(m, i)).join('')}
     </div>
     <button class="add-row-btn" onclick="addMed()">+ Add Medicine</button>
+  </div>
+
+  <!-- NURSE PROCEDURES -->
+  <div class="card">
+    <div class="card-header"><div class="card-icon">💉</div><div><div class="card-title">Nurse Procedures</div><div class="card-sub">IV drips, injections, wound care — actions for the attending nurse</div></div></div>
+    <div class="proc-row-header">
+      <div class="med-col-hdr">Procedure Type</div>
+      <div class="med-col-hdr">Details / Instructions</div>
+      <div class="med-col-hdr">Qty</div>
+      <div></div>
+    </div>
+    <div id="proc-list">
+      ${procs.map((p, i) => renderProcRow(p, i)).join('')}
+    </div>
+    <button class="add-row-btn" onclick="addProc()">+ Add Procedure</button>
+    <div class="field" style="margin-top:12px;">
+      <label>Special Instructions for Nurse</label>
+      <textarea id="proc-instructions" placeholder="Monitor vitals during IV, check for allergies before injection...">${rx?.procInstructions || APP.formProcInstructions || ''}</textarea>
+    </div>
   </div>
 
   <!-- SUGGESTIONS -->
@@ -2312,17 +2750,27 @@
 
     function renderRxCard(rx, canEdit) {
       const open = APP.expandedRx === rx.id;
+      const status = rx.status || 'active';
+      const sc = STATUS_CONFIG[status] || STATUS_CONFIG.active;
+      const orderLines = rx.orderLines || [];
+      const procCount = orderLines.filter(l => l.type === 'procedure').length;
+      const testCount = orderLines.filter(l => l.type === 'lab_test' || l.type === 'diagnostic_test').length;
+      const hasReports = orderLines.some(l => l.status === 'report_uploaded');
       return `
   <div class="rx-card">
     <div class="rx-card-hdr" onclick="toggleExpand('${rx.id}')">
       <div>
         <div class="rx-id">${rx.id}</div>
         <div class="rx-patient-name">${rx.patient.name} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${rx.patient.age}Y, ${rx.patient.gender}</span></div>
-        <div class="rx-meta">${rx.doctorName} · ${fmtDate(rx.createdAt)}${rx.edited ? ' · <span class="pill pill-blue" style="font-size:10px;">Edited</span>' : ''}</div>
+        <div class="rx-meta">${rx.doctorName} · ${fmtDate(rx.createdAt)}${rx.edited ? ' · <span class="pill pill-blue" style="font-size:10px;">Edited</span>' : ''}
+          ${procCount ? ` · <span style="font-size:11px;">💉 ${procCount} procedures</span>` : ''}
+          ${testCount ? ` · <span style="font-size:11px;">🧪 ${testCount} tests</span>` : ''}
+        </div>
       </div>
       <div class="rx-actions">
-        <span class="pill pill-green">Active</span>
+        <span class="pill ${sc.pill}">${sc.icon} ${sc.label}</span>
         ${canEdit ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();editRx('${rx.id}')">✏️ Edit</button>` : ''}
+        ${(status === 'reports_ready' && canEdit) ? `<button class="btn btn-info-soft btn-sm" onclick="event.stopPropagation();APP.reviewingRxId='${rx.id}';APP.section='review';render()">📊 Review</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();APP.previewRx=getRx('${rx.id}');render()">📄 PDF</button>
         <span class="chevron ${open ? 'open' : ''}">▾</span>
       </div>
@@ -2336,7 +2784,13 @@
         <div class="rx-detail-item"><label>MEDICINES</label><p>${rx.medicines?.length || 0} prescribed</p></div>
         <div class="rx-detail-item"><label>LAB TESTS</label><p>${(rx.labTests || []).join(', ') || '—'}</p></div>
       </div>
-      ${rx.referral?.length ? `<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">🔀 Referral: ${rx.referral.map(r => r.specialist).join(', ')}</div>` : ''}
+      ${rx.procedures?.length ? `<div style="font-size:12px;color:var(--text-muted);margin-top:8px;">💉 Procedures: ${rx.procedures.map(p => { const pt = PROCEDURE_TYPES.find(t => t.value === p.type); return (pt ? pt.icon + ' ' : '') + p.details; }).join(', ')}</div>` : ''}
+      ${rx.referral?.length ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">🔀 Referral: ${rx.referral.map(r => r.specialist).join(', ')}</div>` : ''}
+      ${orderLines.length ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">${orderLines.map(l => {
+        const sc2 = l.status === 'administered' || l.status === 'report_uploaded' ? 'pill-green' : l.status === 'declined' ? 'pill-red' : l.status === 'accepted' ? 'pill-blue' : 'pill-gray';
+        const slbl = l.status === 'administered' ? '✅' : l.status === 'report_uploaded' ? '📊' : l.status === 'declined' ? '❌' : l.status === 'accepted' ? '✓' : '⏳';
+        return `<span class="pill ${sc2}" style="font-size:10px;">${slbl} ${l.details.substring(0,25)}${l.details.length > 25 ? '...' : ''}</span>`;
+      }).join('')}</div>` : ''}
     </div>
   </div>`;
     }
@@ -2372,6 +2826,13 @@
       <button class="sidebar-btn ${s === 'dashboard' ? 'active' : ''}" onclick="APP.section='dashboard';render()">
         <span class="sidebar-ico">📊</span> Dashboard
       </button>
+
+      <div class="sidebar-section">Operations</div>
+      <button class="sidebar-btn ${s === 'operations' ? 'active' : ''}" onclick="APP.section='operations';render()">
+        <span class="sidebar-ico">🏥</span> Operations
+        ${(() => { const pa = rxs.filter(r => r.status === 'pending_actions').length; return pa ? `<span class="sidebar-badge" style="background:var(--warn);color:#000;">${pa}</span>` : ''; })()}
+      </button>
+
       <div class="sidebar-section">Doctors</div>
       <button class="sidebar-btn ${s === 'doctors' ? 'active' : ''}" onclick="APP.section='doctors';render()">
         <span class="sidebar-ico">🩺</span> Manage Doctors
@@ -2386,6 +2847,7 @@
 
     <div class="content">
       ${s === 'dashboard' ? renderAdminDash(doctors, rxs, todayRxs, activeDocs) :
+          s === 'operations' ? renderOperations(rxs) :
           s === 'doctors' ? renderAdminDoctors(doctors) :
             renderAdminRxs(rxs)}
     </div>
@@ -2635,6 +3097,29 @@
     function removeMed(i) { APP.formMeds.splice(i, 1); const el = document.getElementById('med-row-' + i); if (el) el.remove(); }
     function updateMed(i, field, val) { if (APP.formMeds[i]) APP.formMeds[i][field] = val; }
 
+    /* ── Procedure CRUD ── */
+    function renderProcRow(p, i) {
+      return `<div class="proc-row" id="proc-row-${i}">
+        <div class="field" style="margin:0">
+          <select id="proc-type-${i}" onchange="updateProc(${i},'type',this.value)">
+            <option value="">Select type...</option>
+            ${PROCEDURE_TYPES.map(t => `<option value="${t.value}" ${p.type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0"><input id="proc-detail-${i}" placeholder="e.g. NS 500ml + Vitamin B Complex" value="${p.details || ''}" oninput="updateProc(${i},'details',this.value)"></div>
+        <div class="field" style="margin:0"><input id="proc-qty-${i}" type="number" min="1" value="${p.quantity || 1}" oninput="updateProc(${i},'quantity',this.value)" style="text-align:center"></div>
+        <button class="btn btn-danger-soft btn-icon" onclick="removeProc(${i})">✕</button>
+      </div>`;
+    }
+
+    function addProc() {
+      APP.formProcedures.push({ type: '', details: '', quantity: 1 });
+      const list = document.getElementById('proc-list');
+      if (list) { const d = document.createElement('div'); d.innerHTML = renderProcRow(APP.formProcedures[APP.formProcedures.length - 1], APP.formProcedures.length - 1); list.appendChild(d.firstElementChild); }
+    }
+    function removeProc(i) { APP.formProcedures.splice(i, 1); const el = document.getElementById('proc-row-' + i); if (el) el.remove(); }
+    function updateProc(i, field, val) { if (APP.formProcedures[i]) APP.formProcedures[i][field] = val; }
+
     function addTag(type) {
       const inp = document.getElementById(type === 'lab' ? 'new-lab' : 'new-diag');
       const val = inp?.value.trim(); if (!val) return;
@@ -2691,6 +3176,8 @@
       document.querySelectorAll('[id^="ref-spec-"]').forEach((el, i) => {
         refs.push({ specialist: el.value, hospital: document.getElementById(`ref-hosp-${i}`)?.value || '', reason: document.getElementById(`ref-reason-${i}`)?.value || '' });
       });
+      // Gather procedures from APP state (already updated via oninput)
+      const procs = APP.formProcedures.filter(p => p.type || p.details);
       return {
         patient: { name: document.getElementById('p-name')?.value || '', phone: document.getElementById('p-phone')?.value || '', age: document.getElementById('p-age')?.value || '', gender: document.getElementById('p-gender')?.value || '', address: document.getElementById('p-addr')?.value || '' },
         visitDate: document.getElementById('p-date')?.value || '',
@@ -2703,6 +3190,8 @@
         labTests: APP.formLabTests.slice(),
         diagnosticTests: APP.formDiagTests.slice(),
         referral: refs,
+        procedures: procs,
+        procInstructions: document.getElementById('proc-instructions')?.value || '',
         recheckDate: document.getElementById('recheck')?.value || '',
         recheckNote: document.getElementById('recheck-note')?.value || '',
       };
@@ -2711,6 +3200,7 @@
     function resetForm() {
       APP.formMeds = [{ name: '', dosage: '', days: '', timing: 'After food' }];
       APP.formLabTests = []; APP.formDiagTests = []; APP.formReferrals = [];
+      APP.formProcedures = []; APP.formProcInstructions = '';
       APP.editingRxId = null;
       clearDraft();
     }
@@ -2724,6 +3214,9 @@
         const rx = getRx(APP.editingRxId);
         if (rx) {
           const updated = { ...rx, ...data, edited: true, editedAt: new Date().toISOString() };
+          // Regenerate order lines if new procedures/tests added
+          if (!updated.orderLines) updated.orderLines = generateOrderLines(updated);
+          updated.status = computeRxStatus(updated);
           updatePrescription(updated);
           APP.previewRx = updated;
         }
@@ -2736,6 +3229,10 @@
           createdAt: new Date().toISOString(), edited: false,
           ...data
         };
+        // Generate order lines from prescribed items
+        rx.orderLines = generateOrderLines(rx);
+        rx.status = computeRxStatus(rx);
+        rx.followUp = null; // will be filled during review
         addPrescription(rx);
         APP.previewRx = rx;
       }
@@ -2743,6 +3240,103 @@
       resetForm();
       toast(APP.editingRxId ? 'Prescription updated!' : 'Prescription saved!');
       render();
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ORDER LINE GENERATION & STATUS
+    ══════════════════════════════════════════════════════ */
+    function generateOrderLines(rx) {
+      const lines = [];
+      let idx = 0;
+      // From procedures
+      (rx.procedures || []).forEach(p => {
+        if (!p.type && !p.details) return;
+        const pt = PROCEDURE_TYPES.find(t => t.value === p.type);
+        lines.push({
+          id: 'OL-' + (++idx),
+          type: 'procedure',
+          category: pt ? pt.label : p.type,
+          icon: pt ? pt.icon : '💉',
+          details: p.details || '',
+          quantity: p.quantity || 1,
+          status: 'pending',
+          administeredAt: null,
+          administeredBy: null,
+          patientResponse: null,
+          reportUrl: null,
+          reportFileId: null,
+          notes: '',
+        });
+      });
+      // From lab tests
+      (rx.labTests || []).forEach(t => {
+        lines.push({
+          id: 'OL-' + (++idx),
+          type: 'lab_test',
+          category: 'Laboratory',
+          icon: '🧪',
+          details: t,
+          status: 'pending',
+          patientResponse: null,
+          reportUrl: null,
+          reportFileId: null,
+          notes: '',
+          interpretation: '',
+        });
+      });
+      // From diagnostic tests
+      (rx.diagnosticTests || []).forEach(t => {
+        lines.push({
+          id: 'OL-' + (++idx),
+          type: 'diagnostic_test',
+          category: 'Imaging / Diagnostic',
+          icon: '📡',
+          details: t,
+          status: 'pending',
+          patientResponse: null,
+          reportUrl: null,
+          reportFileId: null,
+          notes: '',
+          interpretation: '',
+        });
+      });
+      // From referrals
+      (rx.referral || []).forEach(r => {
+        if (!r.specialist) return;
+        lines.push({
+          id: 'OL-' + (++idx),
+          type: 'referral',
+          category: 'Referral',
+          icon: '🔀',
+          details: r.specialist + (r.hospital ? ' — ' + r.hospital : ''),
+          status: 'pending',
+          patientResponse: null,
+          notes: r.reason || '',
+        });
+      });
+      return lines;
+    }
+
+    function computeRxStatus(rx) {
+      const lines = rx.orderLines || [];
+      if (lines.length === 0) return 'active';
+
+      const allResolved = lines.every(l =>
+        l.status === 'administered' || l.status === 'declined' ||
+        l.status === 'accepted' || l.status === 'report_uploaded' || l.status === 'not_required'
+      );
+      const hasTestsWithReports = lines.some(l =>
+        (l.type === 'lab_test' || l.type === 'diagnostic_test') && l.status === 'report_uploaded'
+      );
+      const hasUnresolvedTests = lines.some(l =>
+        (l.type === 'lab_test' || l.type === 'diagnostic_test') &&
+        (l.status === 'pending' || l.status === 'accepted')
+      );
+
+      if (rx.followUp && rx.followUp.completedAt) return 'case_complete';
+      if (hasTestsWithReports && !hasUnresolvedTests) return 'reports_ready';
+      if (allResolved && !hasTestsWithReports) return 'executed';
+      return 'pending_actions';
     }
 
     function editRx(id) {
@@ -2753,6 +3347,8 @@
       APP.formLabTests = rx.labTests?.slice() || [];
       APP.formDiagTests = rx.diagnosticTests?.slice() || [];
       APP.formReferrals = rx.referral?.slice() || [];
+      APP.formProcedures = rx.procedures?.slice() || [];
+      APP.formProcInstructions = rx.procInstructions || '';
       APP.section = 'new';
       render();
     }
@@ -2813,6 +3409,398 @@
     function bindAdminApp() { }
 
     /* ══════════════════════════════════════════════════════
+       OPERATIONS DASHBOARD (Admin)
+    ══════════════════════════════════════════════════════ */
+    function renderOperations(allRxs) {
+      const rxsWithOL = allRxs.filter(r => (r.orderLines || []).length > 0);
+      const f = APP.opsFilter;
+      const filtered = rxsWithOL.filter(rx => {
+        if (f === 'all') return true;
+        if (f === 'pending') return rx.status === 'pending_actions';
+        if (f === 'to_administer') return (rx.orderLines||[]).some(l => l.type === 'procedure' && l.status === 'pending');
+        if (f === 'reports_pending') return (rx.orderLines||[]).some(l => (l.type==='lab_test'||l.type==='diagnostic_test') && (l.status==='pending'||l.status==='accepted'));
+        if (f === 'complete') return rx.status === 'executed' || rx.status === 'case_complete';
+        return true;
+      });
+      const pendingCount = rxsWithOL.filter(r => r.status === 'pending_actions').length;
+      const toAdminCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => l.type==='procedure' && l.status==='pending').length, 0);
+      const repPendCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => (l.type==='lab_test'||l.type==='diagnostic_test') && (l.status==='pending'||l.status==='accepted')).length, 0);
+      const doneCount = rxsWithOL.filter(r => r.status === 'executed' || r.status === 'case_complete').length;
+
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Operations</h1><div class="page-sub">Track procedures, tests & referrals</div></div>
+  </div>
+  <div class="ops-stats">
+    <div class="ops-stat ${f==='pending'?'active':''}" onclick="APP.opsFilter='pending';render()"><div class="ops-stat-val" style="color:var(--warn)">${pendingCount}</div><div class="ops-stat-label">Pending Actions</div></div>
+    <div class="ops-stat ${f==='to_administer'?'active':''}" onclick="APP.opsFilter='to_administer';render()"><div class="ops-stat-val" style="color:var(--orange)">${toAdminCount}</div><div class="ops-stat-label">To Administer</div></div>
+    <div class="ops-stat ${f==='reports_pending'?'active':''}" onclick="APP.opsFilter='reports_pending';render()"><div class="ops-stat-val" style="color:var(--info)">${repPendCount}</div><div class="ops-stat-label">Reports Pending</div></div>
+    <div class="ops-stat ${f==='complete'?'active':''}" onclick="APP.opsFilter='complete';render()"><div class="ops-stat-val" style="color:var(--success)">${doneCount}</div><div class="ops-stat-label">Complete</div></div>
+  </div>
+  <div class="filter-bar">
+    <button class="filter-tab ${f==='all'?'active':''}" onclick="APP.opsFilter='all';render()">All</button>
+  </div>
+  ${filtered.length === 0 ? '<div class="empty-state"><div class="icon">📋</div><p>No items match this filter.</p></div>' :
+    filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(rx => renderOpsCard(rx)).join('')}`;
+    }
+
+    function renderOpsCard(rx) {
+      const lines = rx.orderLines || [];
+      const sc = STATUS_CONFIG[rx.status] || STATUS_CONFIG.active;
+      const doc = getDoctors().find(d => d.id === rx.doctorId);
+      return `
+  <div class="ops-card">
+    <div class="ops-card-hdr">
+      <div>
+        <div style="font-weight:600;font-size:14px;">${rx.id} · ${rx.patient.name} · ${rx.patient.age}Y ${rx.patient.gender}</div>
+        <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${doc?.profile?.name || rx.doctorName} · ${fmtDate(rx.createdAt)}</div>
+      </div>
+      <span class="pill ${sc.pill}">${sc.icon} ${sc.label}</span>
+    </div>
+    <div class="ops-card-body">
+      ${lines.map((l, i) => renderOrderLine(rx.id, l, i)).join('')}
+      <div class="nurse-select">
+        <span style="font-size:12px;color:var(--text-muted);">Nurse:</span>
+        <select id="nurse-${rx.id}" style="width:auto;min-width:160px;">
+          <option value="">Select nurse...</option>
+          ${NURSE_LIST.map(n => `<option value="${n.id}">${n.name}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="saveOpsCard('${rx.id}')">💾 Save Status</button>
+      </div>
+    </div>
+  </div>`;
+    }
+
+    function renderOrderLine(rxId, line, idx) {
+      const iconBg = line.type === 'procedure' ? 'rgba(245,98,30,0.12)' : line.type === 'referral' ? 'rgba(142,68,173,0.12)' : 'rgba(52,152,219,0.12)';
+      const sDone = line.status === 'administered' || line.status === 'report_uploaded';
+      const sDecl = line.status === 'declined';
+      const sAccepted = line.status === 'accepted';
+      const isPending = line.status === 'pending';
+      const isTest = line.type === 'lab_test' || line.type === 'diagnostic_test';
+      const isProc = line.type === 'procedure';
+      const isRef = line.type === 'referral';
+
+      let statusHtml = '';
+      if (sDone) statusHtml = `<span class="pill pill-green">✅ ${isProc ? 'Administered' : 'Report Uploaded'}</span>`;
+      else if (sDecl) statusHtml = `<span class="pill pill-red">❌ Declined</span>`;
+      else if (sAccepted && isTest) statusHtml = `<span class="pill pill-blue">✓ Accepted</span><button class="btn btn-primary btn-sm" onclick="showUploadModal('${rxId}',${idx})">📤 Upload Report</button>`;
+      else if (isPending) {
+        if (isProc) statusHtml = `<button class="btn btn-success-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'administered')">✅ Administered</button><button class="btn btn-danger-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'declined')">❌ Declined</button>`;
+        else if (isTest) statusHtml = `<button class="btn btn-info-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'accepted')">✅ Accepted</button><button class="btn btn-danger-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'declined')">❌ Declined</button>`;
+        else if (isRef) statusHtml = `<button class="btn btn-info-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'accepted')">✅ Accepted</button><button class="btn btn-danger-soft btn-sm" onclick="setOLStatus('${rxId}',${idx},'declined')">❌ Declined</button>`;
+      }
+
+      return `
+    <div class="order-line">
+      <div class="order-line-icon" style="background:${iconBg}">${line.icon || ORDER_ICONS[line.type]}</div>
+      <div class="order-line-info">
+        <div class="order-line-name">${line.details}</div>
+        <div class="order-line-meta">${line.category}${line.quantity > 1 ? ' × '+line.quantity : ''}${line.administeredBy ? ' · by '+NURSE_LIST.find(n=>n.id===line.administeredBy)?.name : ''}${line.administeredAt ? ' · '+fmtDate(line.administeredAt) : ''}</div>
+      </div>
+      <div class="order-line-actions">${statusHtml}</div>
+    </div>`;
+    }
+
+    function setOLStatus(rxId, idx, status) {
+      const rxs = getRxs();
+      const rx = rxs.find(r => r.id === rxId);
+      if (!rx || !rx.orderLines[idx]) return;
+      rx.orderLines[idx].status = status;
+      if (status === 'administered') {
+        const nurseEl = document.getElementById('nurse-' + rxId);
+        rx.orderLines[idx].administeredBy = nurseEl?.value || '';
+        rx.orderLines[idx].administeredAt = new Date().toISOString();
+      }
+      if (status === 'accepted' || status === 'declined') {
+        rx.orderLines[idx].patientResponse = status;
+      }
+      rx.status = computeRxStatus(rx);
+      saveRxs(rxs);
+      toast(status === 'administered' ? 'Procedure marked as administered.' : status === 'declined' ? 'Marked as declined.' : 'Status updated.');
+      render();
+    }
+
+    function saveOpsCard(rxId) {
+      toast('Status saved for ' + rxId);
+    }
+
+    /* ── Upload Report Modal ── */
+    function showUploadModal(rxId, lineIdx) {
+      const existing = document.getElementById('upload-modal');
+      if (existing) existing.remove();
+      const ov = document.createElement('div');
+      ov.className = 'overlay'; ov.id = 'upload-modal';
+      ov.innerHTML = `
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-hdr"><h3>📤 Upload Report</h3><button class="modal-close" onclick="closeUploadModal()">×</button></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Upload the lab/diagnostic report image or PDF.</p>
+        <div class="upload-area" id="upload-drop" onclick="document.getElementById('upload-file').click()">
+          <div class="upload-icon">📁</div>
+          <div class="upload-text">Click or drag & drop to upload</div>
+          <div class="upload-hint">JPEG, PNG, or PDF · Max 10MB</div>
+        </div>
+        <input type="file" id="upload-file" accept="image/*,.pdf" style="display:none" onchange="handleFileSelect(this,'${rxId}',${lineIdx})">
+        <div id="upload-preview-area"></div>
+        <div id="upload-error" class="error-msg" style="display:none;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeUploadModal()">Cancel</button>
+        <button class="btn btn-primary" id="upload-submit" disabled>Upload Report</button>
+      </div>
+    </div>`;
+      document.body.appendChild(ov);
+      // Drag & drop
+      const drop = document.getElementById('upload-drop');
+      drop.ondragover = e => { e.preventDefault(); drop.classList.add('dragover'); };
+      drop.ondragleave = () => drop.classList.remove('dragover');
+      drop.ondrop = e => { e.preventDefault(); drop.classList.remove('dragover'); if(e.dataTransfer.files[0]) processUploadFile(e.dataTransfer.files[0], rxId, lineIdx); };
+    }
+
+    function closeUploadModal() { const el = document.getElementById('upload-modal'); if(el) el.remove(); }
+
+    let _pendingUpload = null;
+    function handleFileSelect(input, rxId, lineIdx) {
+      if(input.files[0]) processUploadFile(input.files[0], rxId, lineIdx);
+    }
+
+    function processUploadFile(file, rxId, lineIdx) {
+      if(file.size > 10*1024*1024) { document.getElementById('upload-error').textContent='File too large (max 10MB)'; document.getElementById('upload-error').style.display='block'; return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        _pendingUpload = { rxId, lineIdx, base64: reader.result, name: file.name, type: file.type };
+        const prev = document.getElementById('upload-preview-area');
+        if(file.type.startsWith('image/')) {
+          prev.innerHTML = `<div class="upload-preview"><img class="upload-preview-thumb" src="${reader.result}"><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size/1024).toFixed(0)} KB</div></div></div>`;
+        } else {
+          prev.innerHTML = `<div class="upload-preview"><div style="font-size:28px;">📄</div><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size/1024).toFixed(0)} KB · PDF</div></div></div>`;
+        }
+        const btn = document.getElementById('upload-submit');
+        btn.disabled = false;
+        btn.onclick = () => doUploadReport();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function doUploadReport() {
+      if(!_pendingUpload) return;
+      const {rxId, lineIdx, base64, name, type} = _pendingUpload;
+      const btn = document.getElementById('upload-submit');
+      btn.disabled = true;
+      btn.textContent = 'Uploading to Drive...';
+
+      fetch(SHEET_API, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'uploadReport', data: { base64, name, type } })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if(res.error) throw new Error(res.error);
+        const rxs = getRxs();
+        const rx = rxs.find(r => r.id === rxId);
+        if(!rx || !rx.orderLines[lineIdx]) return;
+
+        rx.orderLines[lineIdx].status = 'report_uploaded';
+        rx.orderLines[lineIdx].reportUrl = res.url;
+        rx.orderLines[lineIdx].reportFileId = res.fileId;
+        rx.orderLines[lineIdx].reportFileName = name;
+        rx.orderLines[lineIdx].reportMimeType = type;
+        rx.orderLines[lineIdx].reportUploadedAt = new Date().toISOString();
+        rx.status = computeRxStatus(rx);
+        
+        saveRxs(rxs);
+        updatePrescription(rx);
+        
+        _pendingUpload = null;
+        closeUploadModal();
+        toast('Report uploaded to Drive!');
+        render();
+      })
+      .catch(err => {
+        toast('Upload failed: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Retry Upload';
+      });
+    }
+
+    /* ── Image Zoom ── */
+    function zoomImage(src) {
+      const ov = document.createElement('div');
+      ov.className = 'report-zoom-overlay';
+      ov.onclick = () => ov.remove();
+      ov.innerHTML = `<img src="${src}">`;
+      document.body.appendChild(ov);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       DOCTOR REVIEW (Reports & Follow-Up)
+    ══════════════════════════════════════════════════════ */
+    function renderDoctorReview(myRxs) {
+      const reviewable = myRxs.filter(r => r.status === 'reports_ready' || r.status === 'pending_actions' || r.status === 'executed' || r.status === 'case_complete');
+      const activeRx = APP.reviewingRxId ? myRxs.find(r => r.id === APP.reviewingRxId) : null;
+
+      if (activeRx) return renderReviewDetail(activeRx);
+
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Reports & Follow-Up</h1><div class="page-sub">Review lab reports and complete cases</div></div>
+  </div>
+  ${reviewable.length === 0 ? '<div class="empty-state"><div class="icon">📊</div><p>No prescriptions with reports or pending actions.</p></div>' :
+    reviewable.sort((a,b) => {
+      const pri = {reports_ready:0, pending_actions:1, executed:2, case_complete:3};
+      return (pri[a.status]||9) - (pri[b.status]||9) || new Date(b.createdAt) - new Date(a.createdAt);
+    }).map(rx => {
+      const sc = STATUS_CONFIG[rx.status] || STATUS_CONFIG.active;
+      const reportsCount = (rx.orderLines||[]).filter(l => l.status === 'report_uploaded').length;
+      return `
+    <div class="rx-card" style="cursor:pointer;" onclick="APP.reviewingRxId='${rx.id}';render()">
+      <div class="rx-card-hdr">
+        <div>
+          <div class="rx-id">${rx.id}</div>
+          <div class="rx-patient-name">${rx.patient.name} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${rx.patient.age}Y, ${rx.patient.gender}</span></div>
+          <div class="rx-meta">${fmtDate(rx.createdAt)} · ${rx.diagnosis || 'No diagnosis'}</div>
+        </div>
+        <div class="rx-actions">
+          <span class="pill ${sc.pill}">${sc.icon} ${sc.label}</span>
+          ${reportsCount ? `<span class="pill pill-blue">📊 ${reportsCount} reports</span>` : ''}
+          <span class="chevron">▸</span>
+        </div>
+      </div>
+    </div>`;
+    }).join('')}`;
+    }
+
+    function renderReviewDetail(rx) {
+      const lines = rx.orderLines || [];
+      const reports = lines.filter(l => l.status === 'report_uploaded');
+      const procedures = lines.filter(l => l.type === 'procedure');
+      const referrals = lines.filter(l => l.type === 'referral');
+      const fu = rx.followUp || {};
+      const isComplete = rx.status === 'case_complete';
+
+      return `
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">${rx.patient.name} — Case Review</h1>
+      <div class="page-sub">${rx.id} · ${rx.diagnosis || 'No diagnosis'} · ${fmtDate(rx.createdAt)}</div>
+    </div>
+    <button class="btn btn-ghost" onclick="APP.reviewingRxId=null;render()">← Back</button>
+  </div>
+
+  <!-- Execution Summary -->
+  <div class="followup-section" style="margin-top:0;">
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Execution Summary</div>
+    <div class="exec-summary">
+      ${procedures.map(l => `<div class="exec-item ${l.status==='administered'?'done':l.status==='declined'?'declined':''}">
+        ${l.icon} <span style="flex:1">${l.details}</span>
+        <span class="pill ${l.status==='administered'?'pill-green':l.status==='declined'?'pill-red':'pill-gray'}" style="font-size:10px;">${l.status==='administered'?'✅ Administered':l.status==='declined'?'❌ Declined':'⏳ Pending'}</span>
+      </div>`).join('')}
+      ${referrals.map(l => `<div class="exec-item ${l.status==='accepted'?'done':l.status==='declined'?'declined':''}">
+        🔀 <span style="flex:1">${l.details}</span>
+        <span class="pill ${l.status==='accepted'?'pill-green':l.status==='declined'?'pill-red':'pill-gray'}" style="font-size:10px;">${l.status==='accepted'?'✅ Accepted':l.status==='declined'?'❌ Declined':'⏳ Pending'}</span>
+      </div>`).join('')}
+    </div>
+  </div>
+
+  <!-- Lab Reports -->
+  ${reports.length ? `
+  <div class="followup-section">
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📊 Lab Reports</div>
+    ${reports.map((l, i) => {
+      const lineIdx = lines.indexOf(l);
+      const isImage = l.reportMimeType?.startsWith('image/');
+      return `
+    <div class="report-card">
+      <div class="report-card-hdr">
+        <span style="font-size:16px;">${l.icon}</span>
+        <div style="flex:1;"><div style="font-weight:600;">${l.details}</div><div style="font-size:11px;color:var(--text-muted);">Uploaded ${l.reportUploadedAt ? fmtDate(l.reportUploadedAt) : ''}</div></div>
+        <span class="pill pill-green" style="font-size:10px;">📊 Report Available</span>
+      </div>
+      <div class="report-card-body">
+        ${isImage ? `<div class="report-img-wrap" onclick="zoomImage('${l.reportUrl}')"><img src="${l.reportUrl}" alt="${l.details}"></div>` :
+          `<div style="padding:16px;text-align:center;background:var(--bg);border-radius:var(--radius-sm);"><span style="font-size:28px;">📄</span><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${l.reportFileName || 'PDF Report'}</div></div>`}
+        <div class="field" style="margin-top:12px;">
+          <label>Doctor's Interpretation</label>
+          <textarea id="interp-${lineIdx}" placeholder="Clinical interpretation of this report..." ${isComplete?'disabled':''}>${l.interpretation || ''}</textarea>
+        </div>
+      </div>
+    </div>`;
+    }).join('')}
+  </div>` : '<div class="empty-state" style="margin-top:18px;"><div class="icon">📊</div><p>No reports uploaded yet.</p></div>'}
+
+  <!-- Follow-Up Prescription -->
+  ${!isComplete ? `
+  <div class="followup-section">
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">💊 Follow-Up Prescription</div>
+    <div class="field"><label>Updated Diagnosis (based on reports)</label><textarea id="fu-diagnosis" placeholder="Refined diagnosis after reviewing lab reports...">${fu.updatedDiagnosis || ''}</textarea></div>
+    <div class="field"><label>Additional Medicines</label><textarea id="fu-meds" placeholder="One medicine per line: Tab. Augmentin 625mg, 1-0-1, 7 days, After food">${fu.additionalMeds || ''}</textarea></div>
+    <div class="field"><label>Final Clinical Notes</label><textarea id="fu-notes" placeholder="Complete antibiotic course, recheck after 7 days...">${fu.finalNotes || ''}</textarea></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-primary" onclick="saveFollowUp('${rx.id}')">💾 Save Follow-Up</button>
+      <button class="btn btn-success-soft" onclick="completeCase('${rx.id}')">✅ Complete Case & Generate PDF</button>
+    </div>
+  </div>` : `
+  <div class="followup-section">
+    <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">✅ Case Completed</div>
+    ${fu.updatedDiagnosis ? `<div class="field"><label>Updated Diagnosis</label><div style="padding:10px;background:var(--surf2);border-radius:var(--radius-sm);border:1px solid var(--border);">${fu.updatedDiagnosis}</div></div>` : ''}
+    ${fu.additionalMeds ? `<div class="field"><label>Additional Medicines</label><div style="padding:10px;background:var(--surf2);border-radius:var(--radius-sm);border:1px solid var(--border);white-space:pre-wrap;">${fu.additionalMeds}</div></div>` : ''}
+    ${fu.finalNotes ? `<div class="field"><label>Final Notes</label><div style="padding:10px;background:var(--surf2);border-radius:var(--radius-sm);border:1px solid var(--border);">${fu.finalNotes}</div></div>` : ''}
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="APP.previewRx=getRx('${rx.id}');render()">📄 View Full Case PDF</button>
+      <button class="btn btn-info-soft" onclick="reopenCase('${rx.id}')">🔄 Request Reopen</button>
+    </div>
+  </div>`}`;
+    }
+
+    function saveFollowUp(rxId) {
+      const rxs = getRxs();
+      const rx = rxs.find(r => r.id === rxId);
+      if (!rx) return;
+      const lines = rx.orderLines || [];
+      // Save interpretations
+      lines.forEach((l, i) => {
+        if (l.status === 'report_uploaded') {
+          const el = document.getElementById('interp-' + i);
+          if (el) l.interpretation = el.value;
+        }
+      });
+      rx.followUp = {
+        ...(rx.followUp || {}),
+        updatedDiagnosis: document.getElementById('fu-diagnosis')?.value || '',
+        additionalMeds: document.getElementById('fu-meds')?.value || '',
+        finalNotes: document.getElementById('fu-notes')?.value || '',
+        savedAt: new Date().toISOString(),
+      };
+      saveRxs(rxs);
+      toast('Follow-up saved!');
+    }
+
+    function completeCase(rxId) {
+      saveFollowUp(rxId); // save first
+      const rxs = getRxs();
+      const rx = rxs.find(r => r.id === rxId);
+      if (!rx) return;
+      rx.followUp.completedAt = new Date().toISOString();
+      rx.status = 'case_complete';
+      saveRxs(rxs);
+      toast('Case completed! Generating PDF...');
+      APP.previewRx = rx;
+      render();
+    }
+
+    function reopenCase(rxId) {
+      const rxs = getRxs();
+      const rx = rxs.find(r => r.id === rxId);
+      if (!rx) return;
+      rx.followUp.completedAt = null;
+      rx.status = computeRxStatus(rx);
+      saveRxs(rxs);
+      toast('Case reopened for review.');
+      render();
+    }
+
+    /* ══════════════════════════════════════════════════════
        PDF PREVIEW & DOWNLOAD
     ══════════════════════════════════════════════════════ */
     function mountPdfPreview(rx) {
@@ -2847,7 +3835,9 @@
     ══════════════════════════════════════════════════════ */
     function buildPreviewHTML(rx) {
       const meds = rx.medicines || [], labs = rx.labTests || [], diags = rx.diagnosticTests || [], refs = rx.referral || [];
-      const LOGO_SRC = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png';
+      const procs = rx.procedures || [], orderLines = rx.orderLines || [];
+      const fu = rx.followUp || {};
+      const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
 
       const sec = (label) => `<div style="display:flex;align-items:center;gap:6px;margin:14px 0 7px;">
     <span style="font-size:8.5px;font-weight:700;color:#F5621E;text-transform:uppercase;letter-spacing:1.1px;white-space:nowrap;">${label}</span>
@@ -2957,6 +3947,28 @@
         ${diags.map(t => `<div style="padding:5px 10px;border-bottom:0.5px solid #f0f0f0;font-size:11px;"><span style="color:#F5621E;margin-right:4px;">»</span>${t}</div>`).join('')}
       </div>` : ''}
     </div>` : ''}
+    
+    <!-- NURSE PROCEDURES -->
+    ${procs.length ? sec('NURSE PROCEDURES') + `
+    <table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-bottom:4px;">
+      <thead><tr style="background:#f9f8f5;">
+        ${['#', 'PROCEDURE', 'INSTRUCTIONS', 'QTY'].map(h => `<th style="text-align:left;padding:7px 9px;font-size:8px;letter-spacing:0.8px;text-transform:uppercase;color:#888;font-weight:700;border-bottom:2px solid #F5621E;">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${procs.map((p, i) => {
+          const pt = PROCEDURE_TYPES.find(t => t.value === p.type);
+          return `<tr style="background:${i % 2 === 0 ? '#fff' : '#f9f8f5'};border-bottom:0.5px solid #eee;">
+            <td style="padding:7px 9px;color:#bbb;">${i + 1}</td>
+            <td style="padding:7px 9px;font-weight:600;">${pt ? pt.label : p.type}</td>
+            <td style="padding:7px 9px;">${p.details || '—'}</td>
+            <td style="padding:7px 9px;font-weight:700;color:#F5621E;">${p.quantity || 1}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    ${rx.procInstructions ? `<div style="font-size:9.5px;color:#666;font-style:italic;margin-bottom:6px;padding:0 9px;"><b>Note to Nurse:</b> ${rx.procInstructions}</div>` : ''}
+    ` : ''}
+
 
     <!-- REFERRAL -->
     ${refs.length ? sec('REFERRAL') + refs.map(r => `
@@ -2965,6 +3977,36 @@
       <div><div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:3px;">HOSPITAL / CLINIC</div><div>${r.hospital || '—'}</div></div>
       <div><div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:3px;">REASON</div><div>${r.reason || '—'}</div></div>
     </div>`).join('') : ''}
+
+    <!-- CASE EXECUTION & REPORTS -->
+    ${orderLines.length ? sec('CASE EXECUTION & REPORTS') + `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
+      <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;overflow:hidden;">
+        <div style="padding:7px 10px 5px;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;border-bottom:0.5px solid #e8e8e8;">ADMINISTRATION STATUS</div>
+        ${orderLines.map(l => `
+          <div style="padding:5px 10px;border-bottom:0.5px solid #f0f0f0;font-size:10px;display:flex;justify-content:space-between;align-items:center;">
+            <span>${l.icon} ${l.details.substring(0,30)}</span>
+            <span style="font-weight:700;color:${l.status==='administered'||l.status==='report_uploaded'?'#2ecc71':l.status==='declined'?'#e74c3c':'#888'};">${l.status.toUpperCase().replace('_',' ')}</span>
+          </div>`).join('')}
+      </div>
+      <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;overflow:hidden;">
+        <div style="padding:7px 10px 5px;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;border-bottom:0.5px solid #e8e8e8;">CLINICAL INTERPRETATIONS</div>
+        ${orderLines.filter(l => l.interpretation).map(l => `
+          <div style="padding:6px 10px;border-bottom:0.5px solid #f0f0f0;font-size:10px;">
+            <b style="color:#F5621E;font-size:8px;display:block;">${l.details.toUpperCase()}</b>
+            <div style="margin-top:2px;">${l.interpretation}</div>
+          </div>`).join('') || '<div style="padding:20px;text-align:center;color:#bbb;font-size:10px;">No report interpretations added yet.</div>'}
+      </div>
+    </div>` : ''}
+
+    <!-- FOLLOW-UP & FINAL NOTES -->
+    ${fu.completedAt ? sec('FINAL CASE SUMMARY') + `
+    <div style="background:#f4f3fa;border:0.5px solid #ddd8ee;border-radius:5px;padding:12px;margin-bottom:8px;">
+      ${fu.updatedDiagnosis ? `<div style="margin-bottom:8px;"><div style="font-size:8px;font-weight:700;color:#4A3F6B;text-transform:uppercase;margin-bottom:2px;">UPDATED CLINICAL DIAGNOSIS</div><div style="font-size:12px;font-weight:700;">${fu.updatedDiagnosis}</div></div>` : ''}
+      ${fu.additionalMeds ? `<div style="margin-bottom:8px;"><div style="font-size:8px;font-weight:700;color:#4A3F6B;text-transform:uppercase;margin-bottom:2px;">FOLLOW-UP MEDICATIONS</div><div style="font-size:11.5px;white-space:pre-wrap;">${fu.additionalMeds}</div></div>` : ''}
+      ${fu.finalNotes ? `<div><div style="font-size:8px;font-weight:700;color:#4A3F6B;text-transform:uppercase;margin-bottom:2px;">FINAL CLINICAL NOTES & ADVICE</div><div style="font-size:11px;">${fu.finalNotes}</div></div>` : ''}
+    </div>` : ''}
+
 
     <!-- RECHECK -->
     ${rx.recheckDate ? `
@@ -3220,6 +4262,26 @@
         y += Math.max(h1, h2) + 5;
       }
 
+      // ── NURSE PROCEDURES ───────────────────────────────────────────────────────
+      if (rx.procedures?.length) {
+        secTitle('NURSE PROCEDURES'); guard(12);
+        const cols = [M, M + 7, M + 75, M + 160];
+        fillR(M, y, CW, 8, BG, 0); strokeR(M, y, CW, 8, XGR, 0);
+        setF('bold', 6, GRY);['#', 'PROCEDURE', 'INSTRUCTIONS', 'QTY'].forEach((h, i) => doc.text(h, cols[i] + 1, y + 5));
+        doc.setDrawColor(...ORG); doc.setLineWidth(0.5); doc.line(M, y + 8, W - M, y + 8); y += 9;
+        rx.procedures.forEach((p, i) => {
+          guard(9); fillR(M, y, CW, 8, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 8, XGR, 0, 0.2);
+          setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 5.5);
+          const pt = PROCEDURE_TYPES.find(t => t.value === p.type)?.label || p.type;
+          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(pt, 66)[0], cols[1] + 1, y + 5.5);
+          setF('normal', 8.5, DRK); doc.text(doc.splitTextToSize(p.details || '—', 82)[0], cols[2] + 1, y + 5.5);
+          setF('bold', 9, ORG); doc.text(String(p.quantity || 1), cols[3] + 1, y + 5.5);
+          y += 8;
+        });
+        if (rx.procInstructions) { guard(10); setF('oblique', 7.5, GRY); doc.text('Note to Nurse: ' + doc.splitTextToSize(rx.procInstructions, CW - 10)[0], M + 2, y + 5); y += 8; }
+        y += 4;
+      }
+
       // ── REFERRAL ───────────────────────────────────────────────────────────────
       if (rx.referral?.length) {
         secTitle('REFERRAL');
@@ -3237,6 +4299,41 @@
         });
       }
 
+      // ── CASE EXECUTION & REPORTS ───────────────────────────────────────────────
+      if (rx.orderLines?.length) {
+        secTitle('CASE EXECUTION & REPORTS');
+        const half = (CW - 4) / 2;
+        const drawExec = (lines, x, w, label) => {
+          const bh = lines.length * 6 + 10; guard(bh + 5);
+          fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
+          setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
+          lines.forEach((l, i) => {
+            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 25)[0], x + 5, y + 9 + i * 6);
+            const st = l.status.toUpperCase().replace('_',' ');
+            setF('bold', 6.5, l.status==='administered'||l.status==='report_uploaded'?[46,204,113]:[136,136,136]);
+            doc.text(st, x + w - 5, y + 9 + i * 6, { align: 'right' });
+          });
+          return bh;
+        };
+        const drawInterp = (lines, x, w, label) => {
+          const interps = lines.filter(l => l.interpretation);
+          const bh = Math.max(interps.length * 10 + 10, 20); guard(bh + 5);
+          fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
+          setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
+          if (!interps.length) { setF('normal', 7, LGR); doc.text('No interpretations.', x + w/2, y + 12, { align:'center' }); }
+          else {
+            interps.forEach((l, i) => {
+              setF('bold', 6, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, y + 9 + i * 10);
+              setF('normal', 7.5, DRK); doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, y + 13 + i * 10);
+            });
+          }
+          return bh;
+        };
+        const h1 = drawExec(rx.orderLines, M, half, 'ADMINISTRATION STATUS');
+        const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'CLINICAL INTERPRETATIONS');
+        y += Math.max(h1, h2) + 5;
+      }
+
       // ── RECHECK ────────────────────────────────────────────────────────────────
       if (rx.recheckDate) {
         guard(16); fillR(M, y, CW, 14, GRN); strokeR(M, y, CW, 14, BRDGRN); vbar(M, y, y + 14, GR2);
@@ -3244,6 +4341,22 @@
         setF('bold', 12, DRK); doc.text(fmtDate2(rx.recheckDate), M + 5, y + 11);
         if (rx.recheckNote) { setF('oblique', 7.5, GRY); doc.text(doc.splitTextToSize(rx.recheckNote, CW * 0.55)[0], M + 58, y + 8); }
         y += 18;
+      }
+
+      // ── FOLLOW-UP SUMMARY ──────────────────────────────────────────────────────
+      const fu = rx.followUp || {};
+      if (fu.completedAt) {
+        secTitle('FINAL CASE SUMMARY');
+        const diagL = fu.updatedDiagnosis ? doc.splitTextToSize(fu.updatedDiagnosis, CW - 10) : [];
+        const medsL = fu.additionalMeds ? doc.splitTextToSize(fu.additionalMeds, CW - 10) : [];
+        const notesL = fu.finalNotes ? doc.splitTextToSize(fu.finalNotes, CW - 10) : [];
+        const bh = (diagL.length + medsL.length + notesL.length) * 4.2 + (fu.updatedDiagnosis?8:0) + (fu.additionalMeds?8:0) + (fu.finalNotes?8:0) + 8;
+        guard(bh + 4); fillR(M, y, CW, bh, [244, 243, 250]); strokeR(M, y, CW, bh, [221, 216, 238]); vbar(M, y, y + bh, PUR);
+        let fy = y + 5;
+        if (fu.updatedDiagnosis) { setF('bold', 5.5, PUR); doc.text('UPDATED CLINICAL DIAGNOSIS', M + 5, fy); fy += 4; setF('bold', 10, DRK); doc.text(diagL, M + 5, fy); fy += diagL.length * 4.2 + 4; }
+        if (fu.additionalMeds) { setF('bold', 5.5, PUR); doc.text('FOLLOW-UP MEDICATIONS', M + 5, fy); fy += 4; setF('normal', 9, DRK); doc.text(medsL, M + 5, fy); fy += medsL.length * 4.2 + 4; }
+        if (fu.finalNotes) { setF('bold', 5.5, PUR); doc.text('FINAL CLINICAL NOTES & ADVICE', M + 5, fy); fy += 4; setF('normal', 8.5, DRK); doc.text(notesL, M + 5, fy); }
+        y += bh + 5;
       }
 
       // ── SIGNATURE ──────────────────────────────────────────────────────────────

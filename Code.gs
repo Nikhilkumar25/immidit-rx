@@ -70,6 +70,8 @@ function doPost(e) {
         return saveDraftToSheet(body.doctorId, body.data);
       case 'deleteDraft':
         return deleteDraftFromSheet(body.doctorId);
+      case 'uploadReport':
+        return uploadReportToDrive(body.data);
       default:
         return jsonResponse({ error: 'Unknown POST action: ' + body.action });
     }
@@ -235,6 +237,47 @@ function deleteDraftFromSheet(doctorId) {
 }
 
 // ══════════════════════════════════════════════════════════════════
+//  REPORTS — Google Drive Upload
+// ══════════════════════════════════════════════════════════════════
+
+function uploadReportToDrive(data) {
+  // data: { base64, name, type }
+  try {
+    var folder = getReportsFolder();
+    var base64Data = data.base64.split(',')[1];
+    var bytes = Utilities.base64Decode(base64Data);
+    var blob = Utilities.newBlob(bytes, data.type, data.name);
+    var file = folder.createFile(blob);
+    
+    // Make it readable by anyone with the link so frontend can display it
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    // Add to a 'Reports' log sheet for audit
+    var logSheet = getSheet('Reports') || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Reports');
+    if (logSheet.getLastRow() === 0) {
+      logSheet.appendRow(['fileId', 'name', 'type', 'url', 'uploadedAt']);
+    }
+    logSheet.appendRow([file.getId(), data.name, data.type, file.getUrl(), new Date().toISOString()]);
+
+    return jsonResponse({ 
+      ok: true, 
+      fileId: file.getId(), 
+      url: "https://drive.google.com/uc?export=view&id=" + file.getId() // Direct view link
+    });
+  } catch(err) {
+    return jsonResponse({ error: err.toString() });
+  }
+}
+
+function getReportsFolder() {
+  var folderName = "immidit_Reports";
+  var folders = DriveApp.getFoldersByName(folderName);
+  if (folders.hasNext()) return folders.next();
+  return DriveApp.createFolder(folderName);
+}
+
+
+// ══════════════════════════════════════════════════════════════════
 //  INITIAL SETUP — run this function ONCE to create all sheets
 // ══════════════════════════════════════════════════════════════════
 
@@ -295,9 +338,10 @@ function setupSheets() {
 
   SpreadsheetApp.getUi().alert(
     '✅ Setup Complete!\n\n' +
-    'Sheets created: Config, Doctors, Prescriptions, Drafts\n' +
+    'Sheets created: Config, Doctors, Prescriptions, Drafts, Reports\n' +
     'Demo doctor: dr.priya / Priya@123\n' +
     'Admin: admin / immidit@2026\n\n' +
     'Next step: Deploy → New Deployment → Web App'
   );
 }
+
