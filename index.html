@@ -4519,53 +4519,51 @@
       setF('bold', 8.5, DRK); doc.text('immidit  \u00b7  Antarlaapika Pvt Ltd', M + 27, y + 4);
       setF('normal', 7, LGR); doc.text('Sector 56 & nearby, Gurugram, Haryana', M + 27, y + 9);
       setF('normal', 7, LGR); doc.text('care@immidit.com  \u00b7  immidit.com  \u00b7  +91 92179 22339', M + 27, y + 14);
-      setF('normal', 7, LGR); doc.text('Prescription ID: ', W - M - 50, y + 4);
-      setF('bold', 7, DRK); doc.text(rx.id, W - M, y + 4, { align: 'right' });
-      setF('normal', 7, LGR); doc.text('Date: ' + fmtDate(rx.createdAt), W - M, y + 9, { align: 'right' });
-      setF('normal', 7, LGR); doc.text('immidit Digital Health Records', W - M, y + 14, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('Prescription ID: ', W - M - 55, y + 4);
+      setF('bold', 7, DRK); doc.text(rx.id, W - M - 5, y + 4, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('Date: ' + fmtDate(rx.createdAt), W - M - 5, y + 9, { align: 'right' });
+      setF('normal', 7, LGR); doc.text('immidit Digital Health Records', W - M - 5, y + 14, { align: 'right' });
 
       // ── DIGITAL APPENDIX (Optional New Page) ───────────────────────────────────
-      const reports = (rx.orderLines || []).filter(l => l.reportUrl);
-      if (reports.length > 0) {
+      const reportsList = (rx.orderLines || []).filter(l => l.reportUrl);
+      if (reportsList.length > 0) {
         newPage();
-        secTitle('DIGITAL APPENDIX — LAB REPORTS & DIAGNOSTICS');
+        secTitle('DIGITAL APPENDIX -- LAB REPORTS');
         setF('normal', 8, GRY);
-        doc.text('The following medical reports are securely stored in the immidit cloud. Click the links below to view original documents.', M, y + 2);
+        doc.text('The following medical reports are securely stored in the immidit cloud.', M, y + 2);
         y += 10;
 
-        reports.forEach((r, i) => {
-          guard(25);
-          fillR(M, y, CW, 20, BG); strokeR(M, y, CW, 20, XGR);
-          vbar(M, y, y + 20, ORG);
+        reportsList.forEach((r, i) => {
+          guard(30);
+          fillR(M, y, CW, 22, BG); strokeR(M, y, CW, 22, XGR);
+          vbar(M, y, y + 22, ORG);
           
-          setF('bold', 9, DRK); doc.text(r.details.replace(/[^\x00-\x7F]/g, ""), M + 5, y + 7);
+          const cleanDet = fitText(r.details, CW - 60, 9, 'bold', DRK);
+          doc.text(cleanDet, M + 5, y + 7);
           setF('normal', 7, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 5, y + 11);
           
           setF('bold', 8, ORG);
-          doc.text('OPEN ORIGINAL DOCUMENT', M + 5, y + 16);
-          doc.link(M + 5, y + 13, 50, 5, { url: r.reportUrl });
+          doc.text('OPEN DOCUMENT', M + 5, y + 17);
+          doc.link(M + 5, y + 14, 40, 5, { url: r.reportUrl });
 
           if (r.interpretation) {
-            const intL = doc.splitTextToSize('Clinical Interpretation: ' + r.interpretation, CW * 0.5);
+            const intL = doc.splitTextToSize('Note: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW * 0.45);
             setF('oblique', 7.5, DRK);
-            doc.text(intL, M + CW * 0.45, y + 7);
+            doc.text(intL, M + CW - 5, y + 7, { align: 'right' });
           }
-          y += 24;
+          y += 26;
         });
 
-        // Add QR Code (placeholder for actual cloud link)
         guard(40);
-        const cloudUrl = SHEET_API + '?action=viewRx&id=' + rx.id;
-        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
+        fillR(M, y, CW, 25, WRM); strokeR(M, y, CW, 25, BRDORG);
         setF('bold', 8, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 8);
         setF('normal', 7.5, DRK);
-        doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
+        doc.text(doc.splitTextToSize('Access the full patient record, imaging, and history.', CW - 45), M + 5, y + 14);
         
-        // Add Digital Signature / Access ID
-        guard(25);
+        guard(20);
         fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
         setF('bold', 7, ORG); doc.text('DIGITAL CASE ID:', M + 5, y + 8);
-        setF('bold', 12, DRK); doc.text(rx.id, M + 40, y + 9);
+        setF('bold', 12, DRK); doc.text(rx.id, M + CW - 5, y + 9, { align: 'right' });
       }
 
       // ── MERGE ATTACHMENTS (PDFs) ──────────────────────────────────────────────
