@@ -4445,13 +4445,13 @@
       guard(85); hline(y, XGR, 0.35); y += 5;
       secTitle('OUR SERVICES — CARE AT HOME IN 10 MINUTES');
 
-      const howTxt = 'How immidit works: A background-verified nurse arrives at your door — equipped with clinical tools and connected live to a registered doctor for real-time teleconsultation, diagnosis and prescription.  No waiting rooms. No travel. Care in 10 minutes.';
-      const howL = doc.splitTextToSize(howTxt, CW - 10), howH = howL.length * 4.2 + 10;
-      guard(howH + 4);
+      const howTxt = 'A background-verified nurse arrives at your door equipped with clinical tools and connected live to a registered doctor for real-time teleconsultation, diagnosis and prescription. No waiting rooms. No travel. Care in 10 minutes.';
+      const howL = doc.splitTextToSize(howTxt, CW - 15), howH = howL.length * 4.5 + 15;
+      guard(howH + 5);
       fillR(M, y, CW, howH, [244, 243, 250]); strokeR(M, y, CW, howH, [221, 216, 238]); vbar(M, y, y + howH, PUR);
-      setF('bold', 8, DRK); doc.text('How immidit works:', M + 5, y + 6);
-      setF('normal', 8, DRK); doc.text(howL, M + 5, y + 11);
-      y += howH + 4;
+      setF('bold', 9, DRK); doc.text('How immidit works:', M + 7, y + 8);
+      setF('normal', 8.5, DRK); doc.text(howL, M + 7, y + 13.5);
+      y += howH + 6;
 
       const pillarsData = [
         ['Verified Professionals', 'Every nurse is background-checked and clinically trained. Doctors are MCI-registered with verified credentials.'],
@@ -4519,14 +4519,17 @@
         ['9. Emergency', 'This prescription does not substitute emergency care. Call 112 or visit nearest hospital in any emergency.'],
         ['10. Feedback', 'care@immidit.com  \u00b7  +91 92179 22339  \u00b7  immidit.com'],
       ];
-      const tcw = (CW - 6) / 2; let lty = y, rty = y;
+      const tcw = (CW - 20) / 2; let lty = y, rty = y;
       tcData.forEach(([t, d], i) => {
-        const col = i % 2, cx = M + (col * (tcw + 6)), rowY = col === 0 ? lty : rty;
+        const col = i % 2, cx = M + (col * (tcw + 20)), rowY = col === 0 ? lty : rty;
         const fullL = doc.splitTextToSize(t + ': ' + d, tcw);
-        fullL.forEach((ln, li) => { setF(li === 0 ? 'bold' : 'normal', 6, li === 0 ? [85, 85, 85] : GRY); doc.text(ln, cx, rowY + li * 3.8 + 3); });
-        const bh = fullL.length * 3.8 + 4;
+        fullL.forEach((ln, li) => { 
+          setF(li === 0 ? 'bold' : 'normal', 6.5, li === 0 ? [60, 60, 60] : GRY); 
+          doc.text(ln, cx, rowY + li * 4.2 + 4); 
+        });
+        const bh = fullL.length * 4.2 + 6;
         if (col === 0) lty += bh; else rty += bh;
-      }); y = Math.max(lty, rty) + 6;
+      }); y = Math.max(lty, rty) + 10;
 
       // ── FOOTER ─────────────────────────────────────────────────────────────────
       guard(20); hline(y, ORG, 0.55); y += 5;
