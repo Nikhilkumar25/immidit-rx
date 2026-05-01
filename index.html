@@ -4158,8 +4158,8 @@
     async function downloadPDF() {
       const rx = window._previewRx; if (!rx) return;
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a5' });
-      const W = 148, M = 10, CW = W - 2 * M, H = 210;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const W = 210, M = 15, CW = W - 2 * M, H = 297;
       let y = 0;
 
       const ORG = [245, 98, 30], DRK = [26, 26, 46], PUR = [74, 63, 107],
@@ -4170,6 +4170,11 @@
       const newPage = () => { doc.addPage(); y = 15; };
       const guard = (need) => { if (y + need > H - 18) newPage(); };
       const setF = (st, sz, col) => { doc.setFont('helvetica', st); doc.setFontSize(sz); doc.setTextColor(...col); };
+      const fitText = (txt, maxW, startSz, st, col, yOff = 0) => {
+        let sz = startSz; doc.setFont('helvetica', st); doc.setFontSize(sz);
+        while (doc.getTextWidth(txt) > maxW && sz > 6) { sz -= 0.5; doc.setFontSize(sz); }
+        doc.setTextColor(...col); return sz;
+      };
       const fillR = (x, yy, w, h, col, r = 2) => { doc.setFillColor(...col); r ? doc.roundedRect(x, yy, w, h, r, r, 'F') : doc.rect(x, yy, w, h, 'F'); };
       const strokeR = (x, yy, w, h, col, r = 2, lw = 0.3) => { doc.setDrawColor(...col); doc.setLineWidth(lw); r ? doc.roundedRect(x, yy, w, h, r, r, 'S') : doc.rect(x, yy, w, h, 'S'); };
       const hline = (yy, col, lw = 0.3) => { doc.setDrawColor(...col); doc.setLineWidth(lw); doc.line(M, yy, W - M, yy); };
@@ -4218,24 +4223,30 @@
       // ── PATIENT ────────────────────────────────────────────────────────────────
       secTitle('PATIENT DETAILS'); guard(20);
       fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
-      const pcols = [M + 4, M + CW * 0.45, M + CW * 0.72];
-      ['PATIENT NAME', 'AGE / GENDER', 'CONTACT'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
-      [rx.patient.name, rx.patient.age + 'Y / ' + rx.patient.gender, rx.patient.phone || '—']
-        .forEach((v, i) => { setF('bold', i === 0 ? 10 : 8.5, DRK); doc.text(doc.splitTextToSize(v, CW * (i===0?0.4:0.25))[0], pcols[i], y + 10); });
+      const pcols = [M + 5, M + CW * 0.35, M + CW * 0.65, M + CW * 0.85];
+      ['PATIENT NAME', 'AGE / GENDER', 'CONTACT', 'ID'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
+      
+      const pNameSz = fitText(rx.patient.name, CW * 0.3, 11, 'bold', DRK);
+      doc.text(rx.patient.name, pcols[0], y + 10.5);
+      
+      setF('bold', 9, DRK);
+      doc.text(`${rx.patient.age}Y / ${rx.patient.gender}`, pcols[1], y + 10.5);
+      doc.text(rx.patient.phone || '—', pcols[2], y + 10.5);
+      doc.text(rx.id.substring(0, 8), pcols[3], y + 10.5);
+      
+      [CW * 0.33, CW * 0.63, CW * 0.83].forEach(x => { doc.setDrawColor(...XGR); doc.setLineWidth(0.2); doc.line(M + x, y + 2, M + x, y + 13); });
       y += 18;
 
       // ── VITALS ─────────────────────────────────────────────────────────────────
-      secTitle('VITALS AT VISIT'); guard(20);
-      const vw = CW / 3;
+      secTitle('VITALS AT VISIT'); guard(18);
       [['BP', rx.vitals?.bp, 'mmHg'], ['Pulse', rx.vitals?.pulse, 'bpm'], ['Temp', rx.vitals?.temp, 'F'], ['SpO2', rx.vitals?.spo2, '%'], ['Weight', rx.vitals?.weight, 'kg'], ['RR', rx.vitals?.rr, '/min']]
         .forEach(([l, v, u], i) => {
-          const col = i % 3, row = Math.floor(i / 3);
-          const vx = M + col * vw, vy = y + row * 16;
-          fillR(vx + 0.5, vy, vw - 1, 14, BG, 1.5); strokeR(vx + 0.5, vy, vw - 1, 14, XGR, 1.5);
-          setF('bold', 5.5, LGR); doc.text(l, vx + vw / 2, vy + 4, { align: 'center' });
-          setF('bold', 10, DRK); doc.text(v || '—', vx + vw / 2, vy + 9.5, { align: 'center' });
-          setF('normal', 5.5, LGR); doc.text(u, vx + vw / 2, vy + 12.5, { align: 'center' });
-        }); y += 36;
+          const vx = M + i * (CW / 6);
+          fillR(vx + 0.5, y, CW / 6 - 1, 14, BG, 1.5); strokeR(vx + 0.5, y, CW / 6 - 1, 14, XGR, 1.5);
+          setF('bold', 5.5, LGR); doc.text(l, vx + CW / 12, y + 4, { align: 'center' });
+          setF('bold', 11, DRK); doc.text(v || '—', vx + CW / 12, y + 9.5, { align: 'center' });
+          setF('normal', 5.5, LGR); doc.text(u, vx + CW / 12, y + 12.5, { align: 'center' });
+        }); y += 18;
 
       // ── CHIEF CONCERNS ─────────────────────────────────────────────────────────
       if (rx.chiefConcerns) {
@@ -4248,22 +4259,13 @@
       // ── CLINICAL NOTES ─────────────────────────────────────────────────────────
       if (rx.observations || rx.diagnosis) {
         secTitle('CLINICAL NOTES');
-        if (rx.observations) {
-          const obsL = doc.splitTextToSize(rx.observations, CW - 10);
-          const bh = obsL.length * 4.2 + 10; guard(bh + 4);
-          fillR(M, y, CW, bh, BG); strokeR(M, y, CW, bh, XGR);
-          setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5);
-          setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10);
-          y += bh + 4;
-        }
-        if (rx.diagnosis) {
-          const diagL = doc.splitTextToSize(rx.diagnosis, CW - 10);
-          const bh = diagL.length * 4.2 + 10; guard(bh + 4);
-          fillR(M, y, CW, bh, WRM); strokeR(M, y, CW, bh, BRDORG); vbar(M, y, y + bh, ORG);
-          setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', M + 5, y + 5);
-          setF('bold', 9.5, DRK); doc.text(diagL, M + 5, y + 10);
-          y += bh + 6;
-        }
+        const half = (CW - 4) / 2;
+        const obsL = rx.observations ? doc.splitTextToSize(rx.observations, half - 10) : [];
+        const diagL = rx.diagnosis ? doc.splitTextToSize(rx.diagnosis, half - 10) : [];
+        const bh = Math.max(obsL.length, diagL.length) * 4.2 + 14; guard(bh + 5);
+        if (rx.observations) { fillR(M, y, half, bh, BG); strokeR(M, y, half, bh, XGR); setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5); setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10); }
+        if (rx.diagnosis) { const dx = M + half + 4; fillR(dx, y, half, bh, WRM); strokeR(dx, y, half, bh, BRDORG); vbar(dx, y, y + bh, ORG); setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', dx + 5, y + 5); setF('bold', 9.5, DRK); doc.text(diagL, dx + 5, y + 10); }
+        y += bh + 6;
       }
 
       // ── MEDICINES ──────────────────────────────────────────────────────────────
@@ -4350,65 +4352,56 @@
       }
 
       // ── CASE EXECUTION & REPORTS ───────────────────────────────────────────────
+      // ── CASE EXECUTION & REPORTS ───────────────────────────────────────────────
       if (rx.orderLines?.length) {
         secTitle('CASE EXECUTION & REPORTS');
         const half = (CW - 4) / 2;
         const drawExec = (lines, x, w, label) => {
-          const rowH = 14;
+          const rowH = 12;
           const bh = lines.length * rowH + 12; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 7, LGR); doc.text(label, x + 5, y + 6);
+          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
           
           lines.forEach((l, i) => {
-            const ly = y + 14 + i * rowH;
-            const typeLbl = l.type === 'procedure' ? 'PROC' : l.type === 'lab_test' ? 'LAB' : 'DIAG';
-            setF('bold', 5, ORG); doc.text(typeLbl, x + 5, ly - 4);
+            const ly = y + 12 + i * rowH;
+            setF('bold', 5, ORG); doc.text(l.type.toUpperCase().substring(0,4), x + 5, ly - 3.5);
             
-            setF('bold', 9, DRK); 
-            doc.text(doc.splitTextToSize(l.details, w - 40)[0], x + 5, ly);
+            fitText(l.details, w - 35, 8.5, 'bold', DRK);
+            doc.text(doc.splitTextToSize(l.details, w - 35)[0], x + 5, ly + 0.5);
             
             const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
-            if (nName) { setF('normal', 7, GRY); doc.text('Administered by: ' + nName, x + 5, ly + 4.5); }
+            if (nName) { setF('normal', 6, GRY); doc.text('By: ' + nName, x + 5, ly + 4); }
 
             const st = l.status.toUpperCase().replace('_',' ');
             const isDone = l.status==='administered'||l.status==='report_uploaded';
-            setF('bold', 8, isDone?[46,204,113]:[136,136,136]);
+            setF('bold', 7, isDone?[46,204,113]:[136,136,136]);
             doc.text(st, x + w - 5, ly, { align: 'right' });
-
-            if (l.reportUrl) {
-              setF('bold', 6.5, ORG);
-              doc.text('OPEN REPORT \u2197', x + w - 5, ly + 4.5, { align: 'right' });
-              doc.link(x + w - 25, ly + 2, 20, 5, { url: l.reportUrl });
-            }
           });
           return bh;
         };
 
         const drawInterp = (lines, x, w, label) => {
           const interps = lines.filter(l => l.interpretation);
-          const rowH = 18;
-          const bh = Math.max(interps.length * rowH + 12, 36); guard(bh + 5);
+          const rowH = 15;
+          const bh = Math.max(interps.length * rowH + 12, 30); guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 7, LGR); doc.text(label, x + 5, y + 6);
+          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
           
-          if (!interps.length) { 
-            setF('normal', 9, LGR); doc.text('Pending clinical notes.', x + w/2, y + bh/2 + 2, { align:'center' }); 
-          } else {
+          if (!interps.length) { setF('normal', 8, LGR); doc.text('Pending results.', x + w/2, y + bh/2 + 2, { align:'center' }); }
+          else {
             interps.forEach((l, i) => {
-              const iy = y + 14 + i * rowH;
-              setF('bold', 7.5, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
-              setF('normal', 9, DRK); 
-              const wrapped = doc.splitTextToSize(l.interpretation, w - 10);
-              doc.text(wrapped, x + 5, iy + 5.5);
+              const iy = y + 12 + i * rowH;
+              setF('bold', 7, ORG); doc.text(l.details.toUpperCase().substring(0,25), x + 5, iy);
+              setF('normal', 8.5, DRK); 
+              doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, iy + 4.5);
             });
           }
           return bh;
         };
 
-        const h1 = drawExec(rx.orderLines, M, CW, 'CLINICAL EXECUTION');
-        y += h1 + 6;
-        const h2 = drawInterp(rx.orderLines, M, CW, 'INTERPRETATIONS');
-        y += h2 + 8;
+        const h1 = drawExec(rx.orderLines, M, half, 'CLINICAL EXECUTION');
+        const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'INTERPRETATIONS');
+        y += Math.max(h1, h2) + 10;
       }
 
       // ── RECHECK ────────────────────────────────────────────────────────────────
