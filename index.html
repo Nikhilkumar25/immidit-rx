@@ -2054,10 +2054,6 @@
       delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); }
     };
 
-    function updatePrescription(rx) {
-      SYNC.pushRx(rx, true);
-    }
-
 
     /* ══════════════════════════════════════════════════════
        APP STATE
