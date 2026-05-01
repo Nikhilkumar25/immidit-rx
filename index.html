@@ -2009,10 +2009,8 @@
         try {
           const resp = await fetch(SHEET_API, {
             method: 'POST',
-            mode: 'no-cors', // Apps Script requires no-cors for simple posts or it might fail on preflight
             body: JSON.stringify(data)
           });
-          // with no-cors we can't see the response, but the data reaches Google
           return { ok: true };
         } catch (e) {
           console.error('Sync error:', e);
@@ -2046,6 +2044,11 @@
       pushDraft(docId, data) { this.post({ action: 'saveDraft', doctorId: docId, data: data }); },
       delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); }
     };
+
+    function updatePrescription(rx) {
+      SYNC.pushRx(rx, true);
+    }
+
 
     /* ══════════════════════════════════════════════════════
        APP STATE
@@ -3443,7 +3446,7 @@
         return true;
       });
       const pendingCount = rxsWithOL.filter(r => r.status === 'pending_actions').length;
-      const toAdminCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => l.type==='procedure' && l.status==='pending').length, 0);
+      const toAdminCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => l.type === 'procedure' && l.status === 'pending').length, 0);
       const repPendCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => (l.type==='lab_test'||l.type==='diagnostic_test') && (l.status==='pending'||l.status==='accepted')).length, 0);
       const doneCount = rxsWithOL.filter(r => r.status === 'executed' || r.status === 'case_complete').length;
 
@@ -3537,6 +3540,7 @@
       }
       rx.status = computeRxStatus(rx);
       saveRxs(rxs);
+      updatePrescription(rx);
       toast(status === 'administered' ? 'Procedure marked as administered.' : status === 'declined' ? 'Marked as declined.' : 'Status updated.');
       render();
     }
@@ -3739,7 +3743,7 @@
       </div>
       <div class="report-card-body">
         ${isImage ? `<div class="report-img-wrap" onclick="zoomImage('${l.reportUrl}')"><img src="${l.reportUrl}" alt="${l.details}"></div>` :
-          `<div style="padding:16px;text-align:center;background:var(--bg);border-radius:var(--radius-sm);"><span style="font-size:28px;">📄</span><div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${l.reportFileName || 'PDF Report'}</div></div>`}
+          `<a href="${l.reportUrl}" target="_blank" style="text-decoration:none;"><div class="pdf-report-placeholder"><span style="font-size:28px;">📄</span><div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;">${l.reportFileName || 'PDF Report'}</div><div style="font-size:10px;color:var(--primary);margin-top:4px;">Click to view document</div></div></a>`}
         <div class="field" style="margin-top:12px;">
           <label>Doctor's Interpretation</label>
           <textarea id="interp-${lineIdx}" placeholder="Clinical interpretation of this report..." ${isComplete?'disabled':''}>${l.interpretation || ''}</textarea>
@@ -3793,6 +3797,7 @@
         savedAt: new Date().toISOString(),
       };
       saveRxs(rxs);
+      updatePrescription(rx);
       toast('Follow-up saved!');
     }
 
@@ -3804,6 +3809,7 @@
       rx.followUp.completedAt = new Date().toISOString();
       rx.status = 'case_complete';
       saveRxs(rxs);
+      updatePrescription(rx);
       toast('Case completed! Generating PDF...');
       APP.previewRx = rx;
       render();
@@ -3816,6 +3822,7 @@
       rx.followUp.completedAt = null;
       rx.status = computeRxStatus(rx);
       saveRxs(rxs);
+      updatePrescription(rx);
       toast('Case reopened for review.');
       render();
     }
