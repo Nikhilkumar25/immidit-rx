@@ -4158,8 +4158,8 @@
     async function downloadPDF() {
       const rx = window._previewRx; if (!rx) return;
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-      const W = 210, M = 15, CW = W - 2 * M, H = 297;
+      const doc = new jsPDF({ unit: 'mm', format: 'a5' });
+      const W = 148, M = 10, CW = W - 2 * M, H = 210;
       let y = 0;
 
       const ORG = [245, 98, 30], DRK = [26, 26, 46], PUR = [74, 63, 107],
@@ -4216,25 +4216,26 @@
       y += 25; hline(y, XGR, 0.3); y += 5;
 
       // ── PATIENT ────────────────────────────────────────────────────────────────
-      secTitle('PATIENT DETAILS'); guard(17);
+      secTitle('PATIENT DETAILS'); guard(20);
       fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
-      const pcols = [M + 4, M + 4 + CW * 0.32, M + 4 + CW * 0.56, M + 4 + CW * 0.72];
-      ['PATIENT NAME', 'AGE / GENDER', 'CONTACT', 'ADDRESS'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
-      [rx.patient.name, rx.patient.age + 'Y · ' + rx.patient.gender, rx.patient.phone || '—', rx.patient.address || '—']
-        .forEach((v, i) => { setF('bold', i === 0 ? 11 : 9, DRK); doc.text(doc.splitTextToSize(v, CW * 0.28)[0], pcols[i], y + 10.5); });
-      [CW * 0.32, CW * 0.56, CW * 0.72].forEach(x => { doc.setDrawColor(...XGR); doc.setLineWidth(0.3); doc.line(M + x, y, M + x, y + 15); });
-      y += 19;
+      const pcols = [M + 4, M + CW * 0.45, M + CW * 0.72];
+      ['PATIENT NAME', 'AGE / GENDER', 'CONTACT'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
+      [rx.patient.name, rx.patient.age + 'Y / ' + rx.patient.gender, rx.patient.phone || '—']
+        .forEach((v, i) => { setF('bold', i === 0 ? 10 : 8.5, DRK); doc.text(doc.splitTextToSize(v, CW * (i===0?0.4:0.25))[0], pcols[i], y + 10); });
+      y += 18;
 
       // ── VITALS ─────────────────────────────────────────────────────────────────
-      secTitle('VITALS AT VISIT'); guard(17);
-      [['BP', rx.vitals?.bp, 'mmHg'], ['Pulse', rx.vitals?.pulse, 'bpm'], ['Temp', rx.vitals?.temp, 'deg F'], ['SpO2', rx.vitals?.spo2, '%'], ['Weight', rx.vitals?.weight, 'kg'], ['RR', rx.vitals?.rr, 'br/min']]
+      secTitle('VITALS AT VISIT'); guard(20);
+      const vw = CW / 3;
+      [['BP', rx.vitals?.bp, 'mmHg'], ['Pulse', rx.vitals?.pulse, 'bpm'], ['Temp', rx.vitals?.temp, 'F'], ['SpO2', rx.vitals?.spo2, '%'], ['Weight', rx.vitals?.weight, 'kg'], ['RR', rx.vitals?.rr, '/min']]
         .forEach(([l, v, u], i) => {
-          const vx = M + i * (CW / 6);
-          fillR(vx + 0.5, y, CW / 6 - 1, 15, BG, 1.5); strokeR(vx + 0.5, y, CW / 6 - 1, 15, XGR, 1.5);
-          setF('bold', 5.5, LGR); doc.text(l, vx + CW / 12, y + 4, { align: 'center' });
-          setF('bold', 11, DRK); doc.text(v || '—', vx + CW / 12, y + 10, { align: 'center' });
-          setF('normal', 6, LGR); doc.text(u, vx + CW / 12, y + 14, { align: 'center' });
-        }); y += 19;
+          const col = i % 3, row = Math.floor(i / 3);
+          const vx = M + col * vw, vy = y + row * 16;
+          fillR(vx + 0.5, vy, vw - 1, 14, BG, 1.5); strokeR(vx + 0.5, vy, vw - 1, 14, XGR, 1.5);
+          setF('bold', 5.5, LGR); doc.text(l, vx + vw / 2, vy + 4, { align: 'center' });
+          setF('bold', 10, DRK); doc.text(v || '—', vx + vw / 2, vy + 9.5, { align: 'center' });
+          setF('normal', 5.5, LGR); doc.text(u, vx + vw / 2, vy + 12.5, { align: 'center' });
+        }); y += 36;
 
       // ── CHIEF CONCERNS ─────────────────────────────────────────────────────────
       if (rx.chiefConcerns) {
@@ -4247,13 +4248,22 @@
       // ── CLINICAL NOTES ─────────────────────────────────────────────────────────
       if (rx.observations || rx.diagnosis) {
         secTitle('CLINICAL NOTES');
-        const half = (CW - 4) / 2;
-        const obsL = rx.observations ? doc.splitTextToSize(rx.observations, half - 10) : [];
-        const diagL = rx.diagnosis ? doc.splitTextToSize(rx.diagnosis, half - 10) : [];
-        const bh = Math.max(obsL.length, diagL.length) * 4.2 + 14; guard(bh + 4);
-        if (rx.observations) { fillR(M, y, half, bh, BG); strokeR(M, y, half, bh, XGR); setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5); setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10); }
-        if (rx.diagnosis) { const dx = M + half + 4; fillR(dx, y, half, bh, WRM); strokeR(dx, y, half, bh, BRDORG); vbar(dx, y, y + bh, ORG); setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', dx + 5, y + 5); setF('bold', 9.5, DRK); doc.text(diagL, dx + 5, y + 10); }
-        y += bh + 5;
+        if (rx.observations) {
+          const obsL = doc.splitTextToSize(rx.observations, CW - 10);
+          const bh = obsL.length * 4.2 + 10; guard(bh + 4);
+          fillR(M, y, CW, bh, BG); strokeR(M, y, CW, bh, XGR);
+          setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5);
+          setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10);
+          y += bh + 4;
+        }
+        if (rx.diagnosis) {
+          const diagL = doc.splitTextToSize(rx.diagnosis, CW - 10);
+          const bh = diagL.length * 4.2 + 10; guard(bh + 4);
+          fillR(M, y, CW, bh, WRM); strokeR(M, y, CW, bh, BRDORG); vbar(M, y, y + bh, ORG);
+          setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', M + 5, y + 5);
+          setF('bold', 9.5, DRK); doc.text(diagL, M + 5, y + 10);
+          y += bh + 6;
+        }
       }
 
       // ── MEDICINES ──────────────────────────────────────────────────────────────
@@ -4395,9 +4405,10 @@
           return bh;
         };
 
-        const h1 = drawExec(rx.orderLines, M, half, 'CLINICAL EXECUTION');
-        const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'INTERPRETATIONS');
-        y += Math.max(h1, h2) + 12;
+        const h1 = drawExec(rx.orderLines, M, CW, 'CLINICAL EXECUTION');
+        y += h1 + 6;
+        const h2 = drawInterp(rx.orderLines, M, CW, 'INTERPRETATIONS');
+        y += h2 + 8;
       }
 
       // ── RECHECK ────────────────────────────────────────────────────────────────
