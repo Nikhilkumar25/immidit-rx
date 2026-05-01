@@ -3489,11 +3489,11 @@
       ${lines.map((l, i) => renderOrderLine(rx.id, l, i)).join('')}
       <div class="nurse-select">
         <span style="font-size:12px;color:var(--text-muted);">Nurse:</span>
-        <select id="nurse-${rx.id}" style="width:auto;min-width:160px;">
+        <select id="nurse-${rx.id}" style="width:auto;min-width:160px;" onchange="saveOpsCard('${rx.id}')">
           <option value="">Select nurse...</option>
-          ${NURSE_LIST.map(n => `<option value="${n.id}">${n.name}</option>`).join('')}
+          ${NURSE_LIST.map(n => `<option value="${n.id}" ${lines.some(l=>l.administeredBy===n.id)?'selected':''}>${n.name}</option>`).join('')}
         </select>
-        <button class="btn btn-primary btn-sm" onclick="saveOpsCard('${rx.id}')">💾 Save Status</button>
+        <button class="btn btn-primary btn-sm" onclick="saveOpsCard('${rx.id}')">💾 Save All</button>
       </div>
     </div>
   </div>`;
@@ -4351,47 +4351,58 @@
         secTitle('CASE EXECUTION & REPORTS');
         const half = (CW - 4) / 2;
         const drawExec = (lines, x, w, label) => {
-          const bh = lines.length * 11 + 12; guard(bh + 5);
+          const rowH = 12;
+          const bh = lines.length * rowH + 12; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
+          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
+          
           lines.forEach((l, i) => {
-            const ly = y + 10 + i * 11;
-            setF('normal', 7, DRK); doc.text(l.icon + ' ' + doc.splitTextToSize(l.details, w - 38)[0], x + 5, ly);
+            const ly = y + 12 + i * rowH;
+            // Use text labels instead of emojis for PDF compatibility
+            const typeLbl = l.type === 'procedure' ? '[PROC]' : l.type === 'lab_test' ? '[LAB]' : '[DIAG]';
+            setF('bold', 8, DRK); doc.text(typeLbl + ' ' + doc.splitTextToSize(l.details, w - 40)[0], x + 5, ly);
             
             const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
-            if (nName) { setF('normal', 5.5, GRY); doc.text('By ' + nName, x + 5, ly + 3.8); }
+            if (nName) { setF('normal', 6, GRY); doc.text('Attributed to: ' + nName, x + 5, ly + 4); }
 
             const st = l.status.toUpperCase().replace('_',' ');
             const isDone = l.status==='administered'||l.status==='report_uploaded';
-            setF('bold', 6, isDone?[46,204,113]:[136,136,136]);
+            setF('bold', 7, isDone?[46,204,113]:[136,136,136]);
             doc.text(st, x + w - 5, ly, { align: 'right' });
 
             if (l.reportUrl) {
-              setF('normal', 5.5, ORG);
-              doc.text('View Report \u2197', x + w - 5, ly + 3.8, { align: 'right' });
-              doc.link(x + w - 20, ly + 1.5, 15, 3, { url: l.reportUrl });
+              setF('bold', 6, ORG);
+              doc.text('VIEW REPORT \u2197', x + w - 5, ly + 4, { align: 'right' });
+              doc.link(x + w - 25, ly + 1, 20, 4, { url: l.reportUrl });
             }
           });
           return bh;
         };
+
         const drawInterp = (lines, x, w, label) => {
           const interps = lines.filter(l => l.interpretation);
-          const bh = Math.max(interps.length * 14 + 12, 30); guard(bh + 5);
+          const rowH = 16;
+          const bh = Math.max(interps.length * rowH + 12, 36); guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 5.5, LGR); doc.text(label, x + 5, y + 4.5);
-          if (!interps.length) { setF('normal', 7.5, LGR); doc.text('No clinical interpretations added.', x + w/2, y + 15, { align:'center' }); }
-          else {
+          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
+          
+          if (!interps.length) { 
+            setF('normal', 8, LGR); doc.text('No clinical interpretations recorded.', x + w/2, y + bh/2 + 2, { align:'center' }); 
+          } else {
             interps.forEach((l, i) => {
-              const iy = y + 10 + i * 14;
-              setF('bold', 6.5, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
-              setF('normal', 8, DRK); doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, iy + 4.5);
+              const iy = y + 12 + i * rowH;
+              setF('bold', 7, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
+              setF('normal', 8.5, DRK); 
+              const wrapped = doc.splitTextToSize(l.interpretation, w - 10);
+              doc.text(wrapped, x + 5, iy + 5);
             });
           }
           return bh;
         };
-        const h1 = drawExec(rx.orderLines, M, half, 'ADMINISTRATION STATUS');
-        const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'CLINICAL INTERPRETATIONS');
-        y += Math.max(h1, h2) + 8;
+
+        const h1 = drawExec(rx.orderLines, M, half, 'CLINICAL EXECUTION');
+        const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'INTERPRETATIONS');
+        y += Math.max(h1, h2) + 10;
       }
 
       // ── RECHECK ────────────────────────────────────────────────────────────────
