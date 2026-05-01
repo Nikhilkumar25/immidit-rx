@@ -4170,10 +4170,11 @@
       const newPage = () => { doc.addPage(); y = 15; };
       const guard = (need) => { if (y + need > H - 18) newPage(); };
       const setF = (st, sz, col) => { doc.setFont('helvetica', st); doc.setFontSize(sz); doc.setTextColor(...col); };
-      const fitText = (txt, maxW, startSz, st, col, yOff = 0) => {
+      const fitText = (txt, maxW, startSz, st, col) => {
+        const cleanTxt = String(txt || '').replace(/[^\x00-\x7F]/g, "");
         let sz = startSz; doc.setFont('helvetica', st); doc.setFontSize(sz);
-        while (doc.getTextWidth(txt) > maxW && sz > 6) { sz -= 0.5; doc.setFontSize(sz); }
-        doc.setTextColor(...col); return sz;
+        while (doc.getTextWidth(cleanTxt) > maxW && sz > 5) { sz -= 0.5; doc.setFontSize(sz); }
+        doc.setTextColor(...col); return cleanTxt;
       };
       const fillR = (x, yy, w, h, col, r = 2) => { doc.setFillColor(...col); r ? doc.roundedRect(x, yy, w, h, r, r, 'F') : doc.rect(x, yy, w, h, 'F'); };
       const strokeR = (x, yy, w, h, col, r = 2, lw = 0.3) => { doc.setDrawColor(...col); doc.setLineWidth(lw); r ? doc.roundedRect(x, yy, w, h, r, r, 'S') : doc.rect(x, yy, w, h, 'S'); };
@@ -4278,10 +4279,10 @@
         rx.medicines.forEach((m, i) => {
           guard(9); fillR(M, y, CW, 8, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 8, XGR, 0, 0.2);
           setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 5.5);
-          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(m.name, 66)[0], cols[1] + 1, y + 5.5);
+          const name = fitText(m.name, 66, 8.5, 'bold', DRK); doc.text(name, cols[1] + 1, y + 5.5);
           setF('bold', 9, ORG); doc.text(m.dosage, cols[2] + 1, y + 5.5);
           setF('bold', 8.5, DRK); doc.text(m.days + ' days', cols[3] + 1, y + 5.5);
-          setF('normal', 8.5, DRK); doc.text(m.timing, cols[4] + 1, y + 5.5);
+          const timing = fitText(m.timing, CW - (cols[4]-M) - 2, 8.5, 'normal', DRK); doc.text(timing, cols[4] + 1, y + 5.5);
           y += 8;
         }); y += 4;
       }
@@ -4325,8 +4326,8 @@
           guard(10); fillR(M, y, CW, 9, i % 2 === 0 ? WHT : BG, 0); strokeR(M, y, CW, 9, XGR, 0, 0.2);
           setF('normal', 8, LGR); doc.text(String(i + 1), cols[0] + 2, y + 6);
           const pt = PROCEDURE_TYPES.find(t => t.value === p.type)?.label || p.type;
-          setF('bold', 8.5, DRK); doc.text(doc.splitTextToSize(pt, 66)[0], cols[1] + 1, y + 6);
-          setF('normal', 8.5, DRK); doc.text(doc.splitTextToSize(p.details || '—', 82)[0], cols[2] + 1, y + 6);
+          const label = fitText(pt, 65, 8.5, 'bold', DRK); doc.text(label, cols[1] + 1, y + 6);
+          const inst = fitText(p.details || '--', 80, 8.5, 'normal', DRK); doc.text(inst, cols[2] + 1, y + 6);
           setF('bold', 9, ORG); doc.text(String(p.quantity || 1), cols[3] + 1, y + 6);
           y += 9;
         });
@@ -4366,11 +4367,12 @@
             const ly = y + 12 + i * rowH;
             setF('bold', 5, ORG); doc.text(l.type.toUpperCase().substring(0,4), x + 5, ly - 3.5);
             
-            fitText(l.details, w - 35, 8.5, 'bold', DRK);
-            doc.text(doc.splitTextToSize(l.details, w - 35)[0], x + 5, ly + 0.5);
+            const cleanDetails = l.details.replace(/[^\x00-\x7F]/g, ""); // Remove non-ASCII
+            const sz = fitText(cleanDetails, w - 40, 8.5, 'bold', DRK);
+            doc.text(doc.splitTextToSize(cleanDetails, w - 40)[0], x + 5, ly + 0.5);
             
             const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
-            if (nName) { setF('normal', 6, GRY); doc.text('By: ' + nName, x + 5, ly + 4); }
+            if (nName) { setF('normal', 6, GRY); doc.text('Staff: ' + nName.replace(/[^\x00-\x7F]/g, ""), x + 5, ly + 4); }
 
             const st = l.status.toUpperCase().replace('_',' ');
             const isDone = l.status==='administered'||l.status==='report_uploaded';
@@ -4536,11 +4538,11 @@
           fillR(M, y, CW, 20, BG); strokeR(M, y, CW, 20, XGR);
           vbar(M, y, y + 20, ORG);
           
-          setF('bold', 9, DRK); doc.text(r.details, M + 5, y + 7);
-          setF('normal', 7, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '—'), M + 5, y + 11);
+          setF('bold', 9, DRK); doc.text(r.details.replace(/[^\x00-\x7F]/g, ""), M + 5, y + 7);
+          setF('normal', 7, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 5, y + 11);
           
           setF('bold', 8, ORG);
-          doc.text('OPEN ORIGINAL DOCUMENT \u2197', M + 5, y + 16);
+          doc.text('OPEN ORIGINAL DOCUMENT', M + 5, y + 16);
           doc.link(M + 5, y + 13, 50, 5, { url: r.reportUrl });
 
           if (r.interpretation) {
