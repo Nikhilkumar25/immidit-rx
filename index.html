@@ -4468,17 +4468,34 @@
         setF('normal', 7, GRY); doc.text(ptexts[i], px + 4, y + 12);
       }); y += pbh + 5;
 
-      const svcData = [['Rx', 'Nurse+Teleconsult', '499'], ['Vacc', 'Vaccination', '249'], ['Lab', 'Lab Tests at Home', '299'], ['Care', 'Wound Care', '499'], ['IV', 'IV Therapy', '399'], ['ECG', 'ECG at Home', '699']];
-      const sw = CW / 6; guard(23);
+      // ── OUR SERVICES MARQUEE ──────────────────────────────────────────────────
+      secTitle('OUR SERVICES -- CARE AT HOME IN 10 MINUTES');
+      const svcData = [
+        ['Doctor', 'Tele-Consult', '499'],
+        ['Nurse', 'Nurse Visit', '299'],
+        ['Tests', 'Lab Tests', '199'],
+        ['Wound', 'Dressings', '399'],
+        ['IV/Drip', 'IV Therapy', '499'],
+        ['ECG', 'ECG @ Home', '599']
+      ];
+      const sw = CW / 6; guard(35);
       svcData.forEach(([icon, name, price], i) => {
         const sx = M + i * sw + 0.5;
-        fillR(sx, y, sw - 1, 21, WHT); strokeR(sx, y, sw - 1, 21, XGR);
-        doc.setDrawColor(...ORG); doc.setLineWidth(1.5); doc.line(sx, y, sx + sw - 1, y);
-        fillR(sx + (sw - 1) / 2 - 8, y + 2, 16, 7, ORG, 1.5);
-        setF('bold', 7, WHT); doc.text(icon, sx + sw / 2, y + 7, { align: 'center' });
-        setF('bold', 6, DRK); doc.text(name, sx + sw / 2, y + 14, { align: 'center' });
-        setF('bold', 7, ORG); doc.text('Rs.' + price, sx + sw / 2, y + 19.5, { align: 'center' });
-      }); y += 25;
+        fillR(sx, y, sw - 1, 28, WHT); strokeR(sx, y, sw - 1, 28, XGR);
+        doc.setDrawColor(...ORG); doc.setLineWidth(1.2); doc.line(sx, y, sx + sw - 1, y);
+        
+        // Category Label
+        fillR(sx + 2, y + 2, sw - 5, 6, BG, 1);
+        setF('bold', 6, ORG); doc.text(icon, sx + sw/2, y + 6.2, { align: 'center' });
+        
+        // Service Name (Dynamic size)
+        const nameSz = fitText(name, sw - 4, 8.5, 'bold', DRK);
+        doc.text(name, sx + sw / 2, y + 15, { align: 'center' });
+        
+        // Price
+        setF('normal', 6.5, GRY); doc.text('From', sx + sw / 2, y + 20, { align: 'center' });
+        setF('bold', 9.5, ORG); doc.text('Rs.' + price, sx + sw / 2, y + 25, { align: 'center' });
+      }); y += 32;
 
       // CTA strip with logo
       guard(14); fillR(M, y, CW, 13, WRM); strokeR(M, y, CW, 13, BRDORG); vbar(M, y, y + 13, ORG);
