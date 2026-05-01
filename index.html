@@ -4344,29 +4344,31 @@
         secTitle('CASE EXECUTION & REPORTS');
         const half = (CW - 4) / 2;
         const drawExec = (lines, x, w, label) => {
-          const rowH = 12;
+          const rowH = 14;
           const bh = lines.length * rowH + 12; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
+          setF('bold', 7, LGR); doc.text(label, x + 5, y + 6);
           
           lines.forEach((l, i) => {
-            const ly = y + 12 + i * rowH;
-            // Use text labels instead of emojis for PDF compatibility
-            const typeLbl = l.type === 'procedure' ? '[PROC]' : l.type === 'lab_test' ? '[LAB]' : '[DIAG]';
-            setF('bold', 8, DRK); doc.text(typeLbl + ' ' + doc.splitTextToSize(l.details, w - 40)[0], x + 5, ly);
+            const ly = y + 14 + i * rowH;
+            const typeLbl = l.type === 'procedure' ? 'PROC' : l.type === 'lab_test' ? 'LAB' : 'DIAG';
+            setF('bold', 5, ORG); doc.text(typeLbl, x + 5, ly - 4);
+            
+            setF('bold', 9, DRK); 
+            doc.text(doc.splitTextToSize(l.details, w - 40)[0], x + 5, ly);
             
             const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
-            if (nName) { setF('normal', 6, GRY); doc.text('Attributed to: ' + nName, x + 5, ly + 4); }
+            if (nName) { setF('normal', 7, GRY); doc.text('Administered by: ' + nName, x + 5, ly + 4.5); }
 
             const st = l.status.toUpperCase().replace('_',' ');
             const isDone = l.status==='administered'||l.status==='report_uploaded';
-            setF('bold', 7, isDone?[46,204,113]:[136,136,136]);
+            setF('bold', 8, isDone?[46,204,113]:[136,136,136]);
             doc.text(st, x + w - 5, ly, { align: 'right' });
 
             if (l.reportUrl) {
-              setF('bold', 6, ORG);
-              doc.text('VIEW REPORT \u2197', x + w - 5, ly + 4, { align: 'right' });
-              doc.link(x + w - 25, ly + 1, 20, 4, { url: l.reportUrl });
+              setF('bold', 6.5, ORG);
+              doc.text('OPEN REPORT \u2197', x + w - 5, ly + 4.5, { align: 'right' });
+              doc.link(x + w - 25, ly + 2, 20, 5, { url: l.reportUrl });
             }
           });
           return bh;
@@ -4374,20 +4376,20 @@
 
         const drawInterp = (lines, x, w, label) => {
           const interps = lines.filter(l => l.interpretation);
-          const rowH = 16;
+          const rowH = 18;
           const bh = Math.max(interps.length * rowH + 12, 36); guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
-          setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
+          setF('bold', 7, LGR); doc.text(label, x + 5, y + 6);
           
           if (!interps.length) { 
-            setF('normal', 8, LGR); doc.text('No clinical interpretations recorded.', x + w/2, y + bh/2 + 2, { align:'center' }); 
+            setF('normal', 9, LGR); doc.text('Pending clinical notes.', x + w/2, y + bh/2 + 2, { align:'center' }); 
           } else {
             interps.forEach((l, i) => {
-              const iy = y + 12 + i * rowH;
-              setF('bold', 7, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
-              setF('normal', 8.5, DRK); 
+              const iy = y + 14 + i * rowH;
+              setF('bold', 7.5, ORG); doc.text(l.details.toUpperCase().substring(0,35), x + 5, iy);
+              setF('normal', 9, DRK); 
               const wrapped = doc.splitTextToSize(l.interpretation, w - 10);
-              doc.text(wrapped, x + 5, iy + 5);
+              doc.text(wrapped, x + 5, iy + 5.5);
             });
           }
           return bh;
@@ -4395,7 +4397,7 @@
 
         const h1 = drawExec(rx.orderLines, M, half, 'CLINICAL EXECUTION');
         const h2 = drawInterp(rx.orderLines, M + half + 4, half, 'INTERPRETATIONS');
-        y += Math.max(h1, h2) + 10;
+        y += Math.max(h1, h2) + 12;
       }
 
       // ── RECHECK ────────────────────────────────────────────────────────────────
