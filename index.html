@@ -4173,7 +4173,7 @@
       const fitText = (txt, maxW, startSz, st, col) => {
         const cleanTxt = String(txt || '').replace(/[^\x00-\x7F]/g, "");
         let sz = startSz; doc.setFont('helvetica', st); doc.setFontSize(sz);
-        while (doc.getTextWidth(cleanTxt) > maxW && sz > 5) { sz -= 0.5; doc.setFontSize(sz); }
+        while (doc.getTextWidth(cleanTxt) > maxW && sz > 7) { sz -= 0.5; doc.setFontSize(sz); }
         doc.setTextColor(...col); return cleanTxt;
       };
       const fillR = (x, yy, w, h, col, r = 2) => { doc.setFillColor(...col); r ? doc.roundedRect(x, yy, w, h, r, r, 'F') : doc.rect(x, yy, w, h, 'F'); };
@@ -4192,7 +4192,7 @@
       let logoB64 = null;
       try {
         const imgEl = document.createElement('img');
-        await new Promise((res, rej) => { imgEl.onload = res; imgEl.onerror = rej; imgEl.src = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png'; imgEl.crossOrigin = 'anonymous'; });
+        await new Promise((res, rej) => { imgEl.onload = res; imgEl.onerror = rej; imgEl.src = LOGO_SRC; imgEl.crossOrigin = 'anonymous'; });
         const cvs = document.createElement('canvas'); cvs.width = imgEl.naturalWidth; cvs.height = imgEl.naturalHeight;
         const ctx2 = cvs.getContext('2d'); ctx2.fillStyle = '#ffffff'; ctx2.fillRect(0, 0, cvs.width, cvs.height);
         ctx2.drawImage(imgEl, 0, 0); logoB64 = cvs.toDataURL('image/png');
@@ -4529,41 +4529,41 @@
       if (reportsList.length > 0) {
         newPage();
         secTitle('DIGITAL APPENDIX -- LAB REPORTS');
-        setF('normal', 8, GRY);
+        setF('normal', 9, GRY);
         doc.text('The following medical reports are securely stored in the immidit cloud.', M, y + 2);
-        y += 10;
+        y += 12;
 
         reportsList.forEach((r, i) => {
-          guard(30);
-          fillR(M, y, CW, 22, BG); strokeR(M, y, CW, 22, XGR);
-          vbar(M, y, y + 22, ORG);
+          guard(35);
+          fillR(M, y, CW, 24, BG); strokeR(M, y, CW, 24, XGR);
+          vbar(M, y, y + 24, ORG);
           
-          const cleanDet = fitText(r.details, CW - 60, 9, 'bold', DRK);
-          doc.text(cleanDet, M + 5, y + 7);
-          setF('normal', 7, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 5, y + 11);
+          const cleanDet = fitText(r.details, CW - 65, 9.5, 'bold', DRK);
+          doc.text(cleanDet, M + 5, y + 8);
+          setF('normal', 7.5, GRY); doc.text('Uploaded: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 5, y + 13);
           
-          setF('bold', 8, ORG);
-          doc.text('OPEN DOCUMENT', M + 5, y + 17);
-          doc.link(M + 5, y + 14, 40, 5, { url: r.reportUrl });
+          setF('bold', 8.5, ORG);
+          doc.text('OPEN DOCUMENT', M + 5, y + 19);
+          doc.link(M + 5, y + 15, 45, 6, { url: r.reportUrl });
 
           if (r.interpretation) {
             const intL = doc.splitTextToSize('Note: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW * 0.45);
-            setF('oblique', 7.5, DRK);
-            doc.text(intL, M + CW - 5, y + 7, { align: 'right' });
+            setF('oblique', 8, DRK);
+            doc.text(intL, M + CW - 5, y + 8, { align: 'right' });
           }
-          y += 26;
+          y += 28;
         });
 
-        guard(40);
+        guard(45);
         fillR(M, y, CW, 25, WRM); strokeR(M, y, CW, 25, BRDORG);
-        setF('bold', 8, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 8);
-        setF('normal', 7.5, DRK);
-        doc.text(doc.splitTextToSize('Access the full patient record, imaging, and history.', CW - 45), M + 5, y + 14);
+        setF('bold', 9, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 9);
+        setF('normal', 8.5, DRK);
+        doc.text('Access the full patient record, imaging, and history.', M + 5, y + 16);
         
         guard(20);
         fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
-        setF('bold', 7, ORG); doc.text('DIGITAL CASE ID:', M + 5, y + 8);
-        setF('bold', 12, DRK); doc.text(rx.id, M + CW - 5, y + 9, { align: 'right' });
+        setF('bold', 8, ORG); doc.text('DIGITAL CASE ID:', M + 5, y + 9);
+        setF('bold', 12, DRK); doc.text(rx.id, M + CW - 5, y + 10, { align: 'right' });
       }
 
       // ── MERGE ATTACHMENTS (PDFs) ──────────────────────────────────────────────
