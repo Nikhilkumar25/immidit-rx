@@ -72,6 +72,14 @@ function doPost(e) {
         return deleteDraftFromSheet(body.doctorId);
       case 'uploadReport':
         return uploadReportToDrive(body.data);
+      case 'proxyFetch':
+        const fileId = body.url.split('id=')[1] || body.url.split('/d/')[1]?.split('/')[0];
+        if (!fileId) throw new Error('Invalid Drive URL');
+        const file = DriveApp.getFileById(fileId);
+        return jsonResponse({
+          content: Utilities.base64Encode(file.getBlob().getBytes()),
+          mimeType: file.getMimeType()
+        });
       default:
         return jsonResponse({ error: 'Unknown POST action: ' + body.action });
     }

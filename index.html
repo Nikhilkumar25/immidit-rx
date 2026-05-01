@@ -9,6 +9,7 @@
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
   <style>
     /* ══════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -4181,8 +4182,8 @@
         y += 8;
       };
 
-      // Load logo and QR for embedding
-      let logoB64 = null, qrB64 = null;
+      // Load logo for embedding
+      let logoB64 = null;
       try {
         const imgEl = document.createElement('img');
         await new Promise((res, rej) => { imgEl.onload = res; imgEl.onerror = rej; imgEl.src = '/mnt/user-data/uploads/ChatGPT_Image_Feb_17__2026__12_20_37_AM-Photoroom.png'; imgEl.crossOrigin = 'anonymous'; });
@@ -4190,14 +4191,6 @@
         const ctx2 = cvs.getContext('2d'); ctx2.fillStyle = '#ffffff'; ctx2.fillRect(0, 0, cvs.width, cvs.height);
         ctx2.drawImage(imgEl, 0, 0); logoB64 = cvs.toDataURL('image/png');
       } catch (e) { logoB64 = null; }
-
-      try {
-        const cloudUrl = SHEET_API + '?action=viewRx&id=' + rx.id;
-        const qrImg = document.createElement('img');
-        await new Promise((res, rej) => { qrImg.onload = res; qrImg.onerror = rej; qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(cloudUrl)}`; qrImg.crossOrigin = 'anonymous'; });
-        const cvs = document.createElement('canvas'); cvs.width = 150; cvs.height = 150;
-        const ctx2 = cvs.getContext('2d'); ctx2.drawImage(qrImg, 0, 0); qrB64 = cvs.toDataURL('image/png');
-      } catch (e) { qrB64 = null; }
 
       const addLogo = (x, yy, w, h) => { if (logoB64) { try { doc.addImage(logoB64, 'PNG', x, yy, w, h); } catch (e) { } } };
 
@@ -4560,26 +4553,59 @@
         setF('normal', 7.5, DRK);
         doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
         
-        // Add QR Code
-        guard(40);
-        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
-        setF('bold', 8, ORG); doc.text('SECURE DIGITAL ACCESS', M + 5, y + 8);
-        setF('normal', 7.5, DRK);
-        doc.text(doc.splitTextToSize('Scan or click to access the full interactive patient record, including high-resolution medical imaging and full case history.', CW - 45), M + 5, y + 14);
-        
-        if (qrB64) {
-          try { doc.addImage(qrB64, 'PNG', W - M - 28, y + 2, 25, 25); } catch(e) {}
-        } else {
-          setF('normal', 6, LGR); doc.text('Digital ID:', W - M - 28, y + 10);
-          setF('bold', 7, DRK); doc.text(rx.id, W - M - 28, y + 15);
-        }
-        
-        setF('bold', 6.5, ORG);
-        doc.text('SCAN TO VIEW CASE', W - M - 15.5, y + 28, { align:'center' });
+        // Add Digital Signature / Access ID
+        guard(25);
+        fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
+        setF('bold', 7, ORG); doc.text('DIGITAL CASE ID:', M + 5, y + 8);
+        setF('bold', 12, DRK); doc.text(rx.id, M + 40, y + 9);
       }
 
-      doc.save('immidit_' + rx.id + '_' + rx.patient.name.replace(/\s+/g, '_') + '.pdf');
-      toast('PDF downloaded!');
+      // ── MERGE ATTACHMENTS (PDFs) ──────────────────────────────────────────────
+      let finalPdfBytes = doc.output('arraybuffer');
+      const reports = (rx.orderLines || []).filter(l => l.reportUrl && l.reportUrl.includes('id='));
+      
+      if (reports.length > 0 && window.PDFLib) {
+        try {
+          const { PDFDocument } = window.PDFLib;
+          const mergedPdf = await PDFDocument.load(finalPdfBytes);
+          
+          for (const r of reports) {
+            try {
+              toast(`Attaching ${r.details}...`);
+              const res = await SYNC.post({ action: 'proxyFetch', url: r.reportUrl });
+              if (res.content) {
+                const fileBytes = Uint8Array.from(atob(res.content), c => c.charCodeAt(0));
+                
+                if (res.mimeType.includes('pdf')) {
+                  const reportPdf = await PDFDocument.load(fileBytes);
+                  const copiedPages = await mergedPdf.copyPages(reportPdf, reportPdf.getPageIndices());
+                  copiedPages.forEach((page) => mergedPdf.addPage(page));
+                } else if (res.mimeType.includes('image')) {
+                  const page = mergedPdf.addPage();
+                  const { width, height } = page.getSize();
+                  const img = res.mimeType.includes('png') ? await mergedPdf.embedPng(fileBytes) : await mergedPdf.embedJpg(fileBytes);
+                  const dims = img.scaleToFit(width - 40, height - 40);
+                  page.drawImage(img, { x: 20, y: height - dims.height - 20, width: dims.width, height: dims.height });
+                }
+              }
+            } catch (err) {
+              console.error('Failed to attach report:', r.details, err);
+              toast(`Could not attach ${r.details}`, 'error');
+            }
+          }
+          finalPdfBytes = await mergedPdf.save();
+        } catch (err) {
+          console.error('PDF Merge failed:', err);
+          toast('Merge failed, downloading main PDF only.', 'error');
+        }
+      }
+
+      const blob = new Blob([finalPdfBytes], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'immidit_' + rx.id + '_' + rx.patient.name.replace(/\s+/g, '_') + '.pdf';
+      link.click();
+      toast('Prescription ready with attachments!');
     }
 
     /* ══════════════════════════════════════════════════════
