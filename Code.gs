@@ -72,6 +72,8 @@ function doPost(e) {
         return deleteDraftFromSheet(body.doctorId);
       case 'uploadReport':
         return uploadReportToDrive(body.data);
+      case 'saveCases':
+        return saveCasesToSheet(body.data);
       case 'proxyFetch':
         const fileId = body.url.split('id=')[1] || body.url.split('/d/')[1]?.split('/')[0];
         if (!fileId) throw new Error('Invalid Drive URL');
@@ -134,10 +136,30 @@ function pullAll() {
     }
   }
 
+  // ── Nurse Profiles ──
+  var nurseSheet = getSheet('NurseProfiles');
+  var nurseData = nurseSheet ? nurseSheet.getDataRange().getValues() : [];
+  var nurses = [];
+  for (var i = 1; i < nurseData.length; i++) {
+    if (!nurseData[i][0]) continue;
+    nurses.push(safeJSON(nurseData[i][2]));
+  }
+
+  // ── Cases ──
+  var caseSheet = getSheet('Cases');
+  var caseData = caseSheet ? caseSheet.getDataRange().getValues() : [];
+  var cases = [];
+  for (var i = 1; i < caseData.length; i++) {
+    if (!caseData[i][0]) continue;
+    cases.push(safeJSON(caseData[i][2]));
+  }
+
   return jsonResponse({
     admin: admin,
     doctors: doctors,
     prescriptions: prescriptions,
+    nurses: nurses,
+    cases: cases,
     synced: new Date().toISOString(),
   });
 }
@@ -208,6 +230,33 @@ function updatePrescriptionInSheet(rx) {
 
   // Not found — add as new
   return addPrescriptionToSheet(rx);
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  CASES — sync from nurse app
+// ══════════════════════════════════════════════════════════════════
+
+function saveCasesToSheet(casesList) {
+  var sheet = getSheet('Cases');
+  var data = sheet.getDataRange().getValues();
+  var existingMap = {};
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0]) existingMap[data[i][0]] = i + 1; // row number
+  }
+
+  for (var j = 0; j < casesList.length; j++) {
+    var c = casesList[j];
+    var rowNum = existingMap[c.id];
+    if (rowNum) {
+      // Update
+      sheet.getRange(rowNum, 3).setValue(JSON.stringify(c));
+      sheet.getRange(rowNum, 4).setValue(new Date().toISOString());
+    } else {
+      // Insert
+      sheet.appendRow([c.id, c.status, JSON.stringify(c), new Date().toISOString()]);
+    }
+  }
+  return jsonResponse({ ok: true, count: casesList.length });
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -344,9 +393,74 @@ function setupSheets() {
     sheet.setColumnWidth(2, 500);
   }
 
+  // ── Cases ──
+  if (!ss.getSheetByName('Cases')) {
+    sheet = ss.insertSheet('Cases');
+    sheet.appendRow(['id', 'status', 'data_json', 'updatedAt']);
+    sheet.setColumnWidth(3, 500);
+    
+    // Seed demo cases
+    var todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    var cases = [
+      {
+        id: 'IMM-' + todayStr + '-0001',
+        patientName: 'Rajesh Kumar',
+        patientAge: 65,
+        patientGender: 'M',
+        address: 'A-304, Emaar Palm Drive, Sector 54, Gurugram',
+        chiefIssue: 'Hypertension follow-up — BP monitoring',
+        urgency: 'Urgent',
+        status: 'assigned',
+        currentPhase: 1,
+        supplies: [
+          { id: 's1', name: 'BP Monitor', type: 'device', confirmed: false },
+          { id: 's5', name: 'Consent Forms', type: 'consumable', confirmed: false }
+        ],
+        procedurePhotos: [],
+        samplePhotos: [],
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 'IMM-' + todayStr + '-0002',
+        patientName: 'Priya Sharma',
+        patientAge: 28,
+        patientGender: 'F',
+        address: 'B-12, DLF Magnolias, Sector 42, Gurugram',
+        chiefIssue: 'Post-natal wound dressing',
+        urgency: 'Scheduled',
+        status: 'assigned',
+        currentPhase: 1,
+        supplies: [{ id: 's6', name: 'Sterile Dressing Kit', type: 'consumable', confirmed: false }],
+        procedurePhotos: [],
+        samplePhotos: [],
+        createdAt: new Date().toISOString()
+      }
+    ];
+    
+    cases.forEach(function(c) {
+      sheet.appendRow([c.id, c.status, JSON.stringify(c), new Date().toISOString()]);
+    });
+  }
+
+  // ── NurseProfiles ──
+  if (!ss.getSheetByName('NurseProfiles')) {
+    sheet = ss.insertSheet('NurseProfiles');
+    sheet.appendRow(['id', 'name', 'data_json', 'createdAt']);
+    sheet.appendRow([
+      'N-001', 
+      'Kavita Nair', 
+      JSON.stringify({
+        id: 'N-001', name: 'Kavita Nair', zone: 'Gurugram Sectors 54/56/57', 
+        phone: '+91 98765 43210', casesCompleted: 142, joinedDate: '2025-08-01'
+      }), 
+      new Date().toISOString()
+    ]);
+    sheet.setColumnWidth(3, 400);
+  }
+
   SpreadsheetApp.getUi().alert(
     '✅ Setup Complete!\n\n' +
-    'Sheets created: Config, Doctors, Prescriptions, Drafts, Reports\n' +
+    'Sheets created: Config, Doctors, Prescriptions, Drafts, Reports, Cases, NurseProfiles\n' +
     'Demo doctor: dr.priya / Priya@123\n' +
     'Admin: admin / immidit@2026\n\n' +
     'Next step: Deploy → New Deployment → Web App'

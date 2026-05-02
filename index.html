@@ -2130,6 +2130,8 @@
           if (data.admin) DB.set('admin', data.admin);
           if (data.doctors) DB.set('doctors', data.doctors);
           if (data.prescriptions) DB.set('prescriptions', data.prescriptions);
+          if (data.cases) DB.set('cases', data.cases);
+          if (data.nurses) DB.set('nurses', data.nurses);
 
           console.log('Cloud sync successful:', data.synced);
           return true;
@@ -2636,6 +2638,11 @@
         <span class="sidebar-ico">👤</span> My Profile
       </button>
 
+      <div class="sidebar-section">Nurse Integration</div>
+      <button class="sidebar-btn ${s === 'nurse' ? 'active' : ''}" onclick="APP.section='nurse';APP.viewingCaseId=null;render()">
+        <span class="sidebar-ico">🧑‍⚕️</span> Nurse PCRs
+      </button>
+
       <div class="sidebar-footer">
         <div class="sidebar-doctor-info">
           <div style="font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;">Logged in as</div>
@@ -2647,7 +2654,7 @@
     </div>
 
     <div class="content" id="doctor-content">
-      ${s === 'new' ? renderNewRx() : s === 'my' ? renderMyRxs(myRxs) : s === 'review' ? renderDoctorReview(myRxs) : renderDoctorProfile()}
+      ${s === 'new' ? renderNewRx() : s === 'my' ? renderMyRxs(myRxs) : s === 'review' ? renderDoctorReview(myRxs) : s === 'nurse' ? renderNurseCases() : renderDoctorProfile()}
     </div>
   </div>`;
     }
@@ -3936,6 +3943,95 @@
     /* ══════════════════════════════════════════════════════
        PDF PREVIEW & DOWNLOAD
     ══════════════════════════════════════════════════════ */
+    function renderNurseCases() {
+      if (APP.viewingCaseId) return renderCaseDetail(APP.viewingCaseId);
+      const cases = (DB.get('cases') || []).filter(c => c.status !== 'assigned');
+      return `
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Nurse PCRs & Consultations</h1>
+            <div class="page-sub">View live data from the field nurses</div>
+          </div>
+          <button class="btn btn-ghost" onclick="SYNC.pull().then(render)">🔄 Refresh</button>
+        </div>
+        <div class="card-grid">
+          ${cases.length === 0 ? '<p style="color:var(--text-dim);grid-column:1/-1;text-align:center;padding:40px;">No incoming cases yet.</p>' : cases.map(c => `
+            <div class="card" style="cursor:pointer" onclick="APP.viewingCaseId='${c.id}';render()">
+              <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+                <span class="topbar-tag">${c.id}</span>
+                <span class="pill pill-${c.status === 'closed' ? 'green' : 'blue'}">${c.status}</span>
+              </div>
+              <h4 style="font-size:16px;">${c.patientName}</h4>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${c.chiefIssue}</p>
+              <div style="margin-top:12px;font-size:11px;color:var(--text-dim);">
+                📍 Last GPS: ${c.lastUpdatedLocation ? 'Logged' : 'Pending'} · 🕒 ${fmtDate(c.updatedAt || c.createdAt)}
+              </div>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+
+    function renderCaseDetail(id) {
+      const c = (DB.get('cases') || []).find(x => x.id === id);
+      if (!c) return '<p>Case not found.</p>';
+      return `
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">${c.patientName}</h1>
+            <div class="page-sub">${c.id} · ${c.patientAge}y · ${c.patientGender}</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-accent" onclick="startRxFromCase('${c.id}')">✨ Start Prescription</button>
+            <button class="btn btn-ghost" onclick="APP.viewingCaseId=null;render()">← Back</button>
+          </div>
+        </div>
+        <div class="field-row c2">
+          <div class="card">
+            <div class="sidebar-section">Nurse Vitals</div>
+            <div class="vital-grid">
+              <div class="vital-box"><label>BP</label><div>${c.exitVitals?.bp || '—'}</div></div>
+              <div class="vital-box"><label>Pulse</label><div>${c.exitVitals?.pr || '—'}</div></div>
+              <div class="vital-box"><label>SpO2</label><div>${c.exitVitals?.spo2 || '—'}</div></div>
+              <div class="vital-box"><label>Temp</label><div>${c.exitVitals?.temp || '—'}</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sidebar-section">Nurse Notes</div>
+            <p style="font-size:13px;">${c.nurseNotes || 'No notes provided.'}</p>
+            ${c.lastUpdatedLocation ? `<div style="margin-top:12px;font-size:11px;color:var(--text-dim);">📍 Location: ${c.lastUpdatedLocation.lat}, ${c.lastUpdatedLocation.lng}</div>` : ''}
+          </div>
+        </div>
+        ${c.procedurePhotos && c.procedurePhotos.length ? `
+          <div class="sidebar-section">Field Photos</div>
+          <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;">
+            ${c.procedurePhotos.map(p => `<img src="${p}" style="height:150px;border-radius:8px;border:1px solid var(--border);">`).join('')}
+          </div>
+        ` : ''}`;
+    }
+
+    function startRxFromCase(id) {
+      const c = (DB.get('cases') || []).find(x => x.id === id);
+      APP.section = 'new';
+      APP.viewingCaseId = null;
+      resetForm();
+      const nameInp = document.getElementById('p-name');
+      const ageInp = document.getElementById('p-age');
+      const sexInp = document.getElementById('p-sex');
+      const diagInp = document.getElementById('rx-diagnosis');
+      if (nameInp) nameInp.value = c.patientName;
+      if (ageInp) ageInp.value = c.patientAge;
+      if (sexInp) sexInp.value = c.patientGender;
+      if (diagInp) diagInp.value = c.chiefIssue;
+      
+      // Auto-fill vitals if possible
+      if (c.exitVitals) {
+        // Find vital inputs - we need to ensure they have IDs or classes
+        // For now, we just filled the basics.
+      }
+      render();
+      toast('Success', 'Imported patient data from nurse case.');
+    }
+
     function mountPdfPreview(rx) {
       const existing = document.getElementById('pdf-overlay');
       if (existing) existing.remove();
