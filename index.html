@@ -207,12 +207,14 @@
       box-shadow: 0 4px 16px hsla(21, 80%, 54%, 0.25);
     }
 
-    .btn-primary:hover, .btn-accent:hover {
+    .btn-primary:hover,
+    .btn-accent:hover {
       opacity: 0.9;
       transform: translateY(-1px);
     }
 
-    .btn-primary:active, .btn-accent:active {
+    .btn-primary:active,
+    .btn-accent:active {
       transform: translateY(0);
     }
 
@@ -555,6 +557,56 @@
     }
 
     /* ══════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS
+══════════════════════════════════════════════════════ */
+    @media (max-width: 800px) {
+      .app-layout {
+        display: flex;
+        flex-direction: column;
+      }
+      .sidebar {
+        height: auto;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+        position: static;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .sidebar-btn {
+        width: auto;
+        white-space: nowrap;
+      }
+      .sidebar-section, .sidebar-footer {
+        display: none;
+      }
+      .field-row.c2, .field-row.c3, .field-row.c4 {
+        grid-template-columns: 1fr !important;
+      }
+      .content {
+        padding: 16px;
+      }
+      .topbar {
+        padding: 10px 16px;
+      }
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .page-header {
+        flex-direction: column;
+      }
+      .rx-builder {
+        grid-template-columns: 1fr !important;
+      }
+      .rx-preview-pane {
+        position: static !important;
+        height: auto !important;
+        margin-top: 24px;
+      }
+      .field-span-2 { grid-column: span 1 !important; }
+    }
+
+    /* ══════════════════════════════════════════════════════
    LOGIN SCREEN
 ══════════════════════════════════════════════════════ */
     .login-screen {
@@ -693,7 +745,8 @@
     }
 
     .profile-banner h2 {
-      font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
       font-size: 22px;
       color: #fff;
       margin-top: 14px;
@@ -808,7 +861,8 @@
 
     .stat-value {
       font-size: 28px;
-      font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
       line-height: 1;
     }
 
@@ -1587,14 +1641,16 @@
       transition: all 0.18s;
     }
 
-    .ops-stat:hover, .ops-stat.active {
+    .ops-stat:hover,
+    .ops-stat.active {
       border-color: var(--orange-bdr);
       background: var(--orange-dim);
     }
 
     .ops-stat-val {
       font-size: 26px;
-      font-family: 'Poppins', sans-serif; font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
       font-weight: 700;
     }
 
@@ -1737,7 +1793,7 @@
       bottom: 12px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
+      background: rgba(0, 0, 0, 0.7);
       color: #fff;
       padding: 4px 12px;
       border-radius: 12px;
@@ -1748,7 +1804,7 @@
       position: fixed;
       inset: 0;
       z-index: 500;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1851,13 +1907,13 @@
     }
 
     .exec-item.done {
-      border-color: rgba(46,204,113,0.25);
-      background: rgba(46,204,113,0.06);
+      border-color: rgba(46, 204, 113, 0.25);
+      background: rgba(46, 204, 113, 0.06);
     }
 
     .exec-item.declined {
-      border-color: rgba(231,76,60,0.25);
-      background: rgba(231,76,60,0.06);
+      border-color: rgba(231, 76, 60, 0.25);
+      background: rgba(231, 76, 60, 0.06);
     }
 
     /* ══════════════════════════════════════════════════════
@@ -1871,7 +1927,8 @@
       flex-wrap: wrap;
     }
 
-    .filter-bar input, .filter-bar select {
+    .filter-bar input,
+    .filter-bar select {
       width: auto;
       min-width: 180px;
     }
@@ -1913,7 +1970,7 @@
     'use strict';
 
     // ── Global Error Handler for Diagnostics ──
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
       const errDiv = document.createElement('div');
       errDiv.style = 'position:fixed;top:0;left:0;width:100%;background:#fee;color:#b00;padding:20px;z-index:9999;font-family:monospace;border-bottom:2px solid #b00;font-size:12px;';
       errDiv.innerHTML = `<strong>Runtime Error:</strong> ${msg}<br><small>at ${url}:${lineNo}:${columnNo}</small>`;
@@ -1958,11 +2015,11 @@
     };
 
     const STATUS_CONFIG = {
-      active:           { label: 'Active', pill: 'pill-green', icon: '✅' },
-      pending_actions:  { label: 'Pending Actions', pill: 'pill-amber', icon: '⏳' },
-      reports_ready:    { label: 'Reports Ready', pill: 'pill-blue', icon: '📊' },
-      executed:         { label: 'Executed', pill: 'pill-green', icon: '✅' },
-      case_complete:    { label: 'Case Complete', pill: 'pill-purple', icon: '🟣' },
+      active: { label: 'Active', pill: 'pill-green', icon: '✅' },
+      pending_actions: { label: 'Pending Actions', pill: 'pill-amber', icon: '⏳' },
+      reports_ready: { label: 'Reports Ready', pill: 'pill-blue', icon: '📊' },
+      executed: { label: 'Executed', pill: 'pill-green', icon: '✅' },
+      case_complete: { label: 'Case Complete', pill: 'pill-purple', icon: '🟣' },
     };
 
     /* ══════════════════════════════════════════════════════
@@ -2137,6 +2194,8 @@
           age: document.getElementById('p-age')?.value || '',
           gender: document.getElementById('p-gender')?.value || '',
           address: document.getElementById('p-addr')?.value || '',
+          allergies: document.getElementById('p-allergies')?.value || '',
+          comorbidities: document.getElementById('p-comorbidities')?.value || '',
         },
         visitDate: document.getElementById('p-date')?.value || '',
         vitals: {
@@ -2148,7 +2207,6 @@
           rr: document.getElementById('v-rr')?.value || '',
         },
         chiefConcerns: document.getElementById('cc')?.value || '',
-        observations: document.getElementById('obs')?.value || '',
         diagnosis: document.getElementById('diag')?.value || '',
         suggestions: document.getElementById('sug')?.value || '',
         recheckDate: document.getElementById('recheck')?.value || '',
@@ -2195,6 +2253,8 @@
       setVal('p-age', draft.patient?.age);
       setVal('p-gender', draft.patient?.gender);
       setVal('p-addr', draft.patient?.address);
+      setVal('p-allergies', draft.patient?.allergies);
+      setVal('p-comorbidities', draft.patient?.comorbidities);
       setVal('p-date', draft.visitDate);
       setVal('v-bp', draft.vitals?.bp);
       setVal('v-pulse', draft.vitals?.pulse);
@@ -2203,7 +2263,6 @@
       setVal('v-weight', draft.vitals?.weight);
       setVal('v-rr', draft.vitals?.rr);
       setVal('cc', draft.chiefConcerns);
-      setVal('obs', draft.observations);
       setVal('diag', draft.diagnosis);
       setVal('sug', draft.suggestions);
       setVal('recheck', draft.recheckDate);
@@ -2640,6 +2699,10 @@
       <div class="field"><label>Date of Visit</label><input type="date" id="p-date" value="${rx?.visitDate || new Date().toISOString().split('T')[0]}"></div>
     </div>
     <div class="field"><label>Address</label><input id="p-addr" placeholder="Sector, Gurugram" value="${rx?.patient?.address || ''}"></div>
+    <div class="field-row c2">
+      <div class="field"><label style="color: var(--danger)">Known Allergies</label><input id="p-allergies" placeholder="e.g. Penicillin, Peanuts" value="${rx?.patient?.allergies || ''}" class="input-danger" style="border-color: var(--danger); background: hsla(0, 84%, 60%, 0.05);"></div>
+      <div class="field field-span-2" style="grid-column: span 2;"><label>Comorbidities</label><input id="p-comorbidities" placeholder="e.g. Type 2 Diabetes, Hypertension" value="${rx?.patient?.comorbidities || ''}"></div>
+    </div>
   </div>
 
   <!-- VITALS -->
@@ -2663,8 +2726,7 @@
 
   <!-- CLINICAL NOTES -->
   <div class="card">
-    <div class="card-header"><div class="card-icon">🔬</div><div><div class="card-title">Clinical Notes</div><div class="card-sub">Observations and diagnosis</div></div></div>
-    <div class="field"><label>Observations</label><textarea id="obs" placeholder="Clinical examination findings...">${rx?.observations || ''}</textarea></div>
+    <div class="card-header"><div class="card-icon">🔬</div><div><div class="card-title">Clinical Notes</div><div class="card-sub">Primary and secondary diagnosis</div></div></div>
     <div class="field"><label>Diagnosis</label><textarea id="diag" style="min-height:52px;" placeholder="Primary and secondary diagnoses...">${rx?.diagnosis || ''}</textarea></div>
   </div>
 
@@ -2818,7 +2880,7 @@
       ${orderLines.length ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">${orderLines.map(l => {
         const sc2 = l.status === 'administered' || l.status === 'report_uploaded' ? 'pill-green' : l.status === 'declined' ? 'pill-red' : l.status === 'accepted' ? 'pill-blue' : 'pill-gray';
         const slbl = l.status === 'administered' ? '✅' : l.status === 'report_uploaded' ? '📊' : l.status === 'declined' ? '❌' : l.status === 'accepted' ? '✓' : '⏳';
-        return `<span class="pill ${sc2}" style="font-size:10px;">${slbl} ${l.details.substring(0,25)}${l.details.length > 25 ? '...' : ''}</span>`;
+        return `<span class="pill ${sc2}" style="font-size:10px;">${slbl} ${l.details.substring(0, 25)}${l.details.length > 25 ? '...' : ''}</span>`;
       }).join('')}</div>` : ''}
     </div>
   </div>`;
@@ -2877,8 +2939,8 @@
     <div class="content">
       ${s === 'dashboard' ? renderAdminDash(doctors, rxs, todayRxs, activeDocs) :
           s === 'operations' ? renderOperations(rxs) :
-          s === 'doctors' ? renderAdminDoctors(doctors) :
-            renderAdminRxs(rxs)}
+            s === 'doctors' ? renderAdminDoctors(doctors) :
+              renderAdminRxs(rxs)}
     </div>
   </div>`;
     }
@@ -3208,11 +3270,10 @@
       // Gather procedures from APP state (already updated via oninput)
       const procs = APP.formProcedures.filter(p => p.type || p.details);
       return {
-        patient: { name: document.getElementById('p-name')?.value || '', phone: document.getElementById('p-phone')?.value || '', age: document.getElementById('p-age')?.value || '', gender: document.getElementById('p-gender')?.value || '', address: document.getElementById('p-addr')?.value || '' },
+        patient: { name: document.getElementById('p-name')?.value || '', phone: document.getElementById('p-phone')?.value || '', age: document.getElementById('p-age')?.value || '', gender: document.getElementById('p-gender')?.value || '', address: document.getElementById('p-addr')?.value || '', allergies: document.getElementById('p-allergies')?.value || '', comorbidities: document.getElementById('p-comorbidities')?.value || '' },
         visitDate: document.getElementById('p-date')?.value || '',
         vitals: { bp: document.getElementById('v-bp')?.value || '', pulse: document.getElementById('v-pulse')?.value || '', temp: document.getElementById('v-temp')?.value || '', spo2: document.getElementById('v-spo2')?.value || '', weight: document.getElementById('v-weight')?.value || '', rr: document.getElementById('v-rr')?.value || '' },
         chiefConcerns: document.getElementById('cc')?.value || '',
-        observations: document.getElementById('obs')?.value || '',
         diagnosis: document.getElementById('diag')?.value || '',
         suggestions: document.getElementById('sug')?.value || '',
         medicines: meds,
@@ -3446,14 +3507,14 @@
       const filtered = rxsWithOL.filter(rx => {
         if (f === 'all') return true;
         if (f === 'pending') return rx.status === 'pending_actions';
-        if (f === 'to_administer') return (rx.orderLines||[]).some(l => l.type === 'procedure' && l.status === 'pending');
-        if (f === 'reports_pending') return (rx.orderLines||[]).some(l => (l.type==='lab_test'||l.type==='diagnostic_test') && (l.status==='pending'||l.status==='accepted'));
+        if (f === 'to_administer') return (rx.orderLines || []).some(l => l.type === 'procedure' && l.status === 'pending');
+        if (f === 'reports_pending') return (rx.orderLines || []).some(l => (l.type === 'lab_test' || l.type === 'diagnostic_test') && (l.status === 'pending' || l.status === 'accepted'));
         if (f === 'complete') return rx.status === 'executed' || rx.status === 'case_complete';
         return true;
       });
       const pendingCount = rxsWithOL.filter(r => r.status === 'pending_actions').length;
-      const toAdminCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => l.type === 'procedure' && l.status === 'pending').length, 0);
-      const repPendCount = rxsWithOL.reduce((c,r) => c + (r.orderLines||[]).filter(l => (l.type==='lab_test'||l.type==='diagnostic_test') && (l.status==='pending'||l.status==='accepted')).length, 0);
+      const toAdminCount = rxsWithOL.reduce((c, r) => c + (r.orderLines || []).filter(l => l.type === 'procedure' && l.status === 'pending').length, 0);
+      const repPendCount = rxsWithOL.reduce((c, r) => c + (r.orderLines || []).filter(l => (l.type === 'lab_test' || l.type === 'diagnostic_test') && (l.status === 'pending' || l.status === 'accepted')).length, 0);
       const doneCount = rxsWithOL.filter(r => r.status === 'executed' || r.status === 'case_complete').length;
 
       return `
@@ -3461,16 +3522,16 @@
     <div><h1 class="page-title">Operations</h1><div class="page-sub">Track procedures, tests & referrals</div></div>
   </div>
   <div class="ops-stats">
-    <div class="ops-stat ${f==='pending'?'active':''}" onclick="APP.opsFilter='pending';render()"><div class="ops-stat-val" style="color:var(--warn)">${pendingCount}</div><div class="ops-stat-label">Pending Actions</div></div>
-    <div class="ops-stat ${f==='to_administer'?'active':''}" onclick="APP.opsFilter='to_administer';render()"><div class="ops-stat-val" style="color:var(--orange)">${toAdminCount}</div><div class="ops-stat-label">To Administer</div></div>
-    <div class="ops-stat ${f==='reports_pending'?'active':''}" onclick="APP.opsFilter='reports_pending';render()"><div class="ops-stat-val" style="color:var(--info)">${repPendCount}</div><div class="ops-stat-label">Reports Pending</div></div>
-    <div class="ops-stat ${f==='complete'?'active':''}" onclick="APP.opsFilter='complete';render()"><div class="ops-stat-val" style="color:var(--success)">${doneCount}</div><div class="ops-stat-label">Complete</div></div>
+    <div class="ops-stat ${f === 'pending' ? 'active' : ''}" onclick="APP.opsFilter='pending';render()"><div class="ops-stat-val" style="color:var(--warn)">${pendingCount}</div><div class="ops-stat-label">Pending Actions</div></div>
+    <div class="ops-stat ${f === 'to_administer' ? 'active' : ''}" onclick="APP.opsFilter='to_administer';render()"><div class="ops-stat-val" style="color:var(--orange)">${toAdminCount}</div><div class="ops-stat-label">To Administer</div></div>
+    <div class="ops-stat ${f === 'reports_pending' ? 'active' : ''}" onclick="APP.opsFilter='reports_pending';render()"><div class="ops-stat-val" style="color:var(--info)">${repPendCount}</div><div class="ops-stat-label">Reports Pending</div></div>
+    <div class="ops-stat ${f === 'complete' ? 'active' : ''}" onclick="APP.opsFilter='complete';render()"><div class="ops-stat-val" style="color:var(--success)">${doneCount}</div><div class="ops-stat-label">Complete</div></div>
   </div>
   <div class="filter-bar">
-    <button class="filter-tab ${f==='all'?'active':''}" onclick="APP.opsFilter='all';render()">All</button>
+    <button class="filter-tab ${f === 'all' ? 'active' : ''}" onclick="APP.opsFilter='all';render()">All</button>
   </div>
   ${filtered.length === 0 ? '<div class="empty-state"><div class="icon">📋</div><p>No items match this filter.</p></div>' :
-    filtered.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).map(rx => renderOpsCard(rx)).join('')}`;
+          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(rx => renderOpsCard(rx)).join('')}`;
     }
 
     function renderOpsCard(rx) {
@@ -3492,7 +3553,7 @@
         <span style="font-size:12px;color:var(--text-muted);">Nurse:</span>
         <select id="nurse-${rx.id}" style="width:auto;min-width:160px;" onchange="saveOpsCard('${rx.id}')">
           <option value="">Select nurse...</option>
-          ${NURSE_LIST.map(n => `<option value="${n.id}" ${lines.some(l=>l.administeredBy===n.id)?'selected':''}>${n.name}</option>`).join('')}
+          ${NURSE_LIST.map(n => `<option value="${n.id}" ${lines.some(l => l.administeredBy === n.id) ? 'selected' : ''}>${n.name}</option>`).join('')}
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveOpsCard('${rx.id}')">💾 Save All</button>
       </div>
@@ -3525,7 +3586,7 @@
       <div class="order-line-icon" style="background:${iconBg}">${line.icon || ORDER_ICONS[line.type]}</div>
       <div class="order-line-info">
         <div class="order-line-name">${line.details}</div>
-        <div class="order-line-meta">${line.category}${line.quantity > 1 ? ' × '+line.quantity : ''}${line.administeredBy ? ' · by '+NURSE_LIST.find(n=>n.id===line.administeredBy)?.name : ''}${line.administeredAt ? ' · '+fmtDate(line.administeredAt) : ''}</div>
+        <div class="order-line-meta">${line.category}${line.quantity > 1 ? ' × ' + line.quantity : ''}${line.administeredBy ? ' · by ' + NURSE_LIST.find(n => n.id === line.administeredBy)?.name : ''}${line.administeredAt ? ' · ' + fmtDate(line.administeredAt) : ''}</div>
       </div>
       <div class="order-line-actions">${statusHtml}</div>
     </div>`;
@@ -3586,26 +3647,26 @@
       const drop = document.getElementById('upload-drop');
       drop.ondragover = e => { e.preventDefault(); drop.classList.add('dragover'); };
       drop.ondragleave = () => drop.classList.remove('dragover');
-      drop.ondrop = e => { e.preventDefault(); drop.classList.remove('dragover'); if(e.dataTransfer.files[0]) processUploadFile(e.dataTransfer.files[0], rxId, lineIdx); };
+      drop.ondrop = e => { e.preventDefault(); drop.classList.remove('dragover'); if (e.dataTransfer.files[0]) processUploadFile(e.dataTransfer.files[0], rxId, lineIdx); };
     }
 
-    function closeUploadModal() { const el = document.getElementById('upload-modal'); if(el) el.remove(); }
+    function closeUploadModal() { const el = document.getElementById('upload-modal'); if (el) el.remove(); }
 
     let _pendingUpload = null;
     function handleFileSelect(input, rxId, lineIdx) {
-      if(input.files[0]) processUploadFile(input.files[0], rxId, lineIdx);
+      if (input.files[0]) processUploadFile(input.files[0], rxId, lineIdx);
     }
 
     function processUploadFile(file, rxId, lineIdx) {
-      if(file.size > 10*1024*1024) { document.getElementById('upload-error').textContent='File too large (max 10MB)'; document.getElementById('upload-error').style.display='block'; return; }
+      if (file.size > 10 * 1024 * 1024) { document.getElementById('upload-error').textContent = 'File too large (max 10MB)'; document.getElementById('upload-error').style.display = 'block'; return; }
       const reader = new FileReader();
       reader.onload = () => {
         _pendingUpload = { rxId, lineIdx, base64: reader.result, name: file.name, type: file.type };
         const prev = document.getElementById('upload-preview-area');
-        if(file.type.startsWith('image/')) {
-          prev.innerHTML = `<div class="upload-preview"><img class="upload-preview-thumb" src="${reader.result}"><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size/1024).toFixed(0)} KB</div></div></div>`;
+        if (file.type.startsWith('image/')) {
+          prev.innerHTML = `<div class="upload-preview"><img class="upload-preview-thumb" src="${reader.result}"><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size / 1024).toFixed(0)} KB</div></div></div>`;
         } else {
-          prev.innerHTML = `<div class="upload-preview"><div style="font-size:28px;">📄</div><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size/1024).toFixed(0)} KB · PDF</div></div></div>`;
+          prev.innerHTML = `<div class="upload-preview"><div style="font-size:28px;">📄</div><div><div style="font-weight:600;font-size:13px;">${file.name}</div><div style="font-size:11px;color:var(--text-muted);">${(file.size / 1024).toFixed(0)} KB · PDF</div></div></div>`;
         }
         const btn = document.getElementById('upload-submit');
         btn.disabled = false;
@@ -3615,8 +3676,8 @@
     }
 
     function doUploadReport() {
-      if(!_pendingUpload) return;
-      const {rxId, lineIdx, base64, name, type} = _pendingUpload;
+      if (!_pendingUpload) return;
+      const { rxId, lineIdx, base64, name, type } = _pendingUpload;
       const btn = document.getElementById('upload-submit');
       btn.disabled = true;
       btn.textContent = 'Uploading to Drive...';
@@ -3625,34 +3686,34 @@
         method: 'POST',
         body: JSON.stringify({ action: 'uploadReport', data: { base64, name, type } })
       })
-      .then(r => r.json())
-      .then(res => {
-        if(res.error) throw new Error(res.error);
-        const rxs = getRxs();
-        const rx = rxs.find(r => r.id === rxId);
-        if(!rx || !rx.orderLines[lineIdx]) return;
+        .then(r => r.json())
+        .then(res => {
+          if (res.error) throw new Error(res.error);
+          const rxs = getRxs();
+          const rx = rxs.find(r => r.id === rxId);
+          if (!rx || !rx.orderLines[lineIdx]) return;
 
-        rx.orderLines[lineIdx].status = 'report_uploaded';
-        rx.orderLines[lineIdx].reportUrl = res.url;
-        rx.orderLines[lineIdx].reportFileId = res.fileId;
-        rx.orderLines[lineIdx].reportFileName = name;
-        rx.orderLines[lineIdx].reportMimeType = type;
-        rx.orderLines[lineIdx].reportUploadedAt = new Date().toISOString();
-        rx.status = computeRxStatus(rx);
-        
-        saveRxs(rxs);
-        updatePrescription(rx);
-        
-        _pendingUpload = null;
-        closeUploadModal();
-        toast('Report uploaded to Drive!');
-        render();
-      })
-      .catch(err => {
-        toast('Upload failed: ' + err.message, 'error');
-        btn.disabled = false;
-        btn.textContent = 'Retry Upload';
-      });
+          rx.orderLines[lineIdx].status = 'report_uploaded';
+          rx.orderLines[lineIdx].reportUrl = res.url;
+          rx.orderLines[lineIdx].reportFileId = res.fileId;
+          rx.orderLines[lineIdx].reportFileName = name;
+          rx.orderLines[lineIdx].reportMimeType = type;
+          rx.orderLines[lineIdx].reportUploadedAt = new Date().toISOString();
+          rx.status = computeRxStatus(rx);
+
+          saveRxs(rxs);
+          updatePrescription(rx);
+
+          _pendingUpload = null;
+          closeUploadModal();
+          toast('Report uploaded to Drive!');
+          render();
+        })
+        .catch(err => {
+          toast('Upload failed: ' + err.message, 'error');
+          btn.disabled = false;
+          btn.textContent = 'Retry Upload';
+        });
     }
 
     /* ── Image Zoom ── */
@@ -3678,13 +3739,13 @@
     <div><h1 class="page-title">Reports & Follow-Up</h1><div class="page-sub">Review lab reports and complete cases</div></div>
   </div>
   ${reviewable.length === 0 ? '<div class="empty-state"><div class="icon">📊</div><p>No prescriptions with reports or pending actions.</p></div>' :
-    reviewable.sort((a,b) => {
-      const pri = {reports_ready:0, pending_actions:1, executed:2, case_complete:3};
-      return (pri[a.status]||9) - (pri[b.status]||9) || new Date(b.createdAt) - new Date(a.createdAt);
-    }).map(rx => {
-      const sc = STATUS_CONFIG[rx.status] || STATUS_CONFIG.active;
-      const reportsCount = (rx.orderLines||[]).filter(l => l.status === 'report_uploaded').length;
-      return `
+          reviewable.sort((a, b) => {
+            const pri = { reports_ready: 0, pending_actions: 1, executed: 2, case_complete: 3 };
+            return (pri[a.status] || 9) - (pri[b.status] || 9) || new Date(b.createdAt) - new Date(a.createdAt);
+          }).map(rx => {
+            const sc = STATUS_CONFIG[rx.status] || STATUS_CONFIG.active;
+            const reportsCount = (rx.orderLines || []).filter(l => l.status === 'report_uploaded').length;
+            return `
     <div class="rx-card" style="cursor:pointer;" onclick="APP.reviewingRxId='${rx.id}';render()">
       <div class="rx-card-hdr">
         <div>
@@ -3699,7 +3760,7 @@
         </div>
       </div>
     </div>`;
-    }).join('')}`;
+          }).join('')}`;
     }
 
     function renderReviewDetail(rx) {
@@ -3723,13 +3784,13 @@
   <div class="followup-section" style="margin-top:0;">
     <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Execution Summary</div>
     <div class="exec-summary">
-      ${procedures.map(l => `<div class="exec-item ${l.status==='administered'?'done':l.status==='declined'?'declined':''}">
+      ${procedures.map(l => `<div class="exec-item ${l.status === 'administered' ? 'done' : l.status === 'declined' ? 'declined' : ''}">
         ${l.icon} <span style="flex:1">${l.details}</span>
-        <span class="pill ${l.status==='administered'?'pill-green':l.status==='declined'?'pill-red':'pill-gray'}" style="font-size:10px;">${l.status==='administered'?'✅ Administered':l.status==='declined'?'❌ Declined':'⏳ Pending'}</span>
+        <span class="pill ${l.status === 'administered' ? 'pill-green' : l.status === 'declined' ? 'pill-red' : 'pill-gray'}" style="font-size:10px;">${l.status === 'administered' ? '✅ Administered' : l.status === 'declined' ? '❌ Declined' : '⏳ Pending'}</span>
       </div>`).join('')}
-      ${referrals.map(l => `<div class="exec-item ${l.status==='accepted'?'done':l.status==='declined'?'declined':''}">
+      ${referrals.map(l => `<div class="exec-item ${l.status === 'accepted' ? 'done' : l.status === 'declined' ? 'declined' : ''}">
         🔀 <span style="flex:1">${l.details}</span>
-        <span class="pill ${l.status==='accepted'?'pill-green':l.status==='declined'?'pill-red':'pill-gray'}" style="font-size:10px;">${l.status==='accepted'?'✅ Accepted':l.status==='declined'?'❌ Declined':'⏳ Pending'}</span>
+        <span class="pill ${l.status === 'accepted' ? 'pill-green' : l.status === 'declined' ? 'pill-red' : 'pill-gray'}" style="font-size:10px;">${l.status === 'accepted' ? '✅ Accepted' : l.status === 'declined' ? '❌ Declined' : '⏳ Pending'}</span>
       </div>`).join('')}
     </div>
   </div>
@@ -3739,9 +3800,9 @@
   <div class="followup-section">
     <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">📊 Lab Reports</div>
     ${reports.map((l, i) => {
-      const lineIdx = lines.indexOf(l);
-      const isImage = l.reportMimeType?.startsWith('image/');
-      return `
+        const lineIdx = lines.indexOf(l);
+        const isImage = l.reportMimeType?.startsWith('image/');
+        return `
     <div class="report-card">
       <div class="report-card-hdr">
         <span style="font-size:16px;">${l.icon}</span>
@@ -3749,21 +3810,21 @@
           <div style="font-weight:600;">${l.details}</div>
           <div style="font-size:11px;color:var(--text-muted);">
             Uploaded ${l.reportUploadedAt ? fmtDate(l.reportUploadedAt) : ''} 
-            ${l.administeredBy ? ' · Administered by ' + (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : ''}
+            ${l.administeredBy ? ' · Administered by ' + (NURSE_LIST.find(n => n.id === l.administeredBy)?.name || 'Nurse') : ''}
           </div>
         </div>
         <span class="pill pill-green" style="font-size:10px;">📊 Report Available</span>
       </div>
       <div class="report-card-body">
         ${isImage ? `<div class="report-img-wrap" onclick="zoomImage('${l.reportUrl}')"><img src="${l.reportUrl}" alt="${l.details}"></div>` :
-          `<a href="${l.reportUrl}" target="_blank" style="text-decoration:none;"><div class="pdf-report-placeholder"><span style="font-size:28px;">📄</span><div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;">${l.reportFileName || 'PDF Report'}</div><div style="font-size:10px;color:var(--primary);margin-top:4px;">Click to view document</div></div></a>`}
+            `<a href="${l.reportUrl}" target="_blank" style="text-decoration:none;"><div class="pdf-report-placeholder"><span style="font-size:28px;">📄</span><div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-weight:600;">${l.reportFileName || 'PDF Report'}</div><div style="font-size:10px;color:var(--primary);margin-top:4px;">Click to view document</div></div></a>`}
         <div class="field" style="margin-top:12px;">
           <label>Doctor's Interpretation</label>
-          <textarea id="interp-${lineIdx}" placeholder="Clinical interpretation of this report..." ${isComplete?'disabled':''}>${l.interpretation || ''}</textarea>
+          <textarea id="interp-${lineIdx}" placeholder="Clinical interpretation of this report..." ${isComplete ? 'disabled' : ''}>${l.interpretation || ''}</textarea>
         </div>
       </div>
     </div>`;
-    }).join('')}
+      }).join('')}
   </div>` : '<div class="empty-state" style="margin-top:18px;"><div class="icon">📊</div><p>No reports uploaded yet.</p></div>'}
 
   <!-- Follow-Up Prescription -->
@@ -3923,11 +3984,17 @@
 
     <!-- PATIENT -->
     ${sec('PATIENT DETAILS')}
-    <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:7px;padding:10px 13px 12px;display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;margin-bottom:4px;">
-      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">PATIENT NAME</div><div style="font-weight:700;font-size:14px;">${rx.patient.name}</div></div>
-      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">AGE / GENDER</div><div style="font-weight:600;font-size:11px;">${rx.patient.age}Y · ${rx.patient.gender}</div></div>
-      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">CONTACT</div><div style="font-weight:600;font-size:11px;">${rx.patient.phone || '—'}</div></div>
-      <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">ADDRESS</div><div style="font-size:11px;">${rx.patient.address || '—'}</div></div>
+    <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:7px;padding:10px 13px 12px;margin-bottom:4px;">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:8px;margin-bottom:8px;">
+        <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">PATIENT NAME</div><div style="font-weight:700;font-size:14px;">${rx.patient.name}</div></div>
+        <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">AGE / GENDER</div><div style="font-weight:600;font-size:11px;">${rx.patient.age}Y · ${rx.patient.gender}</div></div>
+        <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">CONTACT</div><div style="font-weight:600;font-size:11px;">${rx.patient.phone || '—'}</div></div>
+        <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">ADDRESS</div><div style="font-size:11px;">${rx.patient.address || '—'}</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:8px;border-top:1px dashed #e8e8e8;">
+        <div><div style="font-size:8px;color:#EF4444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">KNOWN ALLERGIES</div><div style="font-weight:600;font-size:11px;color:#EF4444;">${rx.patient.allergies || 'None recorded'}</div></div>
+        <div><div style="font-size:8px;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:3px;">COMORBIDITIES</div><div style="font-weight:600;font-size:11px;">${rx.patient.comorbidities || 'None recorded'}</div></div>
+      </div>
     </div>
 
     <!-- VITALS -->
@@ -3945,14 +4012,9 @@
     ${rx.chiefConcerns ? sec('CHIEF CONCERNS') + '<div style="padding:9px 12px;background:#fff3ee;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;border:0.5px solid #f5d0c0;font-size:11.5px;margin-bottom:4px;">' + rx.chiefConcerns + '</div>' : ''}
 
     <!-- CLINICAL NOTES -->
-    ${(rx.observations || rx.diagnosis) ? sec('CLINICAL NOTES') + `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">
-      ${rx.observations ? `<div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;padding:9px 11px;">
-        <div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:5px;">OBSERVATIONS</div>
-        <div style="font-size:11.5px;">${rx.observations}</div></div>` : ''}
-      ${rx.diagnosis ? `<div style="background:#fff3ee;border:0.5px solid #f5d0c0;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;padding:9px 11px;">
-        <div style="font-size:8px;font-weight:700;color:#F5621E;text-transform:uppercase;margin-bottom:5px;">DIAGNOSIS</div>
-        <div style="font-size:12px;font-weight:700;">${rx.diagnosis.replace(/\n/g, '<br>')}</div></div>` : ''}
+    ${rx.diagnosis ? sec('CLINICAL DIAGNOSIS') + `
+    <div style="background:#fff3ee;border:0.5px solid #f5d0c0;border-left:3px solid #F5621E;border-radius:0 5px 5px 0;padding:9px 11px;margin-bottom:4px;">
+      <div style="font-size:12px;font-weight:700;">${rx.diagnosis.replace(/\n/g, '<br>')}</div>
     </div>` : ''}
 
     <!-- MEDICINES -->
@@ -3996,14 +4058,14 @@
       </tr></thead>
       <tbody>
         ${procs.map((p, i) => {
-          const pt = PROCEDURE_TYPES.find(t => t.value === p.type);
-          return `<tr style="background:${i % 2 === 0 ? '#fff' : '#f9f8f5'};border-bottom:0.5px solid #eee;">
+        const pt = PROCEDURE_TYPES.find(t => t.value === p.type);
+        return `<tr style="background:${i % 2 === 0 ? '#fff' : '#f9f8f5'};border-bottom:0.5px solid #eee;">
             <td style="padding:7px 9px;color:#bbb;">${i + 1}</td>
             <td style="padding:7px 9px;font-weight:600;">${pt ? pt.label : p.type}</td>
             <td style="padding:7px 9px;">${p.details || '—'}</td>
             <td style="padding:7px 9px;font-weight:700;color:#F5621E;">${p.quantity || 1}</td>
           </tr>`;
-        }).join('')}
+      }).join('')}
       </tbody>
     </table>
     ${rx.procInstructions ? `<div style="font-size:9.5px;color:#666;font-style:italic;margin-bottom:6px;padding:0 9px;"><b>Note to Nurse:</b> ${rx.procInstructions}</div>` : ''}
@@ -4025,8 +4087,8 @@
         <div style="padding:7px 10px 5px;font-size:8px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:0.8px;border-bottom:0.5px solid #e8e8e8;">ADMINISTRATION STATUS</div>
         ${orderLines.map(l => `
           <div style="padding:5px 10px;border-bottom:0.5px solid #f0f0f0;font-size:10px;display:flex;justify-content:space-between;align-items:center;">
-            <span>${l.icon} ${l.details.substring(0,30)}</span>
-            <span style="font-weight:700;color:${l.status==='administered'||l.status==='report_uploaded'?'#2ecc71':l.status==='declined'?'#e74c3c':'#888'};">${l.status.toUpperCase().replace('_',' ')}</span>
+            <span>${l.icon} ${l.details.substring(0, 30)}</span>
+            <span style="font-weight:700;color:${l.status === 'administered' || l.status === 'report_uploaded' ? '#2ecc71' : l.status === 'declined' ? '#e74c3c' : '#888'};">${l.status.toUpperCase().replace('_', ' ')}</span>
           </div>`).join('')}
       </div>
       <div style="background:#f9f8f5;border:0.5px solid #e8e8e8;border-radius:5px;overflow:hidden;">
@@ -4228,21 +4290,32 @@
       y += 25; hline(y, XGR, 0.3); y += 5;
 
       // ── PATIENT ────────────────────────────────────────────────────────────────
-      secTitle('PATIENT DETAILS'); guard(20);
-      fillR(M, y, CW, 15, BG); strokeR(M, y, CW, 15, XGR);
+      secTitle('PATIENT DETAILS'); guard(25);
+      fillR(M, y, CW, 20, BG); strokeR(M, y, CW, 20, XGR);
       const pcols = [M + 5, M + CW * 0.35, M + CW * 0.65, M + CW * 0.85];
       ['PATIENT NAME', 'AGE / GENDER', 'CONTACT', 'ID'].forEach((l, i) => { setF('bold', 5.5, LGR); doc.text(l, pcols[i], y + 4); });
-      
+
       const pNameSz = fitText(rx.patient.name, CW * 0.3, 11, 'bold', DRK);
       doc.text(rx.patient.name, pcols[0], y + 10.5);
-      
+
       setF('bold', 9, DRK);
       doc.text(`${rx.patient.age}Y / ${rx.patient.gender}`, pcols[1], y + 10.5);
       doc.text(rx.patient.phone || '—', pcols[2], y + 10.5);
       doc.text(rx.id.substring(0, 8), pcols[3], y + 10.5);
+
+      doc.setDrawColor(...XGR); doc.setLineWidth(0.2);
+      [CW * 0.33, CW * 0.63, CW * 0.83].forEach(x => { doc.line(M + x, y + 2, M + x, y + 13); });
+      doc.setDrawColor(...XGR); doc.setLineWidth(0.3); doc.setLineDashPattern([1, 1], 0);
+      doc.line(M + 2, y + 14, M + CW - 2, y + 14);
+      doc.setLineDashPattern([], 0); // reset
+
+      setF('bold', 5.5, [239, 68, 68]); doc.text('KNOWN ALLERGIES', pcols[0], y + 17);
+      setF('bold', 5.5, LGR); doc.text('COMORBIDITIES', pcols[2], y + 17);
       
-      [CW * 0.33, CW * 0.63, CW * 0.83].forEach(x => { doc.setDrawColor(...XGR); doc.setLineWidth(0.2); doc.line(M + x, y + 2, M + x, y + 13); });
-      y += 18;
+      setF('bold', 7.5, [239, 68, 68]); doc.text(rx.patient.allergies || 'None recorded', pcols[0] + 30, y + 17.5);
+      setF('bold', 7.5, DRK); doc.text(rx.patient.comorbidities || 'None recorded', pcols[2] + 25, y + 17.5);
+
+      y += 24;
 
       // ── VITALS ─────────────────────────────────────────────────────────────────
       secTitle('VITALS AT VISIT'); guard(18);
@@ -4263,15 +4336,13 @@
         setF('normal', 8.5, DRK); doc.text(lines, M + 5, y + 6.5); y += bh + 5;
       }
 
-      // ── CLINICAL NOTES ─────────────────────────────────────────────────────────
-      if (rx.observations || rx.diagnosis) {
-        secTitle('CLINICAL NOTES');
-        const half = (CW - 4) / 2;
-        const obsL = rx.observations ? doc.splitTextToSize(rx.observations, half - 10) : [];
-        const diagL = rx.diagnosis ? doc.splitTextToSize(rx.diagnosis, half - 10) : [];
-        const bh = Math.max(obsL.length, diagL.length) * 4.2 + 14; guard(bh + 5);
-        if (rx.observations) { fillR(M, y, half, bh, BG); strokeR(M, y, half, bh, XGR); setF('bold', 5.5, ORG); doc.text('OBSERVATIONS', M + 5, y + 5); setF('normal', 8.5, DRK); doc.text(obsL, M + 5, y + 10); }
-        if (rx.diagnosis) { const dx = M + half + 4; fillR(dx, y, half, bh, WRM); strokeR(dx, y, half, bh, BRDORG); vbar(dx, y, y + bh, ORG); setF('bold', 5.5, ORG); doc.text('DIAGNOSIS', dx + 5, y + 5); setF('bold', 9.5, DRK); doc.text(diagL, dx + 5, y + 10); }
+      // ── CLINICAL DIAGNOSIS ─────────────────────────────────────────────────────────
+      if (rx.diagnosis) {
+        secTitle('CLINICAL DIAGNOSIS');
+        const diagL = doc.splitTextToSize(rx.diagnosis, CW - 10);
+        const bh = diagL.length * 4.2 + 10; guard(bh + 5);
+        fillR(M, y, CW, bh, WRM); strokeR(M, y, CW, bh, BRDORG); vbar(M, y, y + bh, ORG); 
+        setF('bold', 9.5, DRK); doc.text(diagL, M + 5, y + 7);
         y += bh + 6;
       }
 
@@ -4288,17 +4359,20 @@
           const name = fitText(m.name, 66, 8.5, 'bold', DRK); doc.text(name, cols[1] + 1, y + 5.5);
           setF('bold', 9, ORG); doc.text(m.dosage, cols[2] + 1, y + 5.5);
           setF('bold', 8.5, DRK); doc.text(m.days + ' days', cols[3] + 1, y + 5.5);
-          
+
           // Color-coded timing
           const t = m.timing || '';
           const tx = cols[4] + 1;
           const isM = t.includes('M'), isA = t.includes('A'), isE = t.includes('E'), isN = t.includes('N');
-          setF('bold', 8, isM ? ORG : GRY); doc.text('M', tx, y + 5.5);
-          setF('bold', 8, isA ? ORG : GRY); doc.text('A', tx + 4, y + 5.5);
-          setF('bold', 8, isE ? ORG : GRY); doc.text('E', tx + 8, y + 5.5);
-          setF('bold', 8, isN ? ORG : GRY); doc.text('N', tx + 12, y + 5.5);
-          setF('normal', 7, GRY); doc.text(t.replace(/[MAEN]/g, '').trim(), tx + 18, y + 5.5);
-          
+          const tWidth = 4.5;
+          const drawBadge = (isActive, label, bx) => {
+            fillR(bx, y + 2, tWidth, 4.5, isActive ? ORG : BG, 1);
+            setF('bold', 5.5, isActive ? WHT : LGR);
+            doc.text(label, bx + tWidth/2, y + 5.5, { align: 'center' });
+          };
+          drawBadge(isM, 'M', tx); drawBadge(isA, 'A', tx + tWidth + 1); drawBadge(isE, 'E', tx + (tWidth + 1)*2); drawBadge(isN, 'N', tx + (tWidth + 1)*3);
+          setF('normal', 7, GRY); doc.text(t.replace(/[MAEN]/g, '').trim(), tx + (tWidth + 1)*4 + 2, y + 5.5);
+
           y += 8;
         }); y += 4;
       }
@@ -4378,21 +4452,21 @@
           const bh = lines.length * rowH + 12; guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
           setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
-          
+
           lines.forEach((l, i) => {
             const ly = y + 12 + i * rowH;
-            setF('bold', 5, ORG); doc.text(l.type.toUpperCase().substring(0,4), x + 5, ly - 3.5);
-            
+            setF('bold', 5, ORG); doc.text(l.type.toUpperCase().substring(0, 4), x + 5, ly - 3.5);
+
             const cleanDetails = l.details.replace(/[^\x00-\x7F]/g, ""); // Remove non-ASCII
             const sz = fitText(cleanDetails, w - 40, 8.5, 'bold', DRK);
             doc.text(doc.splitTextToSize(cleanDetails, w - 40)[0], x + 5, ly + 0.5);
-            
-            const nName = l.administeredBy ? (NURSE_LIST.find(n=>n.id===l.administeredBy)?.name || 'Nurse') : '';
+
+            const nName = l.administeredBy ? (NURSE_LIST.find(n => n.id === l.administeredBy)?.name || 'Nurse') : '';
             if (nName) { setF('normal', 6, GRY); doc.text('Staff: ' + nName.replace(/[^\x00-\x7F]/g, ""), x + 5, ly + 4); }
 
-            const st = l.status.toUpperCase().replace('_',' ');
-            const isDone = l.status==='administered'||l.status==='report_uploaded';
-            setF('bold', 7, isDone?[46,204,113]:[136,136,136]);
+            const st = l.status.toUpperCase().replace('_', ' ');
+            const isDone = l.status === 'administered' || l.status === 'report_uploaded';
+            setF('bold', 7, isDone ? [46, 204, 113] : [136, 136, 136]);
             doc.text(st, x + w - 5, ly, { align: 'right' });
           });
           return bh;
@@ -4404,13 +4478,13 @@
           const bh = Math.max(interps.length * rowH + 12, 30); guard(bh + 5);
           fillR(x, y, w, bh, BG); strokeR(x, y, w, bh, XGR);
           setF('bold', 6, LGR); doc.text(label, x + 5, y + 5);
-          
-          if (!interps.length) { setF('normal', 8, LGR); doc.text('Pending results.', x + w/2, y + bh/2 + 2, { align:'center' }); }
+
+          if (!interps.length) { setF('normal', 8, LGR); doc.text('Pending results.', x + w / 2, y + bh / 2 + 2, { align: 'center' }); }
           else {
             interps.forEach((l, i) => {
               const iy = y + 12 + i * rowH;
-              setF('bold', 7, ORG); doc.text(l.details.toUpperCase().substring(0,25), x + 5, iy);
-              setF('normal', 8.5, DRK); 
+              setF('bold', 7, ORG); doc.text(l.details.toUpperCase().substring(0, 25), x + 5, iy);
+              setF('normal', 8.5, DRK);
               doc.text(doc.splitTextToSize(l.interpretation, w - 10), x + 5, iy + 4.5);
             });
           }
@@ -4438,7 +4512,7 @@
         const diagL = fu.updatedDiagnosis ? doc.splitTextToSize(fu.updatedDiagnosis, CW - 10) : [];
         const medsL = fu.additionalMeds ? doc.splitTextToSize(fu.additionalMeds, CW - 10) : [];
         const notesL = fu.finalNotes ? doc.splitTextToSize(fu.finalNotes, CW - 10) : [];
-        const bh = (diagL.length + medsL.length + notesL.length) * 4.2 + (fu.updatedDiagnosis?8:0) + (fu.additionalMeds?8:0) + (fu.finalNotes?8:0) + 8;
+        const bh = (diagL.length + medsL.length + notesL.length) * 4.2 + (fu.updatedDiagnosis ? 8 : 0) + (fu.additionalMeds ? 8 : 0) + (fu.finalNotes ? 8 : 0) + 8;
         guard(bh + 4); fillR(M, y, CW, bh, [244, 243, 250]); strokeR(M, y, CW, bh, [221, 216, 238]); vbar(M, y, y + bh, PUR);
         let fy = y + 5;
         if (fu.updatedDiagnosis) { setF('bold', 5.5, PUR); doc.text('UPDATED CLINICAL DIAGNOSIS', M + 5, fy); fy += 4; setF('bold', 10, DRK); doc.text(diagL, M + 5, fy); fy += diagL.length * 4.2 + 4; }
@@ -4498,28 +4572,35 @@
         const sx = M + i * sw + 0.5;
         fillR(sx, y, sw - 1, 28, WHT); strokeR(sx, y, sw - 1, 28, XGR);
         doc.setDrawColor(...ORG); doc.setLineWidth(1.2); doc.line(sx, y, sx + sw - 1, y);
-        
+
         // Category Label
         fillR(sx + 2, y + 2, sw - 5, 6, BG, 1);
-        setF('bold', 6, ORG); doc.text(icon, sx + sw/2, y + 6.2, { align: 'center' });
-        
+        setF('bold', 6, ORG); doc.text(icon, sx + sw / 2, y + 6.2, { align: 'center' });
+
         // Service Name (Dynamic size)
         const nameSz = fitText(name, sw - 4, 8.5, 'bold', DRK);
         doc.text(name, sx + sw / 2, y + 15, { align: 'center' });
-        
+
         // Price
         setF('normal', 6.5, GRY); doc.text('From', sx + sw / 2, y + 20, { align: 'center' });
         setF('bold', 9.5, ORG); doc.text('Rs.' + price, sx + sw / 2, y + 25, { align: 'center' });
       }); y += 32;
 
-      // CTA strip with logo
-      guard(35); 
-      // Signature Line
-      const sigY = y;
-      doc.setDrawColor(...GRY); doc.setLineWidth(0.2); doc.line(W - M - 60, sigY + 15, W - M, sigY + 15);
-      setF('bold', 7, DRK); doc.text('Electronically Signed By', W - M - 60, sigY + 19);
-      setF('bold', 8.5, ORG); doc.text('Dr. ' + (rx.doctorName || 'MCI Registered Practitioner'), W - M - 60, sigY + 23);
-      y += 30;
+      // ── PREMIUM SIGNATURE BLOCK ────────────────────────────────────────────────
+      guard(40);
+      fillR(M, y, CW, 28, [248, 250, 252]); strokeR(M, y, CW, 28, [226, 232, 240]);
+      vbar(M, y, y + 28, [46, 204, 113], 1.5);
+      
+      setF('bold', 7, [46, 204, 113]); doc.text('✔ DIGITALLY SIGNED & SECURED', M + 8, y + 8);
+      setF('bold', 11, DRK); doc.text('Dr. ' + (rx.doctorName || 'MCI Registered Practitioner'), M + 8, y + 16);
+      setF('normal', 8, GRY); doc.text((rx.doctorQual || '') + ' · Reg: ' + rx.doctorReg, M + 8, y + 22);
+      
+      doc.setDrawColor(...[203, 213, 225]); doc.setLineWidth(0.3);
+      doc.line(W - M - 55, y + 5, W - M - 55, y + 23);
+      
+      setF('bold', 7, GRY); doc.text('Generated On', W - M - 45, y + 12);
+      setF('bold', 8, DRK); doc.text(fmtDate(new Date().toISOString()), W - M - 45, y + 18);
+      y += 35;
 
       fillR(M, y, CW, 13, WRM); strokeR(M, y, CW, 13, BRDORG); vbar(M, y, y + 13, ORG);
       addLogo(M + 3, y + 1.5, 20, 8.5);
@@ -4529,8 +4610,6 @@
       y += 17;
 
       // ── TERMS & CONDITIONS ─────────────────────────────────────────────────────
-      guard(55); hline(y, XGR, 0.3); y += 5;
-      secTitle('TERMS & CONDITIONS');
       const tcData = [
         ['1. Validity', 'Valid for 30 days from date of issue unless otherwise specified by the treating doctor.'],
         ['2. Authenticity', 'Issued by an MCI-registered practitioner via immidit (Antarlaapika Pvt Ltd). Digitally generated and clinically valid.'],
@@ -4543,13 +4622,24 @@
         ['9. Emergency', 'This prescription does not substitute emergency care. Call 112 or visit nearest hospital in any emergency.'],
         ['10. Feedback', 'care@immidit.com  \u00b7  +91 92179 22339  \u00b7  immidit.com'],
       ];
-      const tcw = (CW - 20) / 2; let lty = y, rty = y;
+      const tcw = (CW - 20) / 2;
+      let estLty = 0, estRty = 0;
+      tcData.forEach(([t, d], i) => {
+        const fullL = doc.splitTextToSize(t + ': ' + d, tcw);
+        const bh = fullL.length * 4.2 + 6;
+        if (i % 2 === 0) estLty += bh; else estRty += bh;
+      });
+      const maxTcHeight = Math.max(estLty, estRty) + 20;
+      
+      guard(maxTcHeight); hline(y, XGR, 0.3); y += 5;
+      secTitle('TERMS & CONDITIONS');
+      let lty = y, rty = y;
       tcData.forEach(([t, d], i) => {
         const col = i % 2, cx = M + (col * (tcw + 20)), rowY = col === 0 ? lty : rty;
         const fullL = doc.splitTextToSize(t + ': ' + d, tcw);
-        fullL.forEach((ln, li) => { 
-          setF(li === 0 ? 'bold' : 'normal', 6.5, li === 0 ? [60, 60, 60] : GRY); 
-          doc.text(ln, cx, rowY + li * 4.2 + 4); 
+        fullL.forEach((ln, li) => {
+          setF(li === 0 ? 'bold' : 'normal', 6.5, li === 0 ? [60, 60, 60] : GRY);
+          doc.text(ln, cx, rowY + li * 4.2 + 4);
         });
         const bh = fullL.length * 4.2 + 6;
         if (col === 0) lty += bh; else rty += bh;
@@ -4558,60 +4648,62 @@
       drawFooter(doc.internal.getNumberOfPages());
 
       // ── DIGITAL APPENDIX (Optional New Page) ───────────────────────────────────
-      const reportsList = (rx.orderLines || []).filter(l => l.reportUrl);
+      const reportsList = (rx.orderLines || []).filter(l => l.reportUrl || l.interpretation);
       if (reportsList.length > 0) {
         newPage();
-        fillR(M, y, CW, 12, ORG, 0); 
-        setF('bold', 8, WHT); doc.text('CLINICAL APPENDIX -- DIAGNOSTIC REPORTS', M + CW/2, y + 7.5, { align: 'center' });
-        y += 18;
+        secTitle('DIAGNOSTIC RESULTS & INTERPRETATIONS');
+        y += 5;
 
         reportsList.forEach((r, i) => {
-          guard(40);
-          fillR(M, y, CW, 30, i % 2 === 0 ? BG : WHT); 
-          strokeR(M, y, CW, 30, XGR, 1.5, 0.2);
-          vbar(M, y, y + 30, ORG, 1.5);
+          const interpL = r.interpretation ? doc.splitTextToSize('Doctor\'s Note: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW - 12) : [];
+          const bh = Math.max(30, interpL.length * 4.2 + 25);
+          guard(bh + 5);
           
-          const cleanDet = fitText(r.details, CW - 75, 10, 'bold', DRK);
+          fillR(M, y, CW, bh, i % 2 === 0 ? BG : WHT);
+          strokeR(M, y, CW, bh, XGR, 1.5, 0.2);
+          vbar(M, y, y + bh, ORG, 1.5);
+
+          const cleanDet = fitText(r.details, CW - 20, 9, 'bold', DRK);
           doc.text(cleanDet, M + 6, y + 9);
-          setF('normal', 7.5, LGR); doc.text('FILE REFERENCE: ' + (r.reportUrl.split('id=')[1]?.substring(0,12) || 'REF-' + i), M + 6, y + 14);
-          setF('normal', 7.5, GRY); doc.text('UPLOADED: ' + (r.reportUploadedAt ? fmtDate(r.reportUploadedAt) : '--'), M + 6, y + 19);
           
-          setF('bold', 8.5, ORG);
-          doc.text('OPEN ORIGINAL DOCUMENT', M + 6, y + 25);
-          doc.link(M + 6, y + 21, 45, 6, { url: r.reportUrl });
+          if (r.reportUrl) {
+            setF('bold', 7.5, ORG);
+            doc.text('📄 VIEW ORIGINAL REPORT', M + 6, y + 16);
+            doc.link(M + 6, y + 12, 45, 6, { url: r.reportUrl });
+          } else {
+            setF('normal', 7.5, GRY); doc.text('No file attached', M + 6, y + 16);
+          }
 
           if (r.interpretation) {
-            const intL = doc.splitTextToSize('DOCTOR\'S NOTE: ' + r.interpretation.replace(/[^\x00-\x7F]/g, ""), CW * 0.45);
-            setF('oblique', 8, DRK);
-            doc.text(intL, M + CW - 6, y + 9, { align: 'right' });
+            setF('normal', 8.5, DRK);
+            doc.text(interpL, M + 6, y + 25);
           }
-          y += 35;
+          y += bh + 5;
         });
 
-        guard(50);
-        fillR(M, y, CW, 30, WRM); strokeR(M, y, CW, 30, BRDORG);
-        setF('bold', 9, ORG); doc.text('SECURE DIGITAL CASE FOLDER', M + CW/2, y + 10, { align: 'center' });
+        guard(35);
+        fillR(M, y, CW, 25, WRM); strokeR(M, y, CW, 25, BRDORG);
+        setF('bold', 9, ORG); doc.text('SECURE DIGITAL CASE FOLDER', M + CW / 2, y + 10, { align: 'center' });
         setF('normal', 8, DRK);
-        doc.text('This folder contains the complete case history, including all diagnostic imaging and lab results.', M + CW/2, y + 18, { align: 'center' });
-        setF('bold', 14, DRK); doc.text('CASE ID: ' + rx.id, M + CW/2, y + 26, { align: 'center' });
+        doc.text('This appendix summarizes the diagnostic findings for CASE ID: ' + rx.id, M + CW / 2, y + 18, { align: 'center' });
       }
 
       // ── MERGE ATTACHMENTS (PDFs) ──────────────────────────────────────────────
       let finalPdfBytes = doc.output('arraybuffer');
       const reportsToMerge = (rx.orderLines || []).filter(l => l.reportUrl && l.reportUrl.includes('id='));
-      
+
       if (reportsToMerge.length > 0 && window.PDFLib) {
         try {
           const { PDFDocument } = window.PDFLib;
           const mergedPdf = await PDFDocument.load(finalPdfBytes);
-          
+
           for (const r of reportsToMerge) {
             try {
               toast(`Attaching ${r.details}...`);
               const res = await SYNC.post({ action: 'proxyFetch', url: r.reportUrl });
               if (res.content) {
                 const fileBytes = Uint8Array.from(atob(res.content), c => c.charCodeAt(0));
-                
+
                 if (res.mimeType.includes('pdf')) {
                   const reportPdf = await PDFDocument.load(fileBytes);
                   const copiedPages = await mergedPdf.copyPages(reportPdf, reportPdf.getPageIndices());
