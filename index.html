@@ -2143,7 +2143,8 @@
       pushDoctors() { this.post({ action: 'saveDoctors', data: getDoctors() }); },
       pushRx(rx, isUpdate = false) { this.post({ action: isUpdate ? 'updatePrescription' : 'addPrescription', data: rx }); },
       pushDraft(docId, data) { this.post({ action: 'saveDraft', doctorId: docId, data: data }); },
-      delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); }
+      delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); },
+      pushCases(cases) { this.post({ action: 'saveCases', data: cases }); }
     };
 
 
@@ -2347,8 +2348,12 @@
     const genId = pre => pre + '-' + Date.now().toString().slice(-6);
     const getDoctors = () => DB.get('doctors', []);
     const getRxs = () => DB.get('prescriptions', []);
+    const getCases = () => DB.get('cases', []);
+    const getNurses = () => DB.get('nurses', []);
     const saveDoctors = d => { DB.set('doctors', d); SYNC.pushDoctors(); };
-    const saveRxs = r => { DB.set('prescriptions', r); }; // normally we push individual Rxs
+    const saveRxs = r => { DB.set('prescriptions', r); };
+    const saveCasesLocal = c => { DB.set('cases', c); SYNC.pushCases(c); };
+    const saveNurses = n => { DB.set('nurses', n); /* TODO: push nurses */ };
     const addPrescription = rx => {
       const rxs = getRxs();
       rxs.unshift(rx);
@@ -2641,6 +2646,7 @@
       <div class="sidebar-section">Nurse Integration</div>
       <button class="sidebar-btn ${s === 'nurse' ? 'active' : ''}" onclick="APP.section='nurse';APP.viewingCaseId=null;render()">
         <span class="sidebar-ico">🧑‍⚕️</span> Nurse PCRs
+        ${(() => { const nc = getCases().filter(c => c.status !== 'assigned' && c.status !== 'closed').length; return nc ? `<span class="sidebar-badge" style="background:var(--info);color:#fff;">${nc}</span>` : ''; })()}
       </button>
 
       <div class="sidebar-footer">
@@ -2963,6 +2969,16 @@
         ${(() => { const pa = rxs.filter(r => r.status === 'pending_actions').length; return pa ? `<span class="sidebar-badge" style="background:var(--warn);color:#000;">${pa}</span>` : ''; })()}
       </button>
 
+      <div class="sidebar-section">Nurses & Cases</div>
+      <button class="sidebar-btn ${s === 'nurses' ? 'active' : ''}" onclick="APP.section='nurses';render()">
+        <span class="sidebar-ico">🧑‍⚕️</span> Manage Nurses
+        <span class="sidebar-badge">${getNurses().length}</span>
+      </button>
+      <button class="sidebar-btn ${s === 'cases' ? 'active' : ''}" onclick="APP.section='cases';render()">
+        <span class="sidebar-ico">📁</span> Assign Cases
+        <span class="sidebar-badge">${getCases().length}</span>
+      </button>
+
       <div class="sidebar-section">Doctors</div>
       <button class="sidebar-btn ${s === 'doctors' ? 'active' : ''}" onclick="APP.section='doctors';render()">
         <span class="sidebar-ico">🩺</span> Manage Doctors
@@ -2979,7 +2995,9 @@
       ${s === 'dashboard' ? renderAdminDash(doctors, rxs, todayRxs, activeDocs) :
           s === 'operations' ? renderOperations(rxs) :
             s === 'doctors' ? renderAdminDoctors(doctors) :
-              renderAdminRxs(rxs)}
+              s === 'nurses' ? renderAdminNurses() :
+                s === 'cases' ? renderAdminCases() :
+                  renderAdminRxs(rxs)}
     </div>
   </div>`;
     }
@@ -2993,7 +3011,9 @@
     <div class="stat-card stat-orange"><div class="stat-label">Total Prescriptions</div><div class="stat-value">${rxs.length}</div><div class="stat-sub">All time</div></div>
     <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${todayRxs}</div><div class="stat-sub">${new Date().toLocaleDateString('en-IN', { weekday: 'long' })}</div></div>
     <div class="stat-card stat-green"><div class="stat-label">Active Doctors</div><div class="stat-value">${activeDocs}</div><div class="stat-sub">Profile complete</div></div>
-    <div class="stat-card stat-blue"><div class="stat-label">Pending Profiles</div><div class="stat-value">${doctors.filter(d => !d.profileComplete).length}</div><div class="stat-sub">First login pending</div></div>
+    <div class="stat-card stat-blue"><div class="stat-label">Field Nurses</div><div class="stat-value">${getNurses().length}</div><div class="stat-sub">Registered accounts</div></div>
+    <div class="stat-card stat-purple"><div class="stat-label">Total Cases</div><div class="stat-value">${getCases().length}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card stat-red"><div class="stat-label">Active Cases</div><div class="stat-value">${getCases().filter(c => c.status !== 'closed').length}</div><div class="stat-sub">Pending completion</div></div>
   </div>
   <div class="page-header" style="margin-top:8px;">
     <div><h2 style="font-size:18px;">Recent Prescriptions</h2></div>
@@ -3057,6 +3077,148 @@
     /* ══════════════════════════════════════════════════════
        ADMIN ACTIONS
     ══════════════════════════════════════════════════════ */
+    /* ══════════════════════════════════════════════════════
+       NURSE PCR VIEW (DOCTOR)
+    ══════════════════════════════════════════════════════ */
+    function renderNurseCases() {
+      if (APP.viewingCaseId) return renderCaseDetail(APP.viewingCaseId);
+      const cases = getCases().filter(c => c.status !== 'assigned');
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Nurse PCR Records</h1><div class="page-sub">Field data collected by nurses — review and start prescriptions</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="SYNC.pull().then(()=>render())">🔄 Refresh</button>
+  </div>
+  ${cases.length === 0 ? `<div class="empty-state"><div class="icon">🧑‍⚕️</div><p>No active nurse cases yet. Cases will appear here once a nurse starts a visit.</p></div>` :
+    cases.map(c => {
+      const sc = c.status === 'closed' ? 'pill-green' : c.status === 'in_progress' ? 'pill-blue' : 'pill-gray';
+      const sl = c.status === 'closed' ? '✅ Closed' : c.status === 'in_progress' ? '🔄 In Progress' : c.status === 'en_route' ? '🚗 En Route' : c.status === 'arrived' ? '📍 Arrived' : c.status;
+      return `<div class="rx-card" style="cursor:pointer;" onclick="APP.viewingCaseId='${c.id}';render()">
+        <div class="rx-card-hdr">
+          <div>
+            <div class="rx-id">${c.id}</div>
+            <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge}Y, ${c.patientGender}</span></div>
+            <div class="rx-meta">${c.chiefIssue || '—'} · ${c.address || ''}</div>
+          </div>
+          <div class="rx-actions"><span class="pill ${sc}">${sl}</span></div>
+        </div>
+      </div>`;
+    }).join('')}`;
+    }
+
+    function renderCaseDetail(caseId) {
+      const c = getCases().find(x => x.id === caseId);
+      if (!c) return '<p>Case not found.</p>';
+      const pcr = c.pcrData || {};
+      const consult = c.doctorConsultation || {};
+      const vitals = pcr.vitals || {};
+      const loc = c.lastUpdatedLocation || c.gpsCoordinates || {};
+      return `
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">${c.patientName}</h1>
+      <div class="page-sub">${c.id} · ${c.chiefIssue}</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId=null;render()">← Back</button>
+      <button class="btn btn-primary" onclick="startRxFromCase('${c.id}')">📝 Start Prescription</button>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value" style="font-size:16px;">${c.status || '—'}</div></div>
+    <div class="stat-card"><div class="stat-label">Phase</div><div class="stat-value">${c.currentPhase || '—'}</div><div class="stat-sub">of 6</div></div>
+    <div class="stat-card"><div class="stat-label">Arrival</div><div class="stat-value" style="font-size:14px;">${c.arrivalTime ? new Date(c.arrivalTime).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) : '—'}</div></div>
+    <div class="stat-card"><div class="stat-label">GPS</div><div class="stat-value" style="font-size:12px;">${loc.lat ? loc.lat.toFixed(4)+', '+loc.lng.toFixed(4) : '—'}</div></div>
+  </div>
+  ${pcr.chiefComplaint ? `<div class="card"><div class="card-header"><div class="card-icon">🗣️</div><div><div class="card-title">Chief Complaint (Nurse)</div></div></div><p style="padding:0 16px 16px;">${pcr.chiefComplaint}</p></div>` : ''}
+  ${pcr.handoverNotes ? `<div class="card"><div class="card-header"><div class="card-icon">📝</div><div><div class="card-title">Handover Notes</div></div></div><p style="padding:0 16px 16px;">${pcr.handoverNotes}</p></div>` : ''}
+  ${consult.instructions ? `<div class="card"><div class="card-header"><div class="card-icon">📞</div><div><div class="card-title">Doctor Consultation</div><div class="card-sub">${consult.doctorName || ''} · ${consult.callDuration || ''}</div></div></div><p style="padding:0 16px 16px;">${consult.instructions}</p></div>` : ''}
+  ${(c.procedurePhotos||[]).length ? `<div class="card"><div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">${c.procedurePhotos.length} photo(s)</div></div></div></div>` : ''}
+  `;
+    }
+
+    function startRxFromCase(caseId) {
+      const c = getCases().find(x => x.id === caseId);
+      if (!c) return;
+      resetForm();
+      // Pre-fill patient data into the form state so renderNewRx picks it up
+      APP.editingRxId = null;
+      APP.section = 'new';
+      APP.viewingCaseId = null;
+      APP._prefillFromCase = c; // stash for gatherForm pre-fill
+      render();
+      // Now fill the DOM inputs directly
+      setTimeout(() => {
+        const el = id => document.getElementById(id);
+        if (el('p-name')) el('p-name').value = c.patientName || '';
+        if (el('p-age')) el('p-age').value = c.patientAge || '';
+        if (el('p-gender')) { const g = c.patientGender === 'M' ? 'Male' : c.patientGender === 'F' ? 'Female' : ''; el('p-gender').value = g; }
+        if (el('p-addr')) el('p-addr').value = c.address || '';
+        if (el('cc')) el('cc').value = c.chiefIssue || '';
+        const pcr = c.pcrData || {};
+        if (pcr.chiefComplaint && el('cc')) el('cc').value = pcr.chiefComplaint;
+        if (pcr.handoverNotes && el('diag')) el('diag').value = 'Nurse notes: ' + pcr.handoverNotes;
+        toast('Patient data imported from nurse case ' + c.id);
+      }, 100);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ADMIN — MANAGE NURSES
+    ══════════════════════════════════════════════════════ */
+    function renderAdminNurses() {
+      const nurses = getNurses();
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Manage Nurses</h1><div class="page-sub">Add and manage field nurse accounts</div></div>
+    <button class="btn btn-primary" onclick="APP.showModal='add_nurse';APP.modalData={};render()">+ Add Nurse</button>
+  </div>
+  ${nurses.length === 0 ? `<div class="empty-state"><div class="icon">🧑‍⚕️</div><p>No nurses yet. Add your first nurse.</p></div>` : `
+  <div class="doctor-grid">
+    ${nurses.map(n => `
+    <div class="doctor-card">
+      <div class="doctor-card-top">
+        <div class="doctor-avatar">${(n.name||'N').substring(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="doctor-name">${n.name || 'Unknown'}</div>
+          <div class="doctor-spec">${n.zone || 'No zone assigned'}</div>
+          <div class="doctor-reg">${n.id} · ${n.phone || ''}</div>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="pill pill-green">${n.casesCompleted || 0} cases</span>
+            <span class="pill pill-blue">Joined ${n.joinedDate || '—'}</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`}`;
+    }
+
+    /* ══════════════════════════════════════════════════════
+       ADMIN — ASSIGN CASES
+    ══════════════════════════════════════════════════════ */
+    function renderAdminCases() {
+      const cases = getCases();
+      const nurses = getNurses();
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Case Management</h1><div class="page-sub">${cases.length} total case(s)</div></div>
+    <button class="btn btn-primary" onclick="APP.showModal='add_case';APP.modalData={};render()">+ Create Case</button>
+  </div>
+  ${cases.length === 0 ? `<div class="empty-state"><div class="icon">📁</div><p>No cases yet. Create and assign your first case.</p></div>` :
+    cases.map(c => {
+      const sc = c.status === 'closed' ? 'pill-green' : c.status === 'in_progress' ? 'pill-blue' : c.status === 'assigned' ? 'pill-gray' : 'pill-blue';
+      const sl = c.status === 'closed' ? '✅ Closed' : c.status === 'in_progress' ? '🔄 Active' : c.status === 'assigned' ? '⏳ Assigned' : c.status === 'en_route' ? '🚗 En Route' : c.status;
+      return `<div class="rx-card">
+        <div class="rx-card-hdr">
+          <div>
+            <div class="rx-id">${c.id}</div>
+            <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge||''}Y, ${c.patientGender||''}</span></div>
+            <div class="rx-meta">${c.chiefIssue || '—'} · ${c.urgency || 'Routine'} · ${c.address || ''}</div>
+          </div>
+          <div class="rx-actions"><span class="pill ${sc}">${sl}</span></div>
+        </div>
+      </div>`;
+    }).join('')}`;
+    }
+
     function mountModal() {
       const existing = document.getElementById('app-modal');
       if (existing) existing.remove();
@@ -3135,7 +3297,103 @@
     </div>`;
         document.body.appendChild(overlay);
         document.getElementById('rp-submit').addEventListener('click', doResetPass);
+
+      } else if (APP.showModal === 'add_nurse') {
+        overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-hdr"><h3>Add New Nurse</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <div class="field-row c2">
+          <div class="field"><label>Full Name</label><input id="mn-name" placeholder="Nurse full name"></div>
+          <div class="field"><label>Phone</label><input id="mn-phone" placeholder="+91 98765 43210"></div>
+        </div>
+        <div class="field"><label>Zone / Area</label><input id="mn-zone" placeholder="e.g. Gurugram Sectors 54/56/57"></div>
+        <div id="mn-error" style="display:none;" class="error-msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" id="mn-submit">Add Nurse</button>
+      </div>
+    </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('mn-submit').addEventListener('click', createNurse);
+
+      } else if (APP.showModal === 'add_case') {
+        const nurses = getNurses();
+        overlay.innerHTML = `
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-hdr"><h3>Create & Assign Case</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <div class="field-row c2">
+          <div class="field"><label>Patient Name</label><input id="mc-name" placeholder="Patient full name"></div>
+          <div class="field"><label>Age</label><input id="mc-age" type="number" placeholder="0"></div>
+        </div>
+        <div class="field-row c2">
+          <div class="field"><label>Gender</label><select id="mc-gender"><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></select></div>
+          <div class="field"><label>Urgency</label><select id="mc-urgency"><option>Routine</option><option>Scheduled</option><option>Urgent</option></select></div>
+        </div>
+        <div class="field"><label>Address</label><input id="mc-addr" placeholder="Full address with landmark"></div>
+        <div class="field"><label>Chief Issue / Complaint</label><input id="mc-issue" placeholder="e.g. Hypertension follow-up — BP monitoring"></div>
+        <div class="field"><label>Assign to Nurse</label>
+          <select id="mc-nurse">
+            <option value="">— Select Nurse —</option>
+            ${nurses.map(n => `<option value="${n.id}">${n.name} (${n.zone || 'No zone'})</option>`).join('')}
+          </select>
+        </div>
+        <div id="mc-error" style="display:none;" class="error-msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" id="mc-submit">Create Case</button>
+      </div>
+    </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('mc-submit').addEventListener('click', createCase);
       }
+    }
+
+    function createNurse() {
+      const name = document.getElementById('mn-name').value.trim();
+      const phone = document.getElementById('mn-phone').value.trim();
+      const zone = document.getElementById('mn-zone').value.trim();
+      const errEl = document.getElementById('mn-error');
+      if (!name) { errEl.textContent = 'Nurse name is required.'; errEl.style.display = 'block'; return; }
+      const nurses = getNurses();
+      const id = 'N-' + String(nurses.length + 1).padStart(3, '0');
+      nurses.push({ id, name, phone, zone, casesCompleted: 0, joinedDate: new Date().toISOString().split('T')[0] });
+      saveNurses(nurses);
+      // Also push to Google Sheets
+      SYNC.pushCases(getCases()); // triggers a full sync
+      toast('Nurse ' + name + ' added successfully!');
+      closeModal();
+    }
+
+    function createCase() {
+      const name = document.getElementById('mc-name').value.trim();
+      const age = document.getElementById('mc-age').value.trim();
+      const gender = document.getElementById('mc-gender').value;
+      const urgency = document.getElementById('mc-urgency').value;
+      const addr = document.getElementById('mc-addr').value.trim();
+      const issue = document.getElementById('mc-issue').value.trim();
+      const nurseId = document.getElementById('mc-nurse').value;
+      const errEl = document.getElementById('mc-error');
+      if (!name || !issue) { errEl.textContent = 'Patient name and chief issue are required.'; errEl.style.display = 'block'; return; }
+      const cases = getCases();
+      const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const seq = String(cases.length + 1).padStart(4, '0');
+      const newCase = {
+        id: 'IMM-' + todayStr + '-' + seq,
+        patientName: name, patientAge: parseInt(age) || 0, patientGender: gender,
+        address: addr, chiefIssue: issue, urgency: urgency,
+        status: 'assigned', currentPhase: 1,
+        assignedNurseId: nurseId || null,
+        supplies: [], procedurePhotos: [], samplePhotos: [],
+        createdAt: new Date().toISOString()
+      };
+      cases.push(newCase);
+      saveCasesLocal(cases);
+      toast('Case ' + newCase.id + ' created and assigned!');
+      closeModal();
     }
 
     function createDoctor() {
@@ -3943,95 +4201,6 @@
     /* ══════════════════════════════════════════════════════
        PDF PREVIEW & DOWNLOAD
     ══════════════════════════════════════════════════════ */
-    function renderNurseCases() {
-      if (APP.viewingCaseId) return renderCaseDetail(APP.viewingCaseId);
-      const cases = (DB.get('cases') || []).filter(c => c.status !== 'assigned');
-      return `
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">Nurse PCRs & Consultations</h1>
-            <div class="page-sub">View live data from the field nurses</div>
-          </div>
-          <button class="btn btn-ghost" onclick="SYNC.pull().then(render)">🔄 Refresh</button>
-        </div>
-        <div class="card-grid">
-          ${cases.length === 0 ? '<p style="color:var(--text-dim);grid-column:1/-1;text-align:center;padding:40px;">No incoming cases yet.</p>' : cases.map(c => `
-            <div class="card" style="cursor:pointer" onclick="APP.viewingCaseId='${c.id}';render()">
-              <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
-                <span class="topbar-tag">${c.id}</span>
-                <span class="pill pill-${c.status === 'closed' ? 'green' : 'blue'}">${c.status}</span>
-              </div>
-              <h4 style="font-size:16px;">${c.patientName}</h4>
-              <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">${c.chiefIssue}</p>
-              <div style="margin-top:12px;font-size:11px;color:var(--text-dim);">
-                📍 Last GPS: ${c.lastUpdatedLocation ? 'Logged' : 'Pending'} · 🕒 ${fmtDate(c.updatedAt || c.createdAt)}
-              </div>
-            </div>
-          `).join('')}
-        </div>`;
-    }
-
-    function renderCaseDetail(id) {
-      const c = (DB.get('cases') || []).find(x => x.id === id);
-      if (!c) return '<p>Case not found.</p>';
-      return `
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">${c.patientName}</h1>
-            <div class="page-sub">${c.id} · ${c.patientAge}y · ${c.patientGender}</div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-accent" onclick="startRxFromCase('${c.id}')">✨ Start Prescription</button>
-            <button class="btn btn-ghost" onclick="APP.viewingCaseId=null;render()">← Back</button>
-          </div>
-        </div>
-        <div class="field-row c2">
-          <div class="card">
-            <div class="sidebar-section">Nurse Vitals</div>
-            <div class="vital-grid">
-              <div class="vital-box"><label>BP</label><div>${c.exitVitals?.bp || '—'}</div></div>
-              <div class="vital-box"><label>Pulse</label><div>${c.exitVitals?.pr || '—'}</div></div>
-              <div class="vital-box"><label>SpO2</label><div>${c.exitVitals?.spo2 || '—'}</div></div>
-              <div class="vital-box"><label>Temp</label><div>${c.exitVitals?.temp || '—'}</div></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="sidebar-section">Nurse Notes</div>
-            <p style="font-size:13px;">${c.nurseNotes || 'No notes provided.'}</p>
-            ${c.lastUpdatedLocation ? `<div style="margin-top:12px;font-size:11px;color:var(--text-dim);">📍 Location: ${c.lastUpdatedLocation.lat}, ${c.lastUpdatedLocation.lng}</div>` : ''}
-          </div>
-        </div>
-        ${c.procedurePhotos && c.procedurePhotos.length ? `
-          <div class="sidebar-section">Field Photos</div>
-          <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;">
-            ${c.procedurePhotos.map(p => `<img src="${p}" style="height:150px;border-radius:8px;border:1px solid var(--border);">`).join('')}
-          </div>
-        ` : ''}`;
-    }
-
-    function startRxFromCase(id) {
-      const c = (DB.get('cases') || []).find(x => x.id === id);
-      APP.section = 'new';
-      APP.viewingCaseId = null;
-      resetForm();
-      const nameInp = document.getElementById('p-name');
-      const ageInp = document.getElementById('p-age');
-      const sexInp = document.getElementById('p-sex');
-      const diagInp = document.getElementById('rx-diagnosis');
-      if (nameInp) nameInp.value = c.patientName;
-      if (ageInp) ageInp.value = c.patientAge;
-      if (sexInp) sexInp.value = c.patientGender;
-      if (diagInp) diagInp.value = c.chiefIssue;
-      
-      // Auto-fill vitals if possible
-      if (c.exitVitals) {
-        // Find vital inputs - we need to ensure they have IDs or classes
-        // For now, we just filled the basics.
-      }
-      render();
-      toast('Success', 'Imported patient data from nurse case.');
-    }
-
     function mountPdfPreview(rx) {
       const existing = document.getElementById('pdf-overlay');
       if (existing) existing.remove();
