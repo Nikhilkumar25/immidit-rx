@@ -4167,9 +4167,15 @@
         BG = [249, 248, 245], WRM = [255, 243, 238], GRN = [238, 249, 244],
         GR2 = [46, 204, 113], WHT = [255, 255, 255], BRDORG = [245, 208, 192], BRDGRN = [183, 228, 205];
 
-      const newPage = () => { doc.addPage(); y = 15; };
-      const guard = (need) => { if (y + need > H - 18) newPage(); };
       const setF = (st, sz, col) => { doc.setFont('helvetica', st); doc.setFontSize(sz); doc.setTextColor(...col); };
+      const drawFooter = (pgNum, total) => {
+        const currY = H - 15;
+        doc.setDrawColor(...ORG); doc.setLineWidth(0.4); doc.line(M, currY, W - M, currY);
+        setF('normal', 6.5, LGR); doc.text('immidit Health  \u00b7  care@immidit.com  \u00b7  +91 92179 22339', M, currY + 5);
+        doc.text('Page ' + pgNum, W - M, currY + 5, { align: 'right' });
+      };
+      const newPage = () => { drawFooter(doc.internal.getNumberOfPages()); doc.addPage(); y = 15; };
+      const guard = (need) => { if (y + need > H - 18) newPage(); };
       const fitText = (txt, maxW, startSz, st, col) => {
         const cleanTxt = String(txt || '').replace(/[^\x00-\x7F]/g, "");
         let sz = startSz; doc.setFont('helvetica', st); doc.setFontSize(sz);
@@ -4282,7 +4288,17 @@
           const name = fitText(m.name, 66, 8.5, 'bold', DRK); doc.text(name, cols[1] + 1, y + 5.5);
           setF('bold', 9, ORG); doc.text(m.dosage, cols[2] + 1, y + 5.5);
           setF('bold', 8.5, DRK); doc.text(m.days + ' days', cols[3] + 1, y + 5.5);
-          const timing = fitText(m.timing, CW - (cols[4]-M) - 2, 8.5, 'normal', DRK); doc.text(timing, cols[4] + 1, y + 5.5);
+          
+          // Color-coded timing
+          const t = m.timing || '';
+          const tx = cols[4] + 1;
+          const isM = t.includes('M'), isA = t.includes('A'), isE = t.includes('E'), isN = t.includes('N');
+          setF('bold', 8, isM ? ORG : GRY); doc.text('M', tx, y + 5.5);
+          setF('bold', 8, isA ? ORG : GRY); doc.text('A', tx + 4, y + 5.5);
+          setF('bold', 8, isE ? ORG : GRY); doc.text('E', tx + 8, y + 5.5);
+          setF('bold', 8, isN ? ORG : GRY); doc.text('N', tx + 12, y + 5.5);
+          setF('normal', 7, GRY); doc.text(t.replace(/[MAEN]/g, '').trim(), tx + 18, y + 5.5);
+          
           y += 8;
         }); y += 4;
       }
@@ -4497,11 +4513,19 @@
       }); y += 32;
 
       // CTA strip with logo
-      guard(14); fillR(M, y, CW, 13, WRM); strokeR(M, y, CW, 13, BRDORG); vbar(M, y, y + 13, ORG);
+      guard(35); 
+      // Signature Line
+      const sigY = y;
+      doc.setDrawColor(...GRY); doc.setLineWidth(0.2); doc.line(W - M - 60, sigY + 15, W - M, sigY + 15);
+      setF('bold', 7, DRK); doc.text('Electronically Signed By', W - M - 60, sigY + 19);
+      setF('bold', 8.5, ORG); doc.text('Dr. ' + (rx.doctorName || 'MCI Registered Practitioner'), W - M - 60, sigY + 23);
+      y += 30;
+
+      fillR(M, y, CW, 13, WRM); strokeR(M, y, CW, 13, BRDORG); vbar(M, y, y + 13, ORG);
       addLogo(M + 3, y + 1.5, 20, 8.5);
       if (!logoB64) { setF('bold', 9, ORG); doc.text('immidit', M + 4, y + 8); }
       setF('bold', 8, ORG); doc.text('Book now \u2192', M + 28, y + 8.5);
-      setF('normal', 7.5, GRY); doc.text('WhatsApp / Call  +91 92179 22339  \u00b7  immidit.com  \u00b7  care@immidit.com  \u00b7  Sector 56 & nearby, Gurugram', M + 52, y + 8.5);
+      setF('normal', 7.5, GRY); doc.text('WhatsApp / Call  +91 92179 22339  \u00b7  immidit.com', M + 52, y + 8.5);
       y += 17;
 
       // ── TERMS & CONDITIONS ─────────────────────────────────────────────────────
@@ -4531,17 +4555,7 @@
         if (col === 0) lty += bh; else rty += bh;
       }); y = Math.max(lty, rty) + 10;
 
-      // ── FOOTER ─────────────────────────────────────────────────────────────────
-      guard(20); hline(y, ORG, 0.55); y += 5;
-      addLogo(M, y, 24, 10.2);
-      if (!logoB64) { setF('bold', 8.5, DRK); doc.text('immidit', M, y + 7); }
-      setF('bold', 8.5, DRK); doc.text('immidit  \u00b7  Antarlaapika Pvt Ltd', M + 27, y + 4);
-      setF('normal', 7, LGR); doc.text('Sector 56 & nearby, Gurugram, Haryana', M + 27, y + 9);
-      setF('normal', 7, LGR); doc.text('care@immidit.com  \u00b7  immidit.com  \u00b7  +91 92179 22339', M + 27, y + 14);
-      setF('normal', 7, LGR); doc.text('Prescription ID: ', W - M - 55, y + 4);
-      setF('bold', 7, DRK); doc.text(rx.id, W - M - 5, y + 4, { align: 'right' });
-      setF('normal', 7, LGR); doc.text('Date: ' + fmtDate(rx.createdAt), W - M - 5, y + 9, { align: 'right' });
-      setF('normal', 7, LGR); doc.text('immidit Digital Health Records', W - M - 5, y + 14, { align: 'right' });
+      drawFooter(doc.internal.getNumberOfPages());
 
       // ── DIGITAL APPENDIX (Optional New Page) ───────────────────────────────────
       const reportsList = (rx.orderLines || []).filter(l => l.reportUrl);
