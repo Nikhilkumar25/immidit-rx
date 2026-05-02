@@ -602,8 +602,37 @@
         position: static !important;
         height: auto !important;
         margin-top: 24px;
+        transform-origin: top left;
+        transform: scale(min(1, calc((100vw - 32px) / 794)));
+        margin-bottom: calc(-100% * (1 - min(1, calc((100vw - 32px) / 794))));
       }
       .field-span-2 { grid-column: span 1 !important; }
+      
+      .vital-grid, .rx-detail-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+      .med-row {
+        grid-template-columns: 1fr 1fr !important;
+        position: relative;
+        padding-top: 36px;
+      }
+      .med-row > .field:first-child {
+        grid-column: span 2;
+      }
+      .med-row-header {
+        display: none !important;
+      }
+      .med-row .btn-danger-soft {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+      }
+      .doctor-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ══════════════════════════════════════════════════════
