@@ -154,6 +154,53 @@
       margin-bottom: 14px;
     }
 
+    .checklist-container {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin-bottom: 6px;
+      font-size: 12.5px;
+    }
+
+    .checklist-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .checklist-type {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg2);
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .checklist-del {
+      color: var(--danger);
+      cursor: pointer;
+      opacity: 0.6;
+      padding: 4px;
+    }
+
+    .checklist-del:hover {
+      opacity: 1;
+    }
+
     .field-row {
       display: grid;
       gap: 12px;
@@ -1999,6 +2046,21 @@
   <div id="app"></div>
 
   <script>
+    const LAB_TUBE_MAPPING = {
+      'CBC (Complete Blood Count)': { tube: 'Purple Top (EDTA)', color: '#800080', instructions: 'Gently invert 8-10 times' },
+      'Lipid Profile': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Allow to clot for 30 mins' },
+      'HbA1c': { tube: 'Purple Top (EDTA)', color: '#800080', instructions: 'Gently invert 8-10 times' },
+      'Liver Function Test (LFT)': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Allow to clot for 30 mins' },
+      'Kidney Function Test (KFT)': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Allow to clot for 30 mins' },
+      'Thyroid Profile (T3/T4/TSH)': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Allow to clot for 30 mins' },
+      'Blood Sugar (Fasting/PP)': { tube: 'Grey Top (Fluoride)', color: '#808080', instructions: 'Invert 8-10 times' },
+      'Electrolytes (Na/K/Cl)': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Allow to clot for 30 mins' },
+      'Coagulation Profile (PT/INR)': { tube: 'Light Blue Top (Citrate)', color: '#ADD8E6', instructions: 'Must fill to exact mark' },
+      'D-Dimer': { tube: 'Light Blue Top (Citrate)', color: '#ADD8E6', instructions: 'Invert 3-4 times gently' },
+      'Vitamin B12 / D3': { tube: 'Yellow Top (SST)', color: '#FFD700', instructions: 'Protect from light if possible' },
+      'Blood Culture': { tube: 'Culture Bottle', color: '#FFFFFF', instructions: 'Clean skin with chlorhexidine' },
+    };
+    const STANDARD_LAB_TESTS = Object.keys(LAB_TUBE_MAPPING);
     'use strict';
 
     // ── Global Error Handler for Diagnostics ──
@@ -2014,18 +2076,11 @@
        IMMIDIT LOGO (base64 placeholder — loads from file path)
     ══════════════════════════════════════════════════════ */
     const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
-    const SHEET_API = 'https://script.google.com/macros/s/AKfycbxgwK_WcLLfvNPFRXUt7FAr2g1SJFFTeBTPEHbq_cjCWXP9d2kKYhorf0Tu7SM9UkMyGg/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbyuP3gR1cj2CHGfwAlWdAUnsClSi5QO2BXddNne7pR-Yq4jnpWPwvUocyU-x1wMfCLlgw/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
 
     /* ══════════════════════════════════════════════════════
-       NURSE ROSTER & PROCEDURE TYPES
+       PROCEDURE TYPES & TEMPLATES
     ══════════════════════════════════════════════════════ */
-    const NURSE_LIST = [
-      { id: 'N001', name: 'Nurse Rekha', phone: '+91 98765 00001' },
-      { id: 'N002', name: 'Nurse Sunita', phone: '+91 98765 00002' },
-      { id: 'N003', name: 'Nurse Meena', phone: '+91 98765 00003' },
-      { id: 'N004', name: 'Nurse Kavita', phone: '+91 98765 00004' },
-      { id: 'N005', name: 'Nurse Pooja', phone: '+91 98765 00005' },
-    ];
 
     const PROCEDURE_TYPES = [
       { value: 'injection_im', label: '💉 Injection (IM)', icon: '💉' },
@@ -2041,6 +2096,65 @@
       { value: 'blood_draw', label: '🧪 Blood Draw', icon: '🧪' },
       { value: 'other', label: '🔧 Other Procedure', icon: '🔧' },
     ];
+
+    const SERVICE_TEMPLATES = {
+      'injection_im': [
+        { name: 'Syringe 2ml', type: 'consumable' },
+        { name: 'Spirit Swab', type: 'consumable' },
+        { name: 'Medicine (As prescribed)', type: 'medicine' },
+        { name: 'Adhesive Bandage', type: 'consumable' }
+      ],
+      'injection_iv': [
+        { name: 'Syringe 5ml', type: 'consumable' },
+        { name: 'Tourniquet', type: 'device' },
+        { name: 'Spirit Swab', type: 'consumable' },
+        { name: 'Butterfly Needle', type: 'consumable' }
+      ],
+      'iv_drip': [
+        { name: 'IV Cannula (20G/22G)', type: 'consumable' },
+        { name: 'IV Set / Tubing', type: 'consumable' },
+        { name: 'NS/RL 500ml', type: 'medicine' },
+        { name: 'IV Stand (Portable)', type: 'device' },
+        { name: 'Adhesive Tape', type: 'consumable' }
+      ],
+      'wound_dressing': [
+        { name: 'Sterile Dressing Kit', type: 'consumable' },
+        { name: 'Normal Saline', type: 'medicine' },
+        { name: 'Betadine Solution', type: 'medicine' },
+        { name: 'Micropore Tape', type: 'consumable' },
+        { name: 'Surgical Gloves', type: 'consumable' }
+      ],
+      'vital_monitoring': [
+        { name: 'BP Monitor', type: 'device' },
+        { name: 'Pulse Oximeter', type: 'device' },
+        { name: 'Thermometer', type: 'device' },
+        { name: 'Consent Forms', type: 'consumable' }
+      ],
+      'blood_draw': [
+        { name: 'Vacutainer Tubes', type: 'consumable' },
+        { name: 'Spirit Swab', type: 'consumable' },
+        { name: 'Tourniquet', type: 'device' },
+        { name: 'Multi-sample Needle', type: 'consumable' }
+      ],
+      'catheter_care': [
+        { name: 'Foley Catheter', type: 'consumable' },
+        { name: 'Urine Bag', type: 'consumable' },
+        { name: 'Lignocaine Jelly', type: 'medicine' },
+        { name: 'Sterile Water 10ml', type: 'medicine' },
+        { name: 'Surgical Gloves', type: 'consumable' }
+      ],
+      'ecg': [
+        { name: 'Portable ECG Machine', type: 'device' },
+        { name: 'ECG Electrodes / Gel', type: 'consumable' },
+        { name: 'Thermal Paper Roll', type: 'consumable' }
+      ],
+      'vaccination': [
+        { name: 'Cold Box / Carrier', type: 'device' },
+        { name: 'AD Syringe 0.5ml', type: 'consumable' },
+        { name: 'Vaccine (As requested)', type: 'medicine' },
+        { name: 'Spirit Swab', type: 'consumable' }
+      ]
+    };
 
     const ORDER_ICONS = {
       procedure: '💉', lab_test: '🧪', diagnostic_test: '📡', referral: '🔀'
@@ -2070,26 +2184,7 @@
 
     // Doctors: array of { id, username, password, profileComplete, profile: {...}, active, createdAt }
     if (!DB.get('doctors')) {
-      // Seed one demo doctor
-      DB.set('doctors', [{
-        id: 'DOC001',
-        username: 'dr.priya',
-        password: 'Priya@123',
-        profileComplete: true,
-        active: true,
-        createdAt: new Date().toISOString(),
-        profile: {
-          name: 'Dr. Priya Sharma',
-          regId: 'MCI-DL-45231',
-          specialty: 'General Physician & Internal Medicine',
-          qualification: 'MBBS, MD (Internal Medicine)',
-          experience: '11',
-          phone: '+91 98765 43210',
-          bio: 'Experienced physician specialising in internal medicine and infectious diseases.',
-          signature: null,
-          avatarInitials: 'PS',
-        }
-      }]);
+      DB.set('doctors', []);
     }
 
     // Prescriptions
@@ -2106,8 +2201,12 @@
         if (!SHEET_API) return { error: 'No API configured' };
         this.active = true;
         try {
-          const resp = await fetch(SHEET_API, {
+          // Use 'no-cors' and 'text/plain' to bypass CORS preflight and 'file://' origin restrictions.
+          // This ensures that updates reach Google Sheets even when running locally.
+          await fetch(SHEET_API, {
             method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify(data)
           });
           return { ok: true };
@@ -2130,8 +2229,21 @@
           if (data.admin) DB.set('admin', data.admin);
           if (data.doctors) DB.set('doctors', data.doctors);
           if (data.prescriptions) DB.set('prescriptions', data.prescriptions);
-          if (data.cases) DB.set('cases', data.cases);
           if (data.nurses) DB.set('nurses', data.nurses);
+
+          // Atomic Merging for Cases: Newer data always wins
+          if (data.cases) {
+            const localCases = DB.get('cases', []);
+            const cloudCases = data.cases;
+            const merged = cloudCases.map(c => {
+              const local = localCases.find(l => l.id === c.id);
+              if (!local) return c;
+              const localTime = new Date(local.updatedAt || 0).getTime();
+              const cloudTime = new Date(c.updatedAt || 0).getTime();
+              return cloudTime >= localTime ? c : local;
+            });
+            DB.set('cases', merged);
+          }
 
           console.log('Cloud sync successful:', data.synced);
           return true;
@@ -2144,7 +2256,13 @@
       pushRx(rx, isUpdate = false) { this.post({ action: isUpdate ? 'updatePrescription' : 'addPrescription', data: rx }); },
       pushDraft(docId, data) { this.post({ action: 'saveDraft', doctorId: docId, data: data }); },
       delDraft(docId) { this.post({ action: 'deleteDraft', doctorId: docId }); },
-      pushCases(cases) { this.post({ action: 'saveCases', data: cases }); }
+      pushCases(cases) { 
+        // Ensure updatedAt is set on all cases being pushed
+        const now = new Date().toISOString();
+        const updated = cases.map(c => ({ ...c, updatedAt: c.updatedAt || now }));
+        this.post({ action: 'saveCases', data: updated }); 
+      },
+      pushNurses(nurses) { this.post({ action: 'saveNurses', data: nurses }); }
     };
 
 
@@ -2353,7 +2471,7 @@
     const saveDoctors = d => { DB.set('doctors', d); SYNC.pushDoctors(); };
     const saveRxs = r => { DB.set('prescriptions', r); };
     const saveCasesLocal = c => { DB.set('cases', c); SYNC.pushCases(c); };
-    const saveNurses = n => { DB.set('nurses', n); /* TODO: push nurses */ };
+    const saveNurses = n => { DB.set('nurses', n); SYNC.pushNurses(n); };
     const addPrescription = rx => {
       const rxs = getRxs();
       rxs.unshift(rx);
@@ -2723,13 +2841,17 @@
     </div>`).join('');
 
       return `
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">${editing ? 'Edit Prescription' : 'New Prescription'}</h1>
-      <div class="page-sub">${editing ? 'Modifying ' + editing : 'Fill all sections and generate a PDF'}</div>
+  <div oninput="saveDraft()">
+    <div class="page-header">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="APP.section='my';APP.editingRxId=null;render()" style="padding:4px 8px;">← Back</button>
+        <div>
+          <h1 class="page-title">${editing ? 'Edit Prescription' : 'New Prescription'}</h1>
+          <div class="page-sub">${editing ? 'Modifying ' + editing : 'Fill all sections and generate a PDF'}</div>
+        </div>
+      </div>
+      <div class="mono text-dim" style="font-size:12px;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
     </div>
-    <div class="mono text-dim" style="font-size:12px;">${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-  </div>
 
   <!-- PATIENT -->
   <div class="card">
@@ -2821,7 +2943,10 @@
     <div class="card-header"><div class="card-icon">🧪</div><div><div class="card-title">Investigations</div><div class="card-sub">Lab and diagnostic tests</div></div></div>
     <div class="form-section"><span>Laboratory Tests</span></div>
     <div style="display:flex;gap:8px;margin-bottom:8px;">
-      <input id="new-lab" placeholder="e.g. CBC with ESR, HbA1c, Lipid Profile...">
+      <input id="new-lab" list="lab-datalist" placeholder="Search standard tests (e.g. CBC)..." onkeydown="if(event.key==='Enter')addTag('lab')">
+      <datalist id="lab-datalist">
+        ${STANDARD_LAB_TESTS.map(t => `<option value="${t}">`).join('')}
+      </datalist>
       <button class="btn btn-ghost" onclick="addTag('lab')">Add</button>
     </div>
     <div id="lab-tags">${labTags}</div>
@@ -2857,6 +2982,7 @@
     <button class="btn btn-primary" onclick="savePrescription()">
       ${editing ? '💾 Update & Preview' : '📄 Generate Prescription'}
     </button>
+  </div>
   </div>`;
     }
 
@@ -2996,8 +3122,9 @@
           s === 'operations' ? renderOperations(rxs) :
             s === 'doctors' ? renderAdminDoctors(doctors) :
               s === 'nurses' ? renderAdminNurses() :
-                s === 'cases' ? renderAdminCases() :
-                  renderAdminRxs(rxs)}
+                s === 'cases' ? (APP.viewingCaseId ? renderAdminCaseDetail(getCases().find(c => c.id === APP.viewingCaseId)) : renderAdminCases()) :
+                  s === 'review' ? (APP.reviewingRxId ? renderReviewDetail(getRx(APP.reviewingRxId)) : renderAdminRxs(rxs)) :
+                    renderAdminRxs(rxs)}
     </div>
   </div>`;
     }
@@ -3154,11 +3281,77 @@
         if (el('p-gender')) { const g = c.patientGender === 'M' ? 'Male' : c.patientGender === 'F' ? 'Female' : ''; el('p-gender').value = g; }
         if (el('p-addr')) el('p-addr').value = c.address || '';
         if (el('cc')) el('cc').value = c.chiefIssue || '';
+        
+        // Import Nurse Vitals
+        const v = c.vitals || {};
+        if (el('v-bp')) el('v-bp').value = v.bp || '';
+        if (el('v-pulse')) el('v-pulse').value = v.pulse || '';
+        if (el('v-temp')) el('v-temp').value = v.temp || '';
+        if (el('v-spo2')) el('v-spo2').value = v.spo2 || '';
+        if (el('v-weight')) el('v-weight').value = v.weight || '';
+        if (el('v-rr')) el('v-rr').value = v.rr || '';
+
         const pcr = c.pcrData || {};
         if (pcr.chiefComplaint && el('cc')) el('cc').value = pcr.chiefComplaint;
         if (pcr.handoverNotes && el('diag')) el('diag').value = 'Nurse notes: ' + pcr.handoverNotes;
-        toast('Patient data imported from nurse case ' + c.id);
+        
+        toast('Patient data & vitals imported from nurse case ' + c.id);
+        saveDraft(); // Persist the import immediately
       }, 100);
+    }
+
+    /* ══════════════════════════════════════════════════════
+       SUPPLY CHECKLIST HELPERS
+    ══════════════════════════════════════════════════════ */
+    function onCaseProcChange(val) {
+      if (!val) return;
+      const templates = SERVICE_TEMPLATES[val] || [];
+      APP.modalData.supplies = templates.map((t, idx) => ({ 
+        id: 's' + Date.now() + idx, 
+        name: t.name, 
+        type: t.type, 
+        confirmed: false 
+      }));
+      renderModalSupplies();
+    }
+
+    function renderModalSupplies() {
+      const container = document.getElementById('mc-supply-list');
+      if (!container) return;
+      const supplies = APP.modalData.supplies || [];
+      if (supplies.length === 0) {
+        container.innerHTML = `<div style="text-align:center;padding:12px;color:var(--text-dim);font-size:12px;">No items added. Select a procedure or add custom items.</div>`;
+        return;
+      }
+      container.innerHTML = supplies.map((s, idx) => `
+        <div class="checklist-item">
+          <div>
+            <span>${s.name}</span>
+            <span class="checklist-type">${s.type}</span>
+          </div>
+          <div class="checklist-del" onclick="removeModalSupply(${idx})">×</div>
+        </div>
+      `).join('');
+    }
+
+    function addCustomSupply() {
+      const input = document.getElementById('mc-new-supply');
+      const val = input.value.trim();
+      if (!val) return;
+      if (!APP.modalData.supplies) APP.modalData.supplies = [];
+      APP.modalData.supplies.push({ 
+        id: 's' + Date.now(), 
+        name: val, 
+        type: 'consumable', 
+        confirmed: false 
+      });
+      input.value = '';
+      renderModalSupplies();
+    }
+
+    function removeModalSupply(idx) {
+      APP.modalData.supplies.splice(idx, 1);
+      renderModalSupplies();
     }
 
     /* ══════════════════════════════════════════════════════
@@ -3181,6 +3374,7 @@
           <div class="doctor-name">${n.name || 'Unknown'}</div>
           <div class="doctor-spec">${n.zone || 'No zone assigned'}</div>
           <div class="doctor-reg">${n.id} · ${n.phone || ''}</div>
+          <div class="doctor-reg" style="color:var(--primary);font-weight:600;margin-top:2px;">🔑 Passcode: ${n.password || '—'}</div>
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
             <span class="pill pill-green">${n.casesCompleted || 0} cases</span>
             <span class="pill pill-blue">Joined ${n.joinedDate || '—'}</span>
@@ -3194,6 +3388,86 @@
     /* ══════════════════════════════════════════════════════
        ADMIN — ASSIGN CASES
     ══════════════════════════════════════════════════════ */
+    function renderAdminCaseDetail(c) {
+      if (!c) return `<div class="empty-state"><p>Case not found.</p></div>`;
+      const pcr = c.pcrData || {};
+      const orderLines = c.orderLines || [];
+      const v = c.exitVitals || {};
+
+      return `
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Case Detail: ${c.patientName}</h1>
+      <div class="page-sub">${c.id} · ${c.status.toUpperCase()}</div>
+    </div>
+    <button class="btn btn-ghost" onclick="APP.viewingCaseId=null;render()">← Back to Cases</button>
+  </div>
+
+  <div class="admin-case-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <!-- Patient Info -->
+    <div class="card">
+      <div class="card-header"><div class="card-icon">👤</div><div><div class="card-title">Patient Profile</div></div></div>
+      <div class="field-row c2" style="padding:16px;">
+        <div><label>Age / Gender</label><p>${c.patientAge}Y / ${c.patientGender}</p></div>
+        <div><label>Contact</label><p>${pcr.contactNumber || '—'}</p></div>
+      </div>
+      <div style="padding:0 16px 16px;"><label>Address</label><p>${c.address}</p></div>
+    </div>
+
+    <!-- Vitals Timeline -->
+    <div class="card">
+      <div class="card-header"><div class="card-icon">📊</div><div><div class="card-title">Clinical Vitals</div></div></div>
+      <div class="field-row c3" style="padding:16px;">
+        <div><label>BP</label><p>${v.bp || '—'}</p></div>
+        <div><label>Pulse</label><p>${v.pr || '—'} bpm</p></div>
+        <div><label>SpO2</label><p>${v.spo2 || '—'} %</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Execution Audit -->
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">Clinical Order Audit</div><div class="card-sub">Granular tracking of all prescribed actions</div></div></div>
+    <div class="exec-summary" style="padding:16px;">
+      ${orderLines.length === 0 ? '<p style="color:var(--text-dim);">No specific orders recorded for this case.</p>' :
+          orderLines.map(l => `
+        <div class="exec-item ${l.status === 'administered' || l.status === 'collected' ? 'done' : l.status === 'refused' ? 'declined' : ''}">
+          <span style="font-size:18px;">${l.icon || '📝'}</span>
+          <div style="flex:1;">
+            <div style="font-weight:600;">${l.details}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${l.type.toUpperCase()} · ${l.tube ? 'Tube: ' + l.tube : ''}</div>
+          </div>
+          <span class="pill ${l.status === 'administered' || l.status === 'collected' ? 'pill-green' : l.status === 'refused' ? 'pill-red' : 'pill-gray'}" style="font-size:10px;">
+            ${l.status.toUpperCase()}
+          </span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <!-- Physical Form Verification -->
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Physical Form Verification</div><div class="card-sub">Digital copies of the handwritten clinical PCR</div></div></div>
+    <div class="field-row c2" style="padding:16px;gap:20px;">
+      <div>
+        <label>PCR Page 1</label>
+        ${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);"></div>` : '<div class="empty-thumb">No photo</div>'}
+      </div>
+      <div>
+        <label>PCR Page 2</label>
+        ${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);"></div>` : '<div class="empty-thumb">No photo</div>'}
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header"><div class="card-icon">📝</div><div><div class="card-title">Handover & Nurse Notes</div></div></div>
+    <div style="padding:16px;">
+      <p style="white-space:pre-wrap;">${pcr.handoverNotes || 'No notes provided.'}</p>
+    </div>
+  </div>
+  `;
+    }
     function renderAdminCases() {
       const cases = getCases();
       const nurses = getNurses();
@@ -3210,10 +3484,13 @@
         <div class="rx-card-hdr">
           <div>
             <div class="rx-id">${c.id}</div>
-            <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge||''}Y, ${c.patientGender||''}</span></div>
+            <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge || ''}Y, ${c.patientGender || ''}</span></div>
             <div class="rx-meta">${c.chiefIssue || '—'} · ${c.urgency || 'Routine'} · ${c.address || ''}</div>
           </div>
-          <div class="rx-actions"><span class="pill ${sc}">${sl}</span></div>
+          <div class="rx-actions">
+            <span class="pill ${sc}">${sl}</span>
+            <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId='${c.id}';render()">👁 View Details</button>
+          </div>
         </div>
       </div>`;
     }).join('')}`;
@@ -3307,7 +3584,10 @@
           <div class="field"><label>Full Name</label><input id="mn-name" placeholder="Nurse full name"></div>
           <div class="field"><label>Phone</label><input id="mn-phone" placeholder="+91 98765 43210"></div>
         </div>
-        <div class="field"><label>Zone / Area</label><input id="mn-zone" placeholder="e.g. Gurugram Sectors 54/56/57"></div>
+        <div class="field-row c2">
+          <div class="field"><label>Zone / Area</label><input id="mn-zone" placeholder="e.g. Gurugram Sectors 54/56/57"></div>
+          <div class="field"><label>Passcode / Password</label><input id="mn-pass" type="password" placeholder="4-6 digit code"></div>
+        </div>
         <div id="mn-error" style="display:none;" class="error-msg"></div>
       </div>
       <div class="modal-footer">
@@ -3320,8 +3600,10 @@
 
       } else if (APP.showModal === 'add_case') {
         const nurses = getNurses();
+        if (!APP.modalData.supplies) APP.modalData.supplies = [];
+        
         overlay.innerHTML = `
-    <div class="modal" style="max-width:600px;">
+    <div class="modal" style="max-width:700px;">
       <div class="modal-hdr"><h3>Create & Assign Case</h3><button class="modal-close" onclick="closeModal()">×</button></div>
       <div class="modal-body">
         <div class="field-row c2">
@@ -3333,22 +3615,45 @@
           <div class="field"><label>Urgency</label><select id="mc-urgency"><option>Routine</option><option>Scheduled</option><option>Urgent</option></select></div>
         </div>
         <div class="field"><label>Address</label><input id="mc-addr" placeholder="Full address with landmark"></div>
-        <div class="field"><label>Chief Issue / Complaint</label><input id="mc-issue" placeholder="e.g. Hypertension follow-up — BP monitoring"></div>
-        <div class="field"><label>Assign to Nurse</label>
-          <select id="mc-nurse">
-            <option value="">— Select Nurse —</option>
-            ${nurses.map(n => `<option value="${n.id}">${n.name} (${n.zone || 'No zone'})</option>`).join('')}
-          </select>
+        
+        <div class="field-row c2">
+          <div class="field"><label>Primary Procedure / Service</label>
+            <select id="mc-proc-type" onchange="onCaseProcChange(this.value)">
+              <option value="">— Select Procedure —</option>
+              ${PROCEDURE_TYPES.map(p => `<option value="${p.value}">${p.label}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>Assign to Nurse</label>
+            <select id="mc-nurse">
+              <option value="">— Select Nurse —</option>
+              ${nurses.map(n => `<option value="${n.id}">${n.name} (${n.zone || 'No zone'})</option>`).join('')}
+            </select>
+          </div>
         </div>
-        <div id="mc-error" style="display:none;" class="error-msg"></div>
+        
+        <div class="field"><label>Chief Issue / Complaint</label><input id="mc-issue" placeholder="e.g. Hypertension follow-up — BP monitoring"></div>
+
+        <div style="margin-top:20px;">
+          <label style="font-weight:600;font-size:13px;display:block;margin-bottom:8px;color:var(--text-muted);">SUPPLY CHECKLIST (Auto-populated based on procedure)</label>
+          <div id="mc-supply-list" class="checklist-container">
+            <!-- Dynamic supplies -->
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <input id="mc-new-supply" style="flex:1;" placeholder="Add custom item (e.g. Adult Diapers)">
+            <button class="btn btn-ghost" onclick="addCustomSupply()">+ Add</button>
+          </div>
+        </div>
+
+        <div id="mc-error" style="display:none;margin-top:16px;" class="error-msg"></div>
       </div>
       <div class="modal-footer">
         <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-        <button class="btn btn-primary" id="mc-submit">Create Case</button>
+        <button class="btn btn-primary" id="mc-submit">Create & Assign Case</button>
       </div>
     </div>`;
         document.body.appendChild(overlay);
         document.getElementById('mc-submit').addEventListener('click', createCase);
+        renderModalSupplies();
       }
     }
 
@@ -3356,14 +3661,16 @@
       const name = document.getElementById('mn-name').value.trim();
       const phone = document.getElementById('mn-phone').value.trim();
       const zone = document.getElementById('mn-zone').value.trim();
+      const password = document.getElementById('mn-pass').value.trim();
       const errEl = document.getElementById('mn-error');
-      if (!name) { errEl.textContent = 'Nurse name is required.'; errEl.style.display = 'block'; return; }
+      if (!name || !password) { errEl.textContent = 'Name and passcode are required.'; errEl.style.display = 'block'; return; }
       const nurses = getNurses();
       const id = 'N-' + String(nurses.length + 1).padStart(3, '0');
-      nurses.push({ id, name, phone, zone, casesCompleted: 0, joinedDate: new Date().toISOString().split('T')[0] });
+      nurses.push({ id, name, phone, zone, password, casesCompleted: 0, joinedDate: new Date().toISOString().split('T')[0] });
       saveNurses(nurses);
       // Also push to Google Sheets
-      SYNC.pushCases(getCases()); // triggers a full sync
+      SYNC.pushCases(getCases()); 
+      SYNC.pushNurses(nurses);
       toast('Nurse ' + name + ' added successfully!');
       closeModal();
     }
@@ -3387,7 +3694,8 @@
         address: addr, chiefIssue: issue, urgency: urgency,
         status: 'assigned', currentPhase: 1,
         assignedNurseId: nurseId || null,
-        supplies: [], procedurePhotos: [], samplePhotos: [],
+        supplies: APP.modalData.supplies || [],
+        procedurePhotos: [], samplePhotos: [],
         createdAt: new Date().toISOString()
       };
       cases.push(newCase);
@@ -3481,9 +3789,10 @@
       APP.formMeds.push({ name: '', dosage: '', days: '', timing: 'After food' });
       const list = document.getElementById('med-list');
       if (list) { const d = document.createElement('div'); d.innerHTML = renderMedRow(APP.formMeds[APP.formMeds.length - 1], APP.formMeds.length - 1); list.appendChild(d.firstElementChild); }
+      saveDraft();
     }
-    function removeMed(i) { APP.formMeds.splice(i, 1); const el = document.getElementById('med-row-' + i); if (el) el.remove(); }
-    function updateMed(i, field, val) { if (APP.formMeds[i]) APP.formMeds[i][field] = val; }
+    function removeMed(i) { APP.formMeds.splice(i, 1); const el = document.getElementById('med-row-' + i); if (el) el.remove(); saveDraft(); }
+    function updateMed(i, field, val) { if (APP.formMeds[i]) APP.formMeds[i][field] = val; saveDraft(); }
 
     /* ── Procedure CRUD ── */
     function renderProcRow(p, i) {
@@ -3504,30 +3813,47 @@
       APP.formProcedures.push({ type: '', details: '', quantity: 1 });
       const list = document.getElementById('proc-list');
       if (list) { const d = document.createElement('div'); d.innerHTML = renderProcRow(APP.formProcedures[APP.formProcedures.length - 1], APP.formProcedures.length - 1); list.appendChild(d.firstElementChild); }
+      saveDraft();
     }
-    function removeProc(i) { APP.formProcedures.splice(i, 1); const el = document.getElementById('proc-row-' + i); if (el) el.remove(); }
-    function updateProc(i, field, val) { if (APP.formProcedures[i]) APP.formProcedures[i][field] = val; }
+    function removeProc(i) { APP.formProcedures.splice(i, 1); const el = document.getElementById('proc-row-' + i); if (el) el.remove(); saveDraft(); }
+    function updateProc(i, field, val) { if (APP.formProcedures[i]) APP.formProcedures[i][field] = val; saveDraft(); }
 
     function addTag(type) {
       const inp = document.getElementById(type === 'lab' ? 'new-lab' : 'new-diag');
       const val = inp?.value.trim(); if (!val) return;
       const arr = type === 'lab' ? APP.formLabTests : APP.formDiagTests;
-      arr.push(val);
+      
+      // If lab, store as object with tube mapping
+      if (type === 'lab') {
+        const mapping = LAB_TUBE_MAPPING[val];
+        arr.push({ 
+          name: val, 
+          tube: mapping?.tube || 'Other', 
+          color: mapping?.color || '#ccc',
+          instructions: mapping?.instructions || ''
+        });
+      } else {
+        arr.push(val);
+      }
+
       const container = document.getElementById(type + '-tags');
       if (container) {
         const i = arr.length - 1;
         const icon = type === 'lab' ? '🧫' : '📡';
+        const displayVal = type === 'lab' ? val : val;
         const span = document.createElement('span'); span.className = 'tag'; span.id = type + '-tag-' + i;
         span.innerHTML = `${icon} ${val}<button class="tag-del" onclick="removeTag('${type}',${i})">×</button>`;
         container.appendChild(span);
       }
       inp.value = '';
+      saveDraft();
     }
 
     function removeTag(type, i) {
       if (type === 'lab') APP.formLabTests.splice(i, 1);
       else APP.formDiagTests.splice(i, 1);
       const el = document.getElementById(type + '-tag-' + i); if (el) el.remove();
+      saveDraft();
     }
 
     function addRef() {
@@ -3537,15 +3863,16 @@
         const i = APP.formReferrals.length - 1;
         const d = document.createElement('div');
         d.innerHTML = `<div class="med-row" style="grid-template-columns:1.5fr 1.5fr 2fr auto;" id="ref-row-${i}">
-      <div class="field" style="margin:0"><input placeholder="Specialist" id="ref-spec-${i}" oninput="APP.formReferrals[${i}].specialist=this.value"></div>
-      <div class="field" style="margin:0"><input placeholder="Hospital / Clinic" id="ref-hosp-${i}" oninput="APP.formReferrals[${i}].hospital=this.value"></div>
-      <div class="field" style="margin:0"><input placeholder="Reason" id="ref-reason-${i}" oninput="APP.formReferrals[${i}].reason=this.value"></div>
+      <div class="field" style="margin:0"><input placeholder="Specialist" id="ref-spec-${i}" oninput="APP.formReferrals[${i}].specialist=this.value;saveDraft()"></div>
+      <div class="field" style="margin:0"><input placeholder="Hospital / Clinic" id="ref-hosp-${i}" oninput="APP.formReferrals[${i}].hospital=this.value;saveDraft()"></div>
+      <div class="field" style="margin:0"><input placeholder="Reason" id="ref-reason-${i}" oninput="APP.formReferrals[${i}].reason=this.value;saveDraft()"></div>
       <button class="btn btn-danger-soft btn-icon" onclick="removeRef(${i})">✕</button>
     </div>`;
         list.appendChild(d.firstElementChild);
       }
+      saveDraft();
     }
-    function removeRef(i) { APP.formReferrals.splice(i, 1); const el = document.getElementById('ref-row-' + i); if (el) el.remove(); }
+    function removeRef(i) { APP.formReferrals.splice(i, 1); const el = document.getElementById('ref-row-' + i); if (el) el.remove(); saveDraft(); }
 
     function gatherForm() {
       // Flush any pending test inputs that weren't Add-ed via button
@@ -3657,12 +3984,16 @@
       });
       // From lab tests
       (rx.labTests || []).forEach(t => {
+        const labName = typeof t === 'string' ? t : t.name;
+        const mapping = typeof t === 'object' ? t : LAB_TUBE_MAPPING[labName];
         lines.push({
           id: 'OL-' + (++idx),
           type: 'lab_test',
           category: 'Laboratory',
           icon: '🧪',
-          details: t,
+          details: labName,
+          tube: mapping?.tube || 'Other',
+          instructions: mapping?.instructions || '',
           status: 'pending',
           patientResponse: null,
           reportUrl: null,
@@ -3850,7 +4181,7 @@
         <span style="font-size:12px;color:var(--text-muted);">Nurse:</span>
         <select id="nurse-${rx.id}" style="width:auto;min-width:160px;" onchange="saveOpsCard('${rx.id}')">
           <option value="">Select nurse...</option>
-          ${NURSE_LIST.map(n => `<option value="${n.id}" ${lines.some(l => l.administeredBy === n.id) ? 'selected' : ''}>${n.name}</option>`).join('')}
+          ${getNurses().map(n => `<option value="${n.id}" ${lines.some(l => l.administeredBy === n.id) ? 'selected' : ''}>${n.name}</option>`).join('')}
         </select>
         <button class="btn btn-primary btn-sm" onclick="saveOpsCard('${rx.id}')">💾 Save All</button>
       </div>
@@ -3883,7 +4214,7 @@
       <div class="order-line-icon" style="background:${iconBg}">${line.icon || ORDER_ICONS[line.type]}</div>
       <div class="order-line-info">
         <div class="order-line-name">${line.details}</div>
-        <div class="order-line-meta">${line.category}${line.quantity > 1 ? ' × ' + line.quantity : ''}${line.administeredBy ? ' · by ' + NURSE_LIST.find(n => n.id === line.administeredBy)?.name : ''}${line.administeredAt ? ' · ' + fmtDate(line.administeredAt) : ''}</div>
+        <div class="order-line-meta">${line.category}${line.quantity > 1 ? ' × ' + line.quantity : ''}${line.administeredBy ? ' · by ' + getNurses().find(n => n.id === line.administeredBy)?.name : ''}${line.administeredAt ? ' · ' + fmtDate(line.administeredAt) : ''}</div>
       </div>
       <div class="order-line-actions">${statusHtml}</div>
     </div>`;
@@ -4107,7 +4438,7 @@
           <div style="font-weight:600;">${l.details}</div>
           <div style="font-size:11px;color:var(--text-muted);">
             Uploaded ${l.reportUploadedAt ? fmtDate(l.reportUploadedAt) : ''} 
-            ${l.administeredBy ? ' · Administered by ' + (NURSE_LIST.find(n => n.id === l.administeredBy)?.name || 'Nurse') : ''}
+            ${l.administeredBy ? ' · Administered by ' + (getNurses().find(n => n.id === l.administeredBy)?.name || 'Nurse') : ''}
           </div>
         </div>
         <span class="pill pill-green" style="font-size:10px;">📊 Report Available</span>
@@ -4758,7 +5089,7 @@
             const sz = fitText(cleanDetails, w - 40, 8.5, 'bold', DRK);
             doc.text(doc.splitTextToSize(cleanDetails, w - 40)[0], x + 5, ly + 0.5);
 
-            const nName = l.administeredBy ? (NURSE_LIST.find(n => n.id === l.administeredBy)?.name || 'Nurse') : '';
+            const nName = l.administeredBy ? (getNurses().find(n => n.id === l.administeredBy)?.name || 'Nurse') : '';
             if (nName) { setF('normal', 6, GRY); doc.text('Staff: ' + nName.replace(/[^\x00-\x7F]/g, ""), x + 5, ly + 4); }
 
             const st = l.status.toUpperCase().replace('_', ' ');
@@ -5048,6 +5379,8 @@
     /* ══════════════════════════════════════════════════════
        BOOT — restore session if available
     ══════════════════════════════════════════════════════ */
+    let _syncInterval = null;
+
     async function boot() {
       try {
         const root = document.getElementById('app');
@@ -5058,11 +5391,22 @@
               <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">Syncing with Cloud...</div>
             </div>
           `;
-          // Attempt sync but don't block forever
+          // Initial sync
           await Promise.race([
             SYNC.pull(),
             new Promise(resolve => setTimeout(resolve, 5000))
           ]);
+
+          // Start background auto-sync every 20 seconds
+          if (_syncInterval) clearInterval(_syncInterval);
+          _syncInterval = setInterval(() => {
+            if (!SYNC.active) {
+              console.log('🔄 Background sync triggered...');
+              SYNC.pull().then(changed => {
+                if (changed) render();
+              });
+            }
+          }, 20000); 
         }
       } catch (e) {
         console.error('Boot sync failed:', e);

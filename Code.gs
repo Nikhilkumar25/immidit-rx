@@ -74,6 +74,8 @@ function doPost(e) {
         return uploadReportToDrive(body.data);
       case 'saveCases':
         return saveCasesToSheet(body.data);
+      case 'saveNurses':
+        return saveNursesToSheet(body.data);
       case 'proxyFetch':
         const fileId = body.url.split('id=')[1] || body.url.split('/d/')[1]?.split('/')[0];
         if (!fileId) throw new Error('Invalid Drive URL');
@@ -467,3 +469,24 @@ function setupSheets() {
   );
 }
 
+
+function saveNursesToSheet(nursesList) {
+  var sheet = getSheet('NurseProfiles');
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('NurseProfiles');
+    sheet.appendRow(['id', 'name', 'data_json', 'createdAt']);
+  }
+  sheet.clearContents();
+  sheet.appendRow(['id', 'name', 'data_json', 'createdAt']);
+  
+  for (var i = 0; i < nursesList.length; i++) {
+    var n = nursesList[i];
+    sheet.appendRow([
+      n.id,
+      n.name,
+      JSON.stringify(n),
+      new Date().toISOString()
+    ]);
+  }
+  return jsonResponse({ success: true, count: nursesList.length });
+}
