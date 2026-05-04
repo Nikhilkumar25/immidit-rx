@@ -352,7 +352,7 @@ function uploadReportToDrive(data) {
     return jsonResponse({ 
       ok: true, 
       fileId: file.getId(), 
-      url: "https://drive.google.com/uc?export=view&id=" + file.getId() // Direct view link
+      url: "https://lh3.googleusercontent.com/d/" + file.getId() // More reliable for <img> tags
     });
   } catch(err) {
     return jsonResponse({ error: err.toString() });

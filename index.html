@@ -3391,6 +3391,7 @@
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId=null;render()">← Back</button>
+      <button class="btn btn-ghost btn-sm" onclick="showRawData('${c.id}')">🛠️ Debug Data</button>
       <button class="btn btn-warn" onclick="toast('Initiating video call to nurse...','info')">📞 Live Consult</button>
       <button class="btn btn-primary" onclick="startRxFromCase('${c.id}')">📝 Start Prescription</button>
     </div>
@@ -3398,6 +3399,7 @@
 
   <div class="topbar-nav" style="margin-bottom:20px;justify-content:flex-start;padding:0;">
     <button class="topbar-tab ${s === 'details' ? 'active' : ''}" onclick="APP.caseTab='details';render()">📋 Patient Details</button>
+    <button class="topbar-tab ${s === 'media' ? 'active' : ''}" onclick="APP.caseTab='media';render()">🖼️ Clinical Photos</button>
     <button class="topbar-tab ${s === 'timeline' ? 'active' : ''}" onclick="APP.caseTab='timeline';render()">⏳ Timeline Trail</button>
   </div>
 
@@ -3710,8 +3712,8 @@
       <div class="card">
         <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">Physical Form Audit</div></div></div>
         <div class="field-row c2" style="padding:16px;gap:12px;">
-          <div><label>PCR Page 1</label>${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
-          <div><label>PCR Page 2</label>${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+          <div><label>PCR Page 1</label>${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" crossorigin="anonymous" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+          <div><label>PCR Page 2</label>${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" crossorigin="anonymous" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
         </div>
       </div>
     </div>
@@ -3727,20 +3729,36 @@
       <div class="card">
         <div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">Visual proof of care provided</div></div></div>
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
-          ${(c.procedurePhotos || []).map(uri => `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')"><img src="${uri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>`).join('') || '<p class="text-dim">No procedure photos captured.</p>'}
+          ${(c.procedurePhotos || []).map(uri => `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
+              <img src="${uri}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/120?text=Load+Error';console.error('Img failed:', '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+            </div>
+          `).join('') || '<p class="text-dim">No procedure photos captured.</p>'}
         </div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-icon">🧪</div><div><div class="card-title">Sample & Lab Photos</div><div class="card-sub">Proof of collection & labeling</div></div></div>
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
-          ${(c.samplePhotos || []).map(uri => `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')"><img src="${uri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>`).join('') || '<p class="text-dim">No sample photos captured.</p>'}
+          ${(c.samplePhotos || []).map(uri => `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
+              <img src="${uri}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/120?text=Load+Error'" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+            </div>
+          `).join('') || '<p class="text-dim">No sample photos captured.</p>'}
         </div>
       </div>
       <div class="card">
         <div class="card-header"><div class="card-icon">📄</div><div><div class="card-title">Legal & Vitals Proof</div><div class="card-sub">Consent form & device readings</div></div></div>
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
-          ${c.consentFormPhotoUri ? `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.consentFormPhotoUri}')"><img src="${c.consentFormPhotoUri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Consent</div></div>` : ''}
-          ${c.deviceReadingPhotoUri ? `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.deviceReadingPhotoUri}')"><img src="${c.deviceReadingPhotoUri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Vitals</div></div>` : ''}
+          ${c.consentFormPhotoUri ? `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.consentFormPhotoUri}')">
+              <img src="${c.consentFormPhotoUri}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Consent</div>
+            </div>` : ''}
+          ${c.deviceReadingPhotoUri ? `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.deviceReadingPhotoUri}')">
+              <img src="${c.deviceReadingPhotoUri}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Vitals</div>
+            </div>` : ''}
           ${(!c.consentFormPhotoUri && !c.deviceReadingPhotoUri) ? '<p class="text-dim">No physical proof captured.</p>' : ''}
         </div>
       </div>
@@ -5962,7 +5980,13 @@
     }
 
     boot();
-  </script>
+      function showRawData(id) {
+        const c = getCases().find(x => x.id === id);
+        if (!c) return;
+        alert(JSON.stringify(c, null, 2));
+      }
+      window.showRawData = showRawData;
+    </script>
 </body>
 
 </html>
