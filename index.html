@@ -3440,7 +3440,46 @@
     <button class="topbar-tab ${s === 'timeline' ? 'active' : ''}" onclick="APP.caseTab='timeline';render()">⏳ Timeline Trail</button>
   </div>
 
-  ${s === 'timeline' ? renderCaseTimeline(c) : `
+  ${s === 'timeline' ? renderCaseTimeline(c) : s === 'media' ? `
+    <div class="media-gallery-grid" style="display:grid; grid-template-columns:1fr; gap:20px;">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">Visual proof of care provided</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${(c.procedurePhotos || []).map(uri => `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
+              <img src="${uri}" crossorigin="anonymous" onerror="handleImageError(this, '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+            </div>
+          `).join('') || '<p class="text-dim">No procedure photos captured.</p>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🧪</div><div><div class="card-title">Sample & Lab Photos</div><div class="card-sub">Proof of collection & labeling</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${(c.samplePhotos || []).map(uri => `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
+              <img src="${uri}" crossorigin="anonymous" onerror="handleImageError(this, '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+            </div>
+          `).join('') || '<p class="text-dim">No sample photos captured.</p>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📄</div><div><div class="card-title">Legal & Vitals Proof</div><div class="card-sub">Consent form & device readings</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${c.consentFormPhotoUri ? `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.consentFormPhotoUri}')">
+              <img src="${c.consentFormPhotoUri}" crossorigin="anonymous" onerror="handleImageError(this, '${c.consentFormPhotoUri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Consent</div>
+            </div>` : ''}
+          ${c.deviceReadingPhotoUri ? `
+            <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.deviceReadingPhotoUri}')">
+              <img src="${c.deviceReadingPhotoUri}" crossorigin="anonymous" onerror="handleImageError(this, '${c.deviceReadingPhotoUri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Vitals</div>
+            </div>` : ''}
+          ${(!c.consentFormPhotoUri && !c.deviceReadingPhotoUri) ? '<p class="text-dim">No physical proof captured.</p>' : ''}
+        </div>
+      </div>
+    </div>
+  ` : `
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value" style="font-size:16px;">${c.status || '—'}</div></div>
     <div class="stat-card"><div class="stat-label">Phase</div><div class="stat-value">${c.currentPhase || '—'}</div><div class="stat-sub">of 6</div></div>
@@ -3450,7 +3489,6 @@
   ${pcr.chiefComplaint ? `<div class="card"><div class="card-header"><div class="card-icon">🗣️</div><div><div class="card-title">Chief Complaint (Nurse)</div></div></div><p style="padding:0 16px 16px;">${pcr.chiefComplaint}</p></div>` : ''}
   ${pcr.handoverNotes ? `<div class="card"><div class="card-header"><div class="card-icon">📝</div><div><div class="card-title">Handover Notes</div></div></div><p style="padding:0 16px 16px;">${pcr.handoverNotes}</p></div>` : ''}
   ${consult.instructions ? `<div class="card"><div class="card-header"><div class="card-icon">📞</div><div><div class="card-title">Doctor Consultation</div><div class="card-sub">${consult.doctorName || ''} · ${consult.callDuration || ''}</div></div></div><p style="padding:0 16px 16px;">${consult.instructions}</p></div>` : ''}
-  ${(c.procedurePhotos||[]).length ? `<div class="card"><div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">${c.procedurePhotos.length} photo(s)</div></div></div></div>` : ''}
   `}
   `;
     }
@@ -3698,8 +3736,8 @@
               ${e.media ? `
                 <div class="timeline-media-grid" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
                   ${e.media.map(m => `
-                    <div class="timeline-img-box" onclick="window.open('${m}')" style="width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:zoom-in;">
-                      <img src="${m}" style="width:100%;height:100%;object-fit:cover;">
+                    <div class="timeline-img-box" onclick="zoomImage('${m}')" style="width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:zoom-in;">
+                      <img src="${m}" crossorigin="anonymous" onerror="handleImageError(this, '${m}')" style="width:100%;height:100%;object-fit:cover;">
                     </div>
                   `).join('')}
                 </div>
