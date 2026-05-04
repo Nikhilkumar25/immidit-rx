@@ -10,6 +10,8 @@
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
   <style>
     /* ══════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -545,6 +547,23 @@
       flex-shrink: 0;
     }
 
+    .sidebar-badge.blink {
+      animation: blink-bg 1s infinite;
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+    .urgent-glow {
+      animation: glow-red 2s infinite;
+      border-color: var(--danger) !important;
+    }
+    @keyframes glow-red {
+      0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+    }
+    @keyframes blink-bg {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.1); }
+    }
     .sidebar-badge {
       margin-left: auto;
       background: var(--orange);
@@ -680,7 +699,84 @@
         height: 24px;
         padding: 0;
       }
-      .doctor-grid {
+    /* ══════════════════════════════════════════════════════
+342:    TIMELINE
+343: ══════════════════════════════════════════════════════ */
+344:     .timeline {
+345:       position: relative;
+346:       padding-left: 32px;
+347:       margin-top: 10px;
+348:     }
+349:     .timeline::before {
+350:       content: '';
+351:       position: absolute;
+352:       left: 11px;
+353:       top: 5px;
+354:       bottom: 5px;
+355:       width: 2px;
+356:       background: var(--border);
+357:     }
+358:     .timeline-item {
+359:       position: relative;
+360:       margin-bottom: 24px;
+361:     }
+362:     .timeline-item:last-child {
+363:       margin-bottom: 0;
+364:     }
+365:     .timeline-marker {
+366:       position: absolute;
+367:       left: -32px;
+368:       width: 24px;
+369:       height: 24px;
+370:       border-radius: 50%;
+371:       background: var(--surf);
+372:       border: 2px solid var(--primary);
+373:       display: flex;
+374:       align-items: center;
+375:       justify-content: center;
+376:       font-size: 11px;
+377:       z-index: 2;
+378:       box-shadow: 0 0 0 4px var(--bg);
+379:     }
+380:     .timeline-marker.success { border-color: var(--success); color: var(--success); }
+381:     .timeline-marker.warn { border-color: var(--warn); color: var(--warn); }
+382:     .timeline-marker.info { border-color: var(--info); color: var(--info); }
+383:     .timeline-content {
+384:       background: var(--surf2);
+385:       border: 1px solid var(--border);
+386:       border-radius: var(--radius-sm);
+387:       padding: 12px 16px;
+388:     }
+389:     .timeline-time {
+390:       font-family: 'JetBrains Mono', monospace;
+391:       font-size: 10px;
+392:       font-weight: 600;
+393:       color: var(--text-dim);
+394:       display: block;
+395:       margin-bottom: 4px;
+396:     }
+397:     .timeline-title {
+398:       font-size: 13.5px;
+399:       font-weight: 600;
+400:       color: var(--text);
+401:     }
+402:     .timeline-body {
+403:       font-size: 12px;
+404:       color: var(--text-muted);
+405:       margin-top: 4px;
+406:       line-height: 1.5;
+407:     }
+408:     .timeline-geo {
+409:       font-size: 10px;
+410:       font-weight: 500;
+411:       color: var(--primary);
+412:       margin-top: 8px;
+413:       display: flex;
+414:       align-items: center;
+415:       gap: 4px;
+416:     }
+417: 
+418:     .doctor-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -2075,8 +2171,8 @@
     /* ══════════════════════════════════════════════════════
        IMMIDIT LOGO (base64 placeholder — loads from file path)
     ══════════════════════════════════════════════════════ */
-    const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
-    const SHEET_API = 'https://script.google.com/macros/s/AKfycbyuP3gR1cj2CHGfwAlWdAUnsClSi5QO2BXddNne7pR-Yq4jnpWPwvUocyU-x1wMfCLlgw/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
+    const LOGO_SRC = 'logo.png';
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbwACyhHh10-VRB4VQYc5buyxW0tjyxLaN1kiYYZwGU9EjBUcsLmQE6m9BjE8hwxtwQI-w/exec'; // ← PASTE YOUR GOOGLE APPS SCRIPT URL HERE
 
     /* ══════════════════════════════════════════════════════
        PROCEDURE TYPES & TEMPLATES
@@ -2192,6 +2288,11 @@
       DB.set('prescriptions', []);
     }
 
+    // Labs: array of { id, name, address, active }
+    if (!DB.get('labs')) {
+      DB.set('labs', []);
+    }
+
     /* ══════════════════════════════════════════════════════
        CLOUD SYNC (Google Sheets)
     ══════════════════════════════════════════════════════ */
@@ -2230,6 +2331,7 @@
           if (data.doctors) DB.set('doctors', data.doctors);
           if (data.prescriptions) DB.set('prescriptions', data.prescriptions);
           if (data.nurses) DB.set('nurses', data.nurses);
+          if (data.labs) DB.set('labs', data.labs);
 
           // Atomic Merging for Cases: Newer data always wins
           if (data.cases) {
@@ -2262,8 +2364,17 @@
         const updated = cases.map(c => ({ ...c, updatedAt: c.updatedAt || now }));
         this.post({ action: 'saveCases', data: updated }); 
       },
-      pushNurses(nurses) { this.post({ action: 'saveNurses', data: nurses }); }
+      pushNurses(nurses) { this.post({ action: 'saveNurses', data: nurses }); },
+      pushLabs(labs) { this.post({ action: 'saveLabs', data: labs }); }
     };
+
+    function getDoctors() { return DB.get('doctors', []); }
+    function getRxs() { return DB.get('prescriptions', []); }
+    function getRx(id) { return getRxs().find(r => r.id === id); }
+    function getNurses() { return DB.get('nurses', []); }
+    function getCases() { return DB.get('cases', []); }
+    function getLabs() { return DB.get('labs', []); }
+    function saveLabsLocal(labs) { DB.set('labs', labs); }
 
 
     /* ══════════════════════════════════════════════════════
@@ -2324,6 +2435,7 @@
         const doc = docs.find(d => d.id === sess.doctorId && d.active);
         if (doc && doc.profileComplete) {
           APP.currentDoctor = doc; APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new';
+          initPeer(doc.id);
           restoreDraft();  // restore any in-progress prescription
           return true;
         }
@@ -2464,10 +2576,6 @@
     const fmtDate = iso => { try { return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }); } catch { return iso; } };
     const fmtDate2 = d => { try { const [y, m, day] = d.split('-'); return new Date(y, m - 1, day).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }); } catch { return d; } };
     const genId = pre => pre + '-' + Date.now().toString().slice(-6);
-    const getDoctors = () => DB.get('doctors', []);
-    const getRxs = () => DB.get('prescriptions', []);
-    const getCases = () => DB.get('cases', []);
-    const getNurses = () => DB.get('nurses', []);
     const saveDoctors = d => { DB.set('doctors', d); SYNC.pushDoctors(); };
     const saveRxs = r => { DB.set('prescriptions', r); };
     const saveCasesLocal = c => { DB.set('cases', c); SYNC.pushCases(c); };
@@ -2503,7 +2611,7 @@
       if (APP.view === 'login') { app.innerHTML = renderLogin(); bindLogin(); }
       else if (APP.view === 'profile_complete') { app.innerHTML = renderProfileComplete(); bindProfileComplete(); }
       else if (APP.view === 'doctor') { app.innerHTML = renderDoctorApp(); bindDoctorApp(); }
-      else if (APP.view === 'admin') { app.innerHTML = renderAdminApp(); bindAdminApp(); }
+      else if (APP.view === 'admin') { app.innerHTML = renderAdminApp(); bindAdminLabs(); bindAdminApp(); }
 
       if (APP.previewRx) mountPdfPreview(APP.previewRx);
       if (APP.showModal) mountModal();
@@ -2569,7 +2677,12 @@
           APP.currentDoctor = doc;
           APP.loginError = '';
           if (!doc.profileComplete) { APP.view = 'profile_complete'; APP.profileStep = 1; render(); }
-          else { APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new'; saveSession(); render(); }
+          else { 
+            APP.view = 'doctor'; APP.role = 'doctor'; APP.section = 'new'; 
+            initPeer(doc.id);
+            saveSession(); 
+            render(); 
+          }
         }
       };
       document.getElementById('login-submit')?.addEventListener('click', submit);
@@ -2765,6 +2878,10 @@
       <button class="sidebar-btn ${s === 'nurse' ? 'active' : ''}" onclick="APP.section='nurse';APP.viewingCaseId=null;render()">
         <span class="sidebar-ico">🧑‍⚕️</span> Nurse PCRs
         ${(() => { const nc = getCases().filter(c => c.status !== 'assigned' && c.status !== 'closed').length; return nc ? `<span class="sidebar-badge" style="background:var(--info);color:#fff;">${nc}</span>` : ''; })()}
+      </button>
+      <button class="sidebar-btn ${s === 'consults' ? 'active' : ''}" onclick="APP.section='nurse';APP.viewingCaseId=null;render()">
+        <span class="sidebar-ico">📞</span> Consultations
+        ${(() => { const cc = getCases().filter(c => c.consultationRequested).length; return cc ? `<span class="sidebar-badge blink">${cc} LIVE</span>` : ''; })()}
       </button>
 
       <div class="sidebar-footer">
@@ -3104,6 +3221,10 @@
         <span class="sidebar-ico">📁</span> Assign Cases
         <span class="sidebar-badge">${getCases().length}</span>
       </button>
+      <button class="sidebar-btn ${s === 'admin-consults' ? 'active' : ''}" onclick="APP.section='cases';render()">
+        <span class="sidebar-ico">📞</span> Consultations
+        ${(() => { const cc = getCases().filter(c => c.consultationRequested).length; return cc ? `<span class="sidebar-badge blink">${cc} LIVE</span>` : ''; })()}
+      </button>
 
       <div class="sidebar-section">Doctors</div>
       <button class="sidebar-btn ${s === 'doctors' ? 'active' : ''}" onclick="APP.section='doctors';render()">
@@ -3115,6 +3236,12 @@
         <span class="sidebar-ico">📋</span> All Prescriptions
         <span class="sidebar-badge">${rxs.length}</span>
       </button>
+
+      <div class="sidebar-section">Master Data</div>
+      <button class="sidebar-btn ${s === 'labs' ? 'active' : ''}" onclick="APP.section='labs';render()">
+        <span class="sidebar-ico">🧪</span> Lab Partners
+        <span class="sidebar-badge">${getLabs().length}</span>
+      </button>
     </div>
 
     <div class="content">
@@ -3122,6 +3249,7 @@
           s === 'operations' ? renderOperations(rxs) :
             s === 'doctors' ? renderAdminDoctors(doctors) :
               s === 'nurses' ? renderAdminNurses() :
+                s === 'labs' ? renderAdminLabs() :
                 s === 'cases' ? (APP.viewingCaseId ? renderAdminCaseDetail(getCases().find(c => c.id === APP.viewingCaseId)) : renderAdminCases()) :
                   s === 'review' ? (APP.reviewingRxId ? renderReviewDetail(getRx(APP.reviewingRxId)) : renderAdminRxs(rxs)) :
                     renderAdminRxs(rxs)}
@@ -3219,10 +3347,11 @@
     cases.map(c => {
       const sc = c.status === 'closed' ? 'pill-green' : c.status === 'in_progress' ? 'pill-blue' : 'pill-gray';
       const sl = c.status === 'closed' ? '✅ Closed' : c.status === 'in_progress' ? '🔄 In Progress' : c.status === 'en_route' ? '🚗 En Route' : c.status === 'arrived' ? '📍 Arrived' : c.status;
-      return `<div class="rx-card" style="cursor:pointer;" onclick="APP.viewingCaseId='${c.id}';render()">
+      const isUrgent = c.consultationRequested;
+      return `<div class="rx-card ${isUrgent ? 'urgent-glow' : ''}" style="cursor:pointer; ${isUrgent ? 'border-color:var(--danger);' : ''}" onclick="APP.viewingCaseId='${c.id}';render()">
         <div class="rx-card-hdr">
           <div>
-            <div class="rx-id">${c.id}</div>
+            <div class="rx-id">${c.id} ${isUrgent ? `<span class="pill pill-red blink" style="margin-left:8px;">⚠️ CALL DOCTOR</span>` : ''}</div>
             <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge}Y, ${c.patientGender}</span></div>
             <div class="rx-meta">${c.chiefIssue || '—'} · ${c.address || ''}</div>
           </div>
@@ -3239,6 +3368,7 @@
       const consult = c.doctorConsultation || {};
       const vitals = pcr.vitals || {};
       const loc = c.lastUpdatedLocation || c.gpsCoordinates || {};
+      const s = APP.caseTab || 'details';
       return `
   <div class="page-header">
     <div>
@@ -3247,9 +3377,17 @@
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId=null;render()">← Back</button>
+      <button class="btn btn-warn" onclick="toast('Initiating video call to nurse...','info')">📞 Live Consult</button>
       <button class="btn btn-primary" onclick="startRxFromCase('${c.id}')">📝 Start Prescription</button>
     </div>
   </div>
+
+  <div class="topbar-nav" style="margin-bottom:20px;justify-content:flex-start;padding:0;">
+    <button class="topbar-tab ${s === 'details' ? 'active' : ''}" onclick="APP.caseTab='details';render()">📋 Patient Details</button>
+    <button class="topbar-tab ${s === 'timeline' ? 'active' : ''}" onclick="APP.caseTab='timeline';render()">⏳ Timeline Trail</button>
+  </div>
+
+  ${s === 'timeline' ? renderCaseTimeline(c) : `
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-label">Status</div><div class="stat-value" style="font-size:16px;">${c.status || '—'}</div></div>
     <div class="stat-card"><div class="stat-label">Phase</div><div class="stat-value">${c.currentPhase || '—'}</div><div class="stat-sub">of 6</div></div>
@@ -3260,6 +3398,7 @@
   ${pcr.handoverNotes ? `<div class="card"><div class="card-header"><div class="card-icon">📝</div><div><div class="card-title">Handover Notes</div></div></div><p style="padding:0 16px 16px;">${pcr.handoverNotes}</p></div>` : ''}
   ${consult.instructions ? `<div class="card"><div class="card-header"><div class="card-icon">📞</div><div><div class="card-title">Doctor Consultation</div><div class="card-sub">${consult.doctorName || ''} · ${consult.callDuration || ''}</div></div></div><p style="padding:0 16px 16px;">${consult.instructions}</p></div>` : ''}
   ${(c.procedurePhotos||[]).length ? `<div class="card"><div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">${c.procedurePhotos.length} photo(s)</div></div></div></div>` : ''}
+  `}
   `;
     }
 
@@ -3385,14 +3524,145 @@
   </div>`}`;
     }
 
+    function renderAdminLabs() {
+      const labs = getLabs();
+      return `
+  <div class="page-header">
+    <div><h1 class="page-title">Laboratory Partners</h1><div class="page-sub">Manage selectable labs for sample dropoffs</div></div>
+    <button class="btn btn-primary" onclick="APP.showModal='add_lab';APP.modalData={};render()">+ Add Lab Partner</button>
+  </div>
+  ${labs.length === 0 ? `<div class="empty-state"><div class="icon">🧪</div><p>No lab partners yet. Add your first partner.</p></div>` : `
+  <div class="doctor-grid">
+    ${labs.map(l => `
+    <div class="doctor-card">
+      <div class="doctor-card-top">
+        <div class="doctor-avatar" style="background:var(--info-soft);color:var(--info)">${(l.name||'L').substring(0,1).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="doctor-name">${l.name}</div>
+          <div class="doctor-reg">${l.id}</div>
+          <div class="doctor-spec">${l.address || 'No address provided'}</div>
+          <div style="margin-top:8px;">
+            ${l.active ? `<span class="pill pill-green">Active Partner</span>` : `<span class="pill pill-red">Inactive</span>`}
+          </div>
+        </div>
+      </div>
+      <div class="doctor-card-actions">
+        <button class="btn ${l.active ? 'btn-danger-soft' : 'btn-success-soft'} btn-sm" onclick="toggleLab('${l.id}')">
+          ${l.active ? '🚫 Deactivate' : '✓ Activate'}
+        </button>
+      </div>
+    </div>`).join('')}
+  </div>`}`;
+    }
+
+    function bindAdminLabs() {} // none needed, handled by onclicks
+
     /* ══════════════════════════════════════════════════════
        ADMIN — ASSIGN CASES
     ══════════════════════════════════════════════════════ */
+    function renderCaseTimeline(c) {
+      const events = [];
+      const add = (time, title, body, icon, geo, type, media) => { 
+        if (time) events.push({ time, title, body, icon, geo, type, media }); 
+      };
+
+      add(c.createdAt, 'Case Created', `Assignment issued to nurse ${c.assignedNurseId || '—'}`, '📂', null, 'info');
+      
+      if (c.departureTime) {
+        add(c.departureTime, 'Nurse Departed', 'Nurse verified equipment and started trip', '🚗', null, 'info');
+      }
+
+      if (c.arrivalTime) {
+        add(c.arrivalTime, 'Nurse Arrived', 'Nurse arrived at patient location', '📍', c.gpsCoordinates, 'success');
+      }
+      
+      if (c.consentFormPhotoUri) {
+        add(c.arrivalTime, 'Consent Obtained', 'Patient signature and consent captured', '📝', null, 'success', [c.consentFormPhotoUri]);
+      }
+
+      if (c.deviceReadingPhotoUri) {
+        add(c.arrivalTime, 'Vitals Verified', 'Physical device reading documented via camera', '📊', null, 'info', [c.deviceReadingPhotoUri]);
+      }
+      
+      if (c.pcrCompletedTime) {
+        const p = c.pcrData || {};
+        let pcrMedia = [];
+        if (p.formPage1Uri) pcrMedia.push(p.formPage1Uri);
+        if (p.formPage2Uri) pcrMedia.push(p.formPage2Uri);
+        if (p.prevPrescriptionUri) pcrMedia.push(p.prevPrescriptionUri);
+        if (p.prevMedicinePhotoUri) pcrMedia.push(p.prevMedicinePhotoUri);
+
+        add(c.pcrCompletedTime, 'PCR Completed', `Complaint: ${p.chiefComplaint || '—'}<br>Interventions: ${p.handoverNotes || '—'}`, '🩺', c.lastUpdatedLocation, 'success', pcrMedia);
+      }
+
+      if (c.doctorConsultTime) {
+        const consult = c.doctorConsultation || {};
+        let consultBody = `Consultation with ${consult.doctorName || 'Doctor'}<br>Instructions: ${consult.instructions || '—'}`;
+        if (consult.voiceRecordingUri) {
+          consultBody += `<br><audio controls src="${consult.voiceRecordingUri}" style="margin-top:8px;height:32px;width:100%;"></audio>`;
+        }
+        add(c.doctorConsultTime, 'Doctor Consultation', consultBody, '📞', null, 'warn');
+      }
+      
+      // Photos & Orders
+      const procPhotos = c.procedurePhotos || [];
+      if (procPhotos.length > 0) {
+        add(c.doctorConsultTime || c.pcrCompletedTime, 'Clinical Procedures', `Captured ${procPhotos.length} procedure/site photos`, '📸', c.lastUpdatedLocation, 'info', procPhotos);
+      }
+
+      const samplePhotos = c.samplePhotos || [];
+      if (samplePhotos.length > 0) {
+        add(c.sampleCollectionTime || c.doctorConsultTime, 'Sample Collection', `Collected diagnostic samples at ${new Date(c.sampleCollectionTime).toLocaleTimeString()}`, '🧪', c.lastUpdatedLocation, 'success', samplePhotos);
+      }
+
+      if (c.closeTime) {
+        const vitals = c.exitVitals || {};
+        let exitBody = `Outcome: <b>${(c.caseOutcome || '—').toUpperCase()}</b><br>Notes: ${c.nurseNotes || '—'}`;
+        if (vitals.bp) exitBody += `<br>Exit Vitals: BP ${vitals.bp}, PR ${vitals.pr}, SpO2 ${vitals.spo2}`;
+        add(c.closeTime, 'Discharge & Exit', exitBody, '✅', c.lastUpdatedLocation, 'success');
+      }
+      
+      if (c.labDropoff) {
+        add(c.labDropoff.dropoffTime, 'Lab Drop-off', `Samples delivered to <b>${c.labDropoff.labName}</b><br>Seal: ${c.labDropoff.sealNumber || '—'} · Count: ${c.labDropoff.sampleCount}`, '🏢', null, 'success', c.labDropoff.photoUri ? [c.labDropoff.photoUri] : null);
+      }
+
+      // Sort events by time
+      events.sort((a, b) => new Date(a.time) - new Date(b.time));
+
+      return `
+      <div class="timeline">
+        ${events.map(e => `
+          <div class="timeline-item">
+            <div class="timeline-marker ${e.type || ''}">${e.icon || '•'}</div>
+            <div class="timeline-content">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+                <span class="timeline-time">${new Date(e.time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                ${e.geo ? `<button class="btn btn-ghost btn-sm" style="padding:2px 8px;font-size:10px;" onclick="window.open('https://maps.google.com/?q=${e.geo.lat},${e.geo.lng}')">📍 View GPS</button>` : ''}
+              </div>
+              <div class="timeline-title">${e.title}</div>
+              <div class="timeline-body">${e.body}</div>
+              
+              ${e.media ? `
+                <div class="timeline-media-grid" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+                  ${e.media.map(m => `
+                    <div class="timeline-img-box" onclick="window.open('${m}')" style="width:80px;height:80px;border-radius:6px;overflow:hidden;border:1px solid var(--border);cursor:zoom-in;">
+                      <img src="${m}" style="width:100%;height:100%;object-fit:cover;">
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>`;
+    }
+
     function renderAdminCaseDetail(c) {
       if (!c) return `<div class="empty-state"><p>Case not found.</p></div>`;
       const pcr = c.pcrData || {};
       const orderLines = c.orderLines || [];
       const v = c.exitVitals || {};
+      const s = APP.caseTab || 'details';
 
       return `
   <div class="page-header">
@@ -3400,9 +3670,68 @@
       <h1 class="page-title">Case Detail: ${c.patientName}</h1>
       <div class="page-sub">${c.id} · ${c.status.toUpperCase()}</div>
     </div>
-    <button class="btn btn-ghost" onclick="APP.viewingCaseId=null;render()">← Back to Cases</button>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="APP.viewingCaseId=null;render()">← Back</button>
+    </div>
   </div>
 
+  <div class="topbar-nav" style="margin-bottom:20px;justify-content:flex-start;padding:0;">
+    <button class="topbar-tab ${s === 'details' ? 'active' : ''}" onclick="APP.caseTab='details';render()">📄 Case Files</button>
+    <button class="topbar-tab ${s === 'timeline' ? 'active' : ''}" onclick="APP.caseTab='timeline';render()">⏳ Truth Trail (GPS)</button>
+    <button class="topbar-tab ${s === 'pcr' ? 'active' : ''}" onclick="APP.caseTab='pcr';render()">🩺 Clinical PCR</button>
+    <button class="topbar-tab ${s === 'media' ? 'active' : ''}" onclick="APP.caseTab='media';render()">🖼️ Media Gallery</button>
+  </div>
+
+  ${s === 'timeline' ? renderCaseTimeline(c) : s === 'pcr' ? `
+    <div class="admin-case-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🩺</div><div><div class="card-title">Clinical Assessment</div></div></div>
+        <div class="pcr-data-list" style="padding:16px;">
+          <div class="pcr-item"><label>Chief Complaint</label><p>${pcr.chiefComplaint || '—'}</p></div>
+          <div class="pcr-item"><label>Clinical Findings</label><p>${pcr.clinicalFindings || '—'}</p></div>
+          <div class="pcr-item"><label>History of Present Illness</label><p>${pcr.historyOfIllness || '—'}</p></div>
+          <div class="pcr-item"><label>Current Medications</label><p>${pcr.currentMedications || '—'}</p></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">Physical Form Audit</div></div></div>
+        <div class="field-row c2" style="padding:16px;gap:12px;">
+          <div><label>PCR Page 1</label>${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+          <div><label>PCR Page 2</label>${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header"><div class="card-icon">🚑</div><div><div class="card-title">Nurse Interventions</div></div></div>
+      <div style="padding:16px;">
+        <label>Procedure & Intervention Notes</label>
+        <p style="white-space:pre-wrap; margin-top:8px;">${pcr.handoverNotes || 'No specific intervention notes provided.'}</p>
+      </div>
+    </div>
+  ` : s === 'media' ? `
+    <div class="media-gallery-grid" style="display:grid; grid-template-columns:1fr; gap:20px;">
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Procedure Photos</div><div class="card-sub">Visual proof of care provided</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${(c.procedurePhotos || []).map(uri => `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')"><img src="${uri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>`).join('') || '<p class="text-dim">No procedure photos captured.</p>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">🧪</div><div><div class="card-title">Sample & Lab Photos</div><div class="card-sub">Proof of collection & labeling</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${(c.samplePhotos || []).map(uri => `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')"><img src="${uri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"></div>`).join('') || '<p class="text-dim">No sample photos captured.</p>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-icon">📄</div><div><div class="card-title">Legal & Vitals Proof</div><div class="card-sub">Consent form & device readings</div></div></div>
+        <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
+          ${c.consentFormPhotoUri ? `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.consentFormPhotoUri}')"><img src="${c.consentFormPhotoUri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Consent</div></div>` : ''}
+          ${c.deviceReadingPhotoUri ? `<div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.deviceReadingPhotoUri}')"><img src="${c.deviceReadingPhotoUri}" style="width:100%; height:100%; object-fit:cover; border-radius:8px;"><div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Vitals</div></div>` : ''}
+          ${(!c.consentFormPhotoUri && !c.deviceReadingPhotoUri) ? '<p class="text-dim">No physical proof captured.</p>' : ''}
+        </div>
+      </div>
+    </div>
+  ` : `
   <div class="admin-case-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
     <!-- Patient Info -->
     <div class="card">
@@ -3416,7 +3745,7 @@
 
     <!-- Vitals Timeline -->
     <div class="card">
-      <div class="card-header"><div class="card-icon">📊</div><div><div class="card-title">Clinical Vitals</div></div></div>
+      <div class="card-header"><div class="card-icon">📊</div><div><div class="card-title">Clinical Vitals (Discharge)</div></div></div>
       <div class="field-row c3" style="padding:16px;">
         <div><label>BP</label><p>${v.bp || '—'}</p></div>
         <div><label>Pulse</label><p>${v.pr || '—'} bpm</p></div>
@@ -3436,6 +3765,7 @@
           <div style="flex:1;">
             <div style="font-weight:600;">${l.details}</div>
             <div style="font-size:11px;color:var(--text-muted);">${l.type.toUpperCase()} · ${l.tube ? 'Tube: ' + l.tube : ''}</div>
+            ${l.updatedAt ? `<div style="font-size:9px;color:var(--text-dim);margin-top:2px;">Logged: ${new Date(l.updatedAt).toLocaleString('en-IN')}</div>` : ''}
           </div>
           <span class="pill ${l.status === 'administered' || l.status === 'collected' ? 'pill-green' : l.status === 'refused' ? 'pill-red' : 'pill-gray'}" style="font-size:10px;">
             ${l.status.toUpperCase()}
@@ -3445,28 +3775,14 @@
     </div>
   </div>
 
-  <!-- Physical Form Verification -->
   <div class="card" style="margin-top:20px;">
-    <div class="card-header"><div class="card-icon">📸</div><div><div class="card-title">Physical Form Verification</div><div class="card-sub">Digital copies of the handwritten clinical PCR</div></div></div>
-    <div class="field-row c2" style="padding:16px;gap:20px;">
-      <div>
-        <label>PCR Page 1</label>
-        ${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);"></div>` : '<div class="empty-thumb">No photo</div>'}
-      </div>
-      <div>
-        <label>PCR Page 2</label>
-        ${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" style="width:100%;border-radius:var(--radius);border:1px solid var(--border);"></div>` : '<div class="empty-thumb">No photo</div>'}
-      </div>
+    <div class="card-header"><div class="card-icon">🏥</div><div><div class="card-title">Outcome Summary</div></div></div>
+    <div style="padding:16px; display:grid; grid-template-columns:1fr 2fr; gap:20px;">
+       <div><label>Final Outcome</label><div class="pill ${c.caseOutcome==='completed'?'pill-green':c.caseOutcome==='refused'?'pill-red':'pill-gray'}" style="margin-top:8px;">${(c.caseOutcome||'—').toUpperCase()}</div></div>
+       <div><label>Nurse Closing Notes</label><p style="margin-top:8px; font-size:13px;">${c.nurseNotes || 'No closing notes provided.'}</p></div>
     </div>
   </div>
-
-  <div class="card" style="margin-top:20px;">
-    <div class="card-header"><div class="card-icon">📝</div><div><div class="card-title">Handover & Nurse Notes</div></div></div>
-    <div style="padding:16px;">
-      <p style="white-space:pre-wrap;">${pcr.handoverNotes || 'No notes provided.'}</p>
-    </div>
-  </div>
-  `;
+  `}</div>`;
     }
     function renderAdminCases() {
       const cases = getCases();
@@ -3480,10 +3796,11 @@
     cases.map(c => {
       const sc = c.status === 'closed' ? 'pill-green' : c.status === 'in_progress' ? 'pill-blue' : c.status === 'assigned' ? 'pill-gray' : 'pill-blue';
       const sl = c.status === 'closed' ? '✅ Closed' : c.status === 'in_progress' ? '🔄 Active' : c.status === 'assigned' ? '⏳ Assigned' : c.status === 'en_route' ? '🚗 En Route' : c.status;
-      return `<div class="rx-card">
+      const isUrgent = c.consultationRequested;
+      return `<div class="rx-card ${isUrgent ? 'urgent-glow' : ''}" style="${isUrgent ? 'border-color:var(--danger);' : ''}">
         <div class="rx-card-hdr">
           <div>
-            <div class="rx-id">${c.id}</div>
+            <div class="rx-id">${c.id} ${isUrgent ? `<span class="pill pill-red blink" style="margin-left:8px;">⚠️ CALL DOCTOR</span>` : ''}</div>
             <div class="rx-patient-name">${c.patientName} <span style="font-weight:400;font-size:13px;color:var(--text-muted);">· ${c.patientAge || ''}Y, ${c.patientGender || ''}</span></div>
             <div class="rx-meta">${c.chiefIssue || '—'} · ${c.urgency || 'Routine'} · ${c.address || ''}</div>
           </div>
@@ -3517,7 +3834,10 @@
           <div class="field"><label>Temporary Password</label><input id="m-pass" placeholder="Min 6 characters" type="text"></div>
         </div>
         <div class="field"><label>Display Name (optional)</label><input id="m-name" placeholder="Dr. Full Name"></div>
-        <div class="field"><label>Medical Reg. ID (optional)</label><input id="m-reg" placeholder="MCI-XXXXX"></div>
+        <div class="field-row c2">
+          <div class="field"><label>Medical Reg. ID (optional)</label><input id="m-reg" placeholder="MCI-XXXXX"></div>
+          <div class="field"><label>Phone Number</label><input id="m-phone" placeholder="+91 98765 43210"></div>
+        </div>
         <div id="m-error" style="display:none;" class="error-msg"></div>
         <div id="m-success" style="display:none;" class="cred-box">
           <div class="cred-box-title">🎉 Doctor Account Created</div>
@@ -3654,6 +3974,22 @@
         document.body.appendChild(overlay);
         document.getElementById('mc-submit').addEventListener('click', createCase);
         renderModalSupplies();
+      } else if (APP.showModal === 'add_lab') {
+        overlay.innerHTML = `
+    <div class="modal">
+      <div class="modal-hdr"><h3>Add Lab Partner</h3><button class="modal-close" onclick="closeModal()">×</button></div>
+      <div class="modal-body">
+        <div class="field"><label>Laboratory Name</label><input id="ml-name" placeholder="e.g. Metropolis Healthcare"></div>
+        <div class="field"><label>Address / Branch</label><input id="ml-addr" placeholder="e.g. Sector 44, Gurugram"></div>
+        <div id="ml-error" style="display:none;" class="error-msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+        <button class="btn btn-primary" id="ml-submit">Add Partner</button>
+      </div>
+    </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('ml-submit').addEventListener('click', createLab);
       }
     }
 
@@ -3709,6 +4045,7 @@
       const password = document.getElementById('m-pass').value.trim();
       const name = document.getElementById('m-name').value.trim();
       const reg = document.getElementById('m-reg').value.trim();
+      const phone = document.getElementById('m-phone').value.trim();
       const errEl = document.getElementById('m-error');
 
       if (!username || !password) { errEl.textContent = 'Username and password are required.'; errEl.style.display = 'block'; return; }
@@ -3728,7 +4065,7 @@
           specialty: '',
           qualification: '',
           experience: '',
-          phone: '',
+          phone: phone || '',
           bio: '',
           signature: null,
           avatarInitials: name ? name.split(' ').filter(w => w).slice(0, 2).map(w => w[0].toUpperCase()).join('') : username.substring(0, 2).toUpperCase(),
@@ -3744,6 +4081,33 @@
       document.getElementById('cred-p').textContent = password;
       document.getElementById('m-success').style.display = 'block';
       toast('Doctor account created successfully!');
+    }
+
+    function createLab() {
+      const name = document.getElementById('ml-name').value.trim();
+      const addr = document.getElementById('ml-addr').value.trim();
+      const errEl = document.getElementById('ml-error');
+      if (!name) { errEl.textContent = 'Laboratory name is required.'; errEl.style.display = 'block'; return; }
+      
+      const labs = getLabs();
+      const id = 'LAB' + String(labs.length + 1).padStart(3, '0');
+      labs.push({ id, name, address: addr, active: true });
+      
+      saveLabsLocal(labs);
+      SYNC.pushLabs(labs);
+      toast('Lab ' + name + ' added successfully!');
+      closeModal();
+    }
+
+    function toggleLab(id) {
+      const labs = getLabs();
+      const l = labs.find(x => x.id === id);
+      if (l) {
+        l.active = !l.active;
+        saveLabsLocal(labs);
+        SYNC.pushLabs(labs);
+        render();
+      }
     }
 
     function showCreds(id) {
@@ -3923,19 +4287,19 @@
       const data = gatherForm();
       if (!data.patient.name) { toast('Patient name is required.', 'error'); return; }
       const doc = APP.currentDoctor;
+      let finalRx = null;
 
       if (APP.editingRxId) {
         const rx = getRx(APP.editingRxId);
         if (rx) {
-          const updated = { ...rx, ...data, edited: true, editedAt: new Date().toISOString() };
-          // Regenerate order lines if new procedures/tests added
-          if (!updated.orderLines) updated.orderLines = generateOrderLines(updated);
-          updated.status = computeRxStatus(updated);
-          updatePrescription(updated);
-          APP.previewRx = updated;
+          finalRx = { ...rx, ...data, edited: true, editedAt: new Date().toISOString() };
+          if (!finalRx.orderLines) finalRx.orderLines = generateOrderLines(finalRx);
+          finalRx.status = computeRxStatus(finalRx);
+          updatePrescription(finalRx);
+          APP.previewRx = finalRx;
         }
       } else {
-        const rx = {
+        finalRx = {
           id: genId('RX'),
           doctorId: doc.id, doctorName: doc.profile.name, doctorReg: doc.profile.regId,
           doctorSpec: doc.profile.specialty, doctorQual: doc.profile.qualification,
@@ -3943,12 +4307,34 @@
           createdAt: new Date().toISOString(), edited: false,
           ...data
         };
-        // Generate order lines from prescribed items
-        rx.orderLines = generateOrderLines(rx);
-        rx.status = computeRxStatus(rx);
-        rx.followUp = null; // will be filled during review
-        addPrescription(rx);
-        APP.previewRx = rx;
+        finalRx.orderLines = generateOrderLines(finalRx);
+        finalRx.status = computeRxStatus(finalRx);
+        finalRx.followUp = null;
+        addPrescription(finalRx);
+        APP.previewRx = finalRx;
+      }
+
+      // ── NURSE SYNC ──
+      // If this Rx was started from an active nurse case, update the case immediately
+      if (APP._prefillFromCase && finalRx) {
+        const caseId = APP._prefillFromCase.id;
+        const cases = getCases();
+        const c = cases.find(x => x.id === caseId);
+        if (c) {
+          c.orderLines = finalRx.orderLines;
+          c.doctorConsultTime = new Date().toISOString();
+          c.doctorConsultation = {
+            doctorId: doc.id,
+            doctorName: doc.profile.name,
+            instructions: finalRx.suggestions || 'Refer to prescription.',
+            callDuration: 'Prescription Issued'
+          };
+          c.updatedAt = new Date().toISOString();
+          saveCases(cases);
+          SYNC.post({ action: 'saveCases', data: [c] });
+          toast('Nurse actionables updated with new orders!', 'success');
+        }
+        APP._prefillFromCase = null;
       }
 
       resetForm();
@@ -4566,7 +4952,7 @@
       const meds = rx.medicines || [], labs = rx.labTests || [], diags = rx.diagnosticTests || [], refs = rx.referral || [];
       const procs = rx.procedures || [], orderLines = rx.orderLines || [];
       const fu = rx.followUp || {};
-      const LOGO_SRC = 'https://i.ibb.co/chL7QPcJ/Chat-GPT-Image-Feb-17-2026-12-20-37-AM-Photoroom.png';
+      const LOGO_SRC = 'logo.png';
 
       const sec = (label) => `<div style="display:flex;align-items:center;gap:6px;margin:14px 0 7px;">
     <span style="font-size:8.5px;font-weight:700;color:#F5621E;text-transform:uppercase;letter-spacing:1.1px;white-space:nowrap;">${label}</span>
@@ -5376,6 +5762,139 @@
       resetForm(); render();
     }
 
+    let _peer = null;
+    let _remoteStream = null;
+    let _callInterval = null;
+    let _activeCallCaseId = null;
+
+    function initPeer(doctorId) {
+      if (_peer) return;
+      // PeerJS IDs should be alphanumeric/simple
+      const cleanId = String(doctorId).replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      console.log('📡 Initializing PeerJS for Doctor:', cleanId);
+      _peer = new Peer(cleanId);
+      
+      _peer.on('open', id => console.log('✅ PeerJS Connected: ', id));
+      _peer.on('error', err => console.warn('❌ PeerJS Error:', err));
+      
+      _peer.on('call', call => {
+        APP.activeCall = call;
+        toast('Direct Audio Link Established');
+        checkIncomingCalls(); // Force UI check immediately
+      });
+    }
+
+    async function checkIncomingCalls() {
+      if (APP.role !== 'doctor' || !APP.currentDoctor) return;
+      initPeer(APP.currentDoctor.id);
+
+      const cases = getCases();
+      let incoming = cases.find(c => c.consultationRequested && !c.doctorConsultation);
+      
+      // IF we have an active WebRTC link but no data flag yet, force a sync
+      if (APP.activeCall && !incoming) {
+        console.log('🔄 WebRTC Signal active, forcing data sync...');
+        await SYNC.pull();
+        incoming = getCases().find(c => c.consultationRequested && !c.doctorConsultation);
+      }
+
+      if (incoming && _activeCallCaseId !== incoming.id) {
+        _activeCallCaseId = incoming.id;
+        showIncomingCall(incoming);
+      } else if (!incoming && _activeCallCaseId) {
+        _activeCallCaseId = null;
+        const overlay = document.getElementById('incoming-call-overlay');
+        if (overlay) overlay.remove();
+      }
+    }
+
+    function showIncomingCall(c) {
+      if (document.getElementById('incoming-call-overlay')) return;
+
+      const overlay = document.createElement('div');
+      overlay.id = 'incoming-call-overlay';
+      overlay.style = `
+        position: fixed; top: 20px; right: 20px; z-index: 9999;
+        background: #0F172A; color: white; border-radius: 16px;
+        padding: 20px; width: 320px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 16px;
+        animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      `;
+      overlay.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:48px; height:48px; border-radius:24px; background:var(--primary); display:flex; align-items:center; justify-content:center; position:relative;">
+            <div style="position:absolute; width:100%; height:100%; border-radius:50%; background:var(--primary); opacity:0.6; animation: ping 1.5s infinite;"></div>
+            <span style="font-size:24px;">👨‍⚕️</span>
+          </div>
+          <div>
+            <div style="font-weight:700; font-size:14px;">Incoming Virtual Consult</div>
+            <div style="font-size:12px; opacity:0.7;">Field Nurse is requesting bridge...</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.05); padding:12px; border-radius:10px;">
+          <div style="font-weight:600; font-size:13px; margin-bottom:4px;">${c.patientName}</div>
+          <div style="font-size:11px; opacity:0.6; line-height:1.4;">${c.chiefIssue}</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button onclick="acceptCall('${c.id}')" style="flex:1; background:var(--primary); color:white; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Accept</button>
+          <button onclick="document.getElementById('incoming-call-overlay').remove()" style="background:rgba(255,255,255,0.1); color:white; border:none; padding:10px; border-radius:8px; font-weight:600; cursor:pointer;">Ignore</button>
+        </div>
+        <style>
+          @keyframes ping { 0% { transform: scale(1); opacity: 0.8; } 70%, 100% { transform: scale(2.5); opacity: 0; } }
+          @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        </style>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    window.acceptCall = function(caseId) {
+      const overlay = document.getElementById('incoming-call-overlay');
+      if (overlay) overlay.remove();
+      
+      APP.viewingCaseId = caseId;
+      APP.section = 'cases';
+      
+      const c = getCases().find(x => x.id === caseId);
+      if (c) {
+        APP.showModal = 'add_rx';
+        APP.modalData = { 
+          patient: { name: c.patientName, age: c.patientAge, gender: c.patientGender },
+          linkedCaseId: c.id,
+          vitals: c.exitVitals || null
+        };
+        
+        // ANSWER THE WEBRTC CALL IF IT EXISTS
+        if (APP.activeCall) {
+          navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            APP.activeCall.answer(stream);
+            APP.activeCall.on('stream', remoteStream => {
+              const audio = document.getElementById('remote-audio') || document.createElement('audio');
+              audio.id = 'remote-audio';
+              audio.srcObject = remoteStream;
+              audio.play();
+              if (!document.getElementById('remote-audio')) document.body.appendChild(audio);
+              toast('Clinical Bridge Connected — Real-time Audio Active', 'success');
+            });
+          });
+        }
+      }
+      render();
+    };
+
+    window.endCall = function() {
+      if (APP.activeCall) {
+        APP.activeCall.close();
+        APP.activeCall = null;
+      }
+      const audio = document.getElementById('remote-audio');
+      if (audio) {
+        audio.pause();
+        audio.srcObject = null;
+      }
+      toast('Call Ended');
+      render();
+    };
+
     /* ══════════════════════════════════════════════════════
        BOOT — restore session if available
     ══════════════════════════════════════════════════════ */
@@ -5391,22 +5910,29 @@
               <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;">Syncing with Cloud...</div>
             </div>
           `;
-          // Initial sync
           await Promise.race([
             SYNC.pull(),
             new Promise(resolve => setTimeout(resolve, 5000))
           ]);
 
-          // Start background auto-sync every 20 seconds
           if (_syncInterval) clearInterval(_syncInterval);
           _syncInterval = setInterval(() => {
-            if (!SYNC.active) {
-              console.log('🔄 Background sync triggered...');
+            const isInputFocused = !!APP.showModal || !!APP.viewingCaseId || !!APP.viewingRxId || (APP.role === 'doctor' && APP.section === 'new');
+            
+            if (!SYNC.active && !isInputFocused) {
               SYNC.pull().then(changed => {
                 if (changed) render();
               });
             }
           }, 20000); 
+
+          // ── VIRTUAL CALL POLLING ──
+          if (_callInterval) clearTimeout(_callInterval);
+          const pollCalls = async () => {
+            await checkIncomingCalls();
+            _callInterval = setTimeout(pollCalls, 5000);
+          };
+          pollCalls();
         }
       } catch (e) {
         console.error('Boot sync failed:', e);

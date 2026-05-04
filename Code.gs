@@ -76,6 +76,8 @@ function doPost(e) {
         return saveCasesToSheet(body.data);
       case 'saveNurses':
         return saveNursesToSheet(body.data);
+      case 'saveLabs':
+        return saveLabsToSheet(body.data);
       case 'proxyFetch':
         const fileId = body.url.split('id=')[1] || body.url.split('/d/')[1]?.split('/')[0];
         if (!fileId) throw new Error('Invalid Drive URL');
@@ -162,8 +164,21 @@ function pullAll() {
     prescriptions: prescriptions,
     nurses: nurses,
     cases: cases,
+    labs: getLabs(),
     synced: new Date().toISOString(),
   });
+}
+
+function getLabs() {
+  var sheet = getSheet('Labs');
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getValues();
+  var labs = [];
+  for (var i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue;
+    labs.push({ id: data[i][0], name: data[i][1], address: data[i][2], active: toBool(data[i][3]) });
+  }
+  return labs;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -241,24 +256,40 @@ function updatePrescriptionInSheet(rx) {
 function saveCasesToSheet(casesList) {
   var sheet = getSheet('Cases');
   var data = sheet.getDataRange().getValues();
-  var existingMap = {};
+  var existingMap = {}; // id -> { row: number, json: object }
   for (var i = 1; i < data.length; i++) {
-    if (data[i][0]) existingMap[data[i][0]] = i + 1; // row number
-  }
-
-  for (var j = 0; j < casesList.length; j++) {
-    var c = casesList[j];
-    var rowNum = existingMap[c.id];
-    if (rowNum) {
-      // Update
-      sheet.getRange(rowNum, 3).setValue(JSON.stringify(c));
-      sheet.getRange(rowNum, 4).setValue(new Date().toISOString());
-    } else {
-      // Insert
-      sheet.appendRow([c.id, c.status, JSON.stringify(c), new Date().toISOString()]);
+    if (data[i][0]) {
+      existingMap[data[i][0]] = {
+        row: i + 1,
+        data: safeJSON(data[i][2])
+      };
     }
   }
-  return jsonResponse({ ok: true, count: casesList.length });
+
+  var updatedCount = 0;
+  var insertedCount = 0;
+
+  for (var j = 0; j < casesList.length; j++) {
+    var incoming = casesList[j];
+    var existing = existingMap[incoming.id];
+    
+    if (existing) {
+      // Latest-Writer-Wins check
+      var incomingTime = new Date(incoming.updatedAt || 0).getTime();
+      var existingTime = new Date(existing.data.updatedAt || 0).getTime();
+      
+      if (incomingTime > existingTime) {
+        sheet.getRange(existing.row, 3).setValue(JSON.stringify(incoming));
+        sheet.getRange(existing.row, 4).setValue(new Date().toISOString());
+        updatedCount++;
+      }
+    } else {
+      // Insert new case
+      sheet.appendRow([incoming.id, incoming.status, JSON.stringify(incoming), new Date().toISOString()]);
+      insertedCount++;
+    }
+  }
+  return jsonResponse({ ok: true, updated: updatedCount, inserted: insertedCount });
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -460,9 +491,18 @@ function setupSheets() {
     sheet.setColumnWidth(3, 400);
   }
 
+  // ── Labs ──
+  if (!ss.getSheetByName('Labs')) {
+    sheet = ss.insertSheet('Labs');
+    sheet.appendRow(['id', 'name', 'address', 'active']);
+    sheet.appendRow(['LAB001', 'Metropolis Healthcare', 'Sector 44, Gurugram', 'TRUE']);
+    sheet.appendRow(['LAB002', 'Dr. Lal PathLabs', 'DLF Phase 4, Gurugram', 'TRUE']);
+    sheet.appendRow(['LAB003', 'SRL Diagnostics', 'Golf Course Road, Gurugram', 'TRUE']);
+  }
+
   SpreadsheetApp.getUi().alert(
     '✅ Setup Complete!\n\n' +
-    'Sheets created: Config, Doctors, Prescriptions, Drafts, Reports, Cases, NurseProfiles\n' +
+    'Sheets created: Config, Doctors, Prescriptions, Drafts, Reports, Cases, NurseProfiles, Labs\n' +
     'Demo doctor: dr.priya / Priya@123\n' +
     'Admin: admin / immidit@2026\n\n' +
     'Next step: Deploy → New Deployment → Web App'
@@ -489,4 +529,27 @@ function saveNursesToSheet(nursesList) {
     ]);
   }
   return jsonResponse({ success: true, count: nursesList.length });
+}
+
+function saveLabsToSheet(labsList) {
+  var sheet = getSheet('Labs');
+  if (!sheet) {
+    sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('Labs');
+    sheet.appendRow(['id', 'name', 'address', 'active']);
+  }
+  var lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    sheet.getRange(2, 1, lastRow - 1, 4).clearContent();
+  }
+  
+  var rows = [];
+  for (var i = 0; i < labsList.length; i++) {
+    var l = labsList[i];
+    rows.push([l.id, l.name, l.address || '', l.active ? 'TRUE' : 'FALSE']);
+  }
+  
+  if (rows.length > 0) {
+    sheet.getRange(2, 1, rows.length, 4).setValues(rows);
+  }
+  return jsonResponse({ ok: true, count: rows.length });
 }
