@@ -2177,6 +2177,73 @@
     const ICON_SRC = 'app_icon.png';
     const SHEET_API = 'https://script.google.com/macros/s/AKfycbz0sC-J2AKXP9fLaWUQYLa5aQ-6E6kGTo1-bHCYKBx77PcFV2v7PTlujFeU0xtW4FJXSg/exec';
 
+    /* ══════════════════════════════════════════════════════
+       CALLING (WebRTC)
+    ══════════════════════════════════════════════════════ */
+    let doctorPeer = null;
+    let currentCall = null;
+    let localStream = null;
+
+    function initDoctorPeer() {
+      if (doctorPeer) return;
+      const docId = localStorage.getItem('immidit_user_id') || 'admin';
+      doctorPeer = new Peer(`immidit-doctor-${docId}`, {
+        host: '0.peerjs.com',
+        secure: true,
+        port: 443
+      });
+
+      doctorPeer.on('open', (id) => console.log('Doctor Peer ID:', id));
+      doctorPeer.on('error', (err) => console.error('Peer error:', err));
+    }
+
+    async function startLiveConsult(nurseId) {
+      if (!nurseId) return toast('Nurse ID missing', 'error');
+      
+      const modal = document.getElementById('call-modal');
+      modal.style.display = 'flex';
+      
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('local-video').srcObject = localStream;
+        
+        const targetId = `immidit-nurse-${nurseId}`;
+        toast(`Calling Nurse ${nurseId}...`, 'info');
+        
+        currentCall = doctorPeer.call(targetId, localStream);
+        
+        currentCall.on('stream', (remoteStream) => {
+          document.getElementById('remote-video').srcObject = remoteStream;
+          toast('Nurse connected', 'success');
+        });
+        
+        currentCall.on('close', endCall);
+        currentCall.on('error', (err) => {
+          toast('Connection failed', 'error');
+          endCall();
+        });
+
+      } catch (err) {
+        console.error('Call failed', err);
+        toast('Camera/Mic permission denied', 'error');
+        endCall();
+      }
+    }
+
+    function endCall() {
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+      }
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+      document.getElementById('call-modal').style.display = 'none';
+      document.getElementById('local-video').srcObject = null;
+      document.getElementById('remote-video').srcObject = null;
+    }
+
     async function handleImageError(img, src) {
       console.warn('Image failed to load directly, trying proxy:', src);
       if (src.includes('data:image')) return;
@@ -3429,7 +3496,7 @@
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId=null;render()">← Back</button>
       ${APP.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="showRawData('${c.id}')">🛠️ Debug Data</button>` : ''}
-      <button class="btn btn-warn" onclick="toast('Initiating video call to nurse...','info')">📞 Live Consult</button>
+      <button class="btn btn-warn" onclick="startLiveConsult('${c.assignedNurseId}')">📞 Live Consult</button>
       <button class="btn btn-primary" onclick="startRxFromCase('${c.id}')">📝 Start Prescription</button>
     </div>
   </div>
@@ -6064,6 +6131,15 @@
       }
       window.showRawData = showRawData;
     </script>
+  <div id="call-modal" class="call-overlay">
+    <div class="video-grid">
+      <video id="remote-video" autoplay playsinline></video>
+      <video id="local-video" autoplay muted playsinline></video>
+    </div>
+    <div class="call-controls">
+      <button class="btn-call-end" onclick="endCall()"><i class="ri-phone-fill" style="transform:rotate(135deg)"></i></button>
+    </div>
+  </div>
 </body>
 
 </html>
