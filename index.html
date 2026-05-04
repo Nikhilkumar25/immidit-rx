@@ -2197,8 +2197,30 @@
       doctorPeer.on('error', (err) => console.error('Peer error:', err));
     }
 
+    function endCall() {
+      if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+      }
+      if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+      }
+      document.getElementById('call-modal').style.display = 'none';
+      document.getElementById('local-video').srcObject = null;
+      document.getElementById('remote-video').srcObject = null;
+      
+      // Clear inputs
+      document.getElementById('call-tasks').value = '';
+      document.getElementById('call-observations').value = '';
+      APP._callingCaseId = null;
+    }
+
+    let _callingNurseId = null;
     async function startLiveConsult(nurseId) {
       if (!nurseId) return toast('Nurse ID missing', 'error');
+      _callingNurseId = nurseId;
+      APP._callingCaseId = APP.viewingCaseId;
       
       const modal = document.getElementById('call-modal');
       modal.style.display = 'flex';
@@ -2230,18 +2252,30 @@
       }
     }
 
-    function endCall() {
-      if (currentCall) {
-        currentCall.close();
-        currentCall = null;
+    function saveCallActionables() {
+      if (!APP._callingCaseId) return toast('No active case linked to call', 'error');
+      
+      const tasks = document.getElementById('call-tasks').value;
+      const obs = document.getElementById('call-observations').value;
+      
+      const cases = getCases();
+      const c = cases.find(x => x.id === APP._callingCaseId);
+      if (c) {
+        c.doctorConsultation = {
+          doctorId: APP.user.id,
+          doctorName: APP.user.profile?.name || APP.user.username,
+          instructions: tasks,
+          observations: obs,
+          callDuration: 'Live Consult',
+          updatedAt: new Date().toISOString()
+        };
+        
+        c.updatedAt = new Date().toISOString();
+        
+        saveCasesLocal(cases);
+        SYNC.post({ action: 'saveCases', data: [c] });
+        toast('Clinical tasks synced to nurse successfully!', 'success');
       }
-      if (localStream) {
-        localStream.getTracks().forEach(t => t.stop());
-        localStream = null;
-      }
-      document.getElementById('call-modal').style.display = 'none';
-      document.getElementById('local-video').srcObject = null;
-      document.getElementById('remote-video').srcObject = null;
     }
 
     async function handleImageError(img, src) {
@@ -4505,7 +4539,7 @@
             callDuration: 'Prescription Issued'
           };
           c.updatedAt = new Date().toISOString();
-          saveCases(cases);
+          saveCasesLocal(cases);
           SYNC.post({ action: 'saveCases', data: [c] });
           toast('Nurse actionables updated with new orders!', 'success');
         }
@@ -6132,12 +6166,35 @@
       window.showRawData = showRawData;
     </script>
   <div id="call-modal" class="call-overlay">
-    <div class="video-grid">
-      <video id="remote-video" autoplay playsinline></video>
-      <video id="local-video" autoplay muted playsinline></video>
-    </div>
-    <div class="call-controls">
-      <button class="btn-call-end" onclick="endCall()"><i class="ri-phone-fill" style="transform:rotate(135deg)"></i></button>
+    <div class="call-container" style="display:flex; width:95%; height:85%; gap:20px;">
+      <div class="video-grid" style="flex:2; position:relative;">
+        <video id="remote-video" autoplay playsinline style="width:100%; height:100%; background:#000; border-radius:24px; object-fit:cover;"></video>
+        <video id="local-video" autoplay muted playsinline style="position:absolute; bottom:20px; right:20px; width:200px; height:150px; background:#222; border-radius:16px; border:2px solid rgba(255,255,255,0.2); object-fit:cover;"></video>
+      </div>
+      
+      <div class="call-actionables" style="flex:1; background:white; border-radius:24px; display:flex; flex-direction:column; overflow:hidden;">
+        <div style="padding:20px; border-bottom:1px solid #eee; background:var(--surf);">
+          <div style="font-weight:700; color:var(--text);">Clinical Actionables</div>
+          <div style="font-size:11px; color:var(--text-muted);">Sync tasks directly to nurse phone</div>
+        </div>
+        
+        <div style="flex:1; overflow-y:auto; padding:20px;">
+          <div style="margin-bottom:20px;">
+            <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; margin-bottom:8px; color:var(--text-dim);">Assigned Tasks (Injection, Dressing, etc.)</label>
+            <textarea id="call-tasks" placeholder="e.g. 1. Inj Monocef 1gm IV&#10;2. BP check every 15 mins&#10;3. Wound dressing with Betadine" style="width:100%; height:120px; border:1px solid #ddd; border-radius:12px; padding:12px; font-size:13px; font-family:inherit;"></textarea>
+          </div>
+          
+          <div>
+            <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; margin-bottom:8px; color:var(--text-dim);">Device Readings & Observations</label>
+            <textarea id="call-observations" placeholder="e.g. SpO2: 94%, Pulse: 110, Patient appears distressed." style="width:100%; height:100px; border:1px solid #ddd; border-radius:12px; padding:12px; font-size:13px; font-family:inherit;"></textarea>
+          </div>
+        </div>
+        
+        <div style="padding:20px; background:var(--surf); border-top:1px solid #eee; display:flex; gap:10px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="saveCallActionables()">Sync to Nurse</button>
+          <button class="btn btn-danger-soft" onclick="endCall()">End Call</button>
+        </div>
+      </div>
     </div>
   </div>
 </body>
