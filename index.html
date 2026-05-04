@@ -2368,6 +2368,21 @@
       pushLabs(labs) { this.post({ action: 'saveLabs', data: labs }); }
     };
 
+    async function syncNow() {
+      const btn = document.getElementById('sync-btn');
+      if (btn) btn.innerHTML = '⌛ Syncing...';
+      try {
+        await Cloud.pull();
+        showToast('Data synced successfully', 'success');
+      } catch(e) {
+        showToast('Sync failed: ' + e.toString(), 'error');
+      } finally {
+        if (btn) btn.innerHTML = '🔄 Sync';
+        render();
+      }
+    }
+    window.syncNow = syncNow;
+
     function getDoctors() { return DB.get('doctors', []); }
     function getRxs() { return DB.get('prescriptions', []); }
     function getRx(id) { return getRxs().find(r => r.id === id); }
@@ -2842,12 +2857,11 @@
       <button class="topbar-tab ${s === 'new' ? 'active' : ''}" onclick="APP.section='new';APP.editingRxId=null;resetForm();render()">✏️ New Prescription</button>
       <button class="topbar-tab ${s === 'my' ? 'active' : ''}" onclick="APP.section='my';render()">📋 My Prescriptions</button>
     </div>
-    <div class="topbar-user">
+      <button id="sync-btn" class="topbar-tab" style="margin-right:10px; opacity:0.7;" onclick="syncNow()">🔄 Sync</button>
       <span class="status-dot"></span>
       <span>${p.name}</span>
       <span style="color:var(--text-dim)">·</span>
       <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
   </div>
 
   <div class="app-layout">
