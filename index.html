@@ -3712,8 +3712,8 @@
       <div class="card">
         <div class="card-header"><div class="card-icon">📋</div><div><div class="card-title">Physical Form Audit</div></div></div>
         <div class="field-row c2" style="padding:16px;gap:12px;">
-          <div><label>PCR Page 1</label>${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" crossorigin="anonymous" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
-          <div><label>PCR Page 2</label>${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" crossorigin="anonymous" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+          <div><label>PCR Page 1</label>${pcr.formPage1Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage1Uri}')"><img src="${pcr.formPage1Uri}" crossorigin="anonymous" onerror="handleImageError(this, '${pcr.formPage1Uri}')" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
+          <div><label>PCR Page 2</label>${pcr.formPage2Uri ? `<div class="pcr-preview-wrap" onclick="zoomImage('${pcr.formPage2Uri}')"><img src="${pcr.formPage2Uri}" crossorigin="anonymous" onerror="handleImageError(this, '${pcr.formPage2Uri}')" style="width:100%;border-radius:var(--radius);"></div>` : '<div class="empty-thumb">No photo</div>'}</div>
         </div>
       </div>
     </div>
@@ -3731,7 +3731,7 @@
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
           ${(c.procedurePhotos || []).map(uri => `
             <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
-              <img src="${uri}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/120?text=Load+Error';console.error('Img failed:', '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <img src="${uri}" crossorigin="anonymous" onerror="handleImageError(this, '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
             </div>
           `).join('') || '<p class="text-dim">No procedure photos captured.</p>'}
         </div>
@@ -3741,7 +3741,7 @@
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
           ${(c.samplePhotos || []).map(uri => `
             <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${uri}')">
-              <img src="${uri}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/120?text=Load+Error'" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <img src="${uri}" crossorigin="anonymous" onerror="handleImageError(this, '${uri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
             </div>
           `).join('') || '<p class="text-dim">No sample photos captured.</p>'}
         </div>
@@ -3751,12 +3751,12 @@
         <div class="media-row" style="display:flex; flex-wrap:wrap; gap:12px; padding:16px;">
           ${c.consentFormPhotoUri ? `
             <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.consentFormPhotoUri}')">
-              <img src="${c.consentFormPhotoUri}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <img src="${c.consentFormPhotoUri}" crossorigin="anonymous" onerror="handleImageError(this, '${c.consentFormPhotoUri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
               <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Consent</div>
             </div>` : ''}
           ${c.deviceReadingPhotoUri ? `
             <div class="media-thumb" style="width:120px; height:120px; cursor:pointer;" onclick="zoomImage('${c.deviceReadingPhotoUri}')">
-              <img src="${c.deviceReadingPhotoUri}" crossorigin="anonymous" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
+              <img src="${c.deviceReadingPhotoUri}" crossorigin="anonymous" onerror="handleImageError(this, '${c.deviceReadingPhotoUri}')" style="width:100%; height:100%; object-fit:cover; border-radius:8px;">
               <div style="font-size:10px;text-align:center;margin-top:4px;color:var(--text-dim);">Vitals</div>
             </div>` : ''}
           ${(!c.consentFormPhotoUri && !c.deviceReadingPhotoUri) ? '<p class="text-dim">No physical proof captured.</p>' : ''}
@@ -4536,6 +4536,43 @@
       if (APP.section === 'new' && APP._pendingDraft) {
         setTimeout(applyDraftToForm, 50);
       }
+
+      async function zoomImage(src) {
+        if (!src) return;
+        const ov = document.getElementById('zoom-overlay');
+        ov.style.display = 'flex';
+        ov.innerHTML = `<div style="color:white;font-size:14px;">Loading high-res image...</div>`;
+        
+        try {
+          // If it's a Drive URL, we can try to proxy it for high-res viewing if needed
+          ov.innerHTML = `<img src="${src}" crossorigin="anonymous" onerror="handleImageError(this, '${src}')">`;
+        } catch(e) {
+          ov.innerHTML = `<div style="color:white;">Failed to load image.</div>`;
+        }
+      }
+
+      async function handleImageError(img, src) {
+        console.warn('Image failed to load directly, trying proxy:', src);
+        // If already proxied, stop
+        if (src.includes('data:image')) return;
+        
+        try {
+          const resp = await fetch(SHEET_API, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'proxyFetch', url: src })
+          });
+          const data = await resp.json();
+          if (data.content) {
+            img.src = `data:${data.mimeType};base64,${data.content}`;
+            img.removeAttribute('onerror');
+          } else {
+            img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
+          }
+        } catch(e) {
+          img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
+        }
+      }
+      window.handleImageError = handleImageError;
 
       // Start draft auto-save timer
       if (APP.section === 'new') {

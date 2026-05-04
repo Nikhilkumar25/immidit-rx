@@ -352,7 +352,7 @@ function uploadReportToDrive(data) {
     return jsonResponse({ 
       ok: true, 
       fileId: file.getId(), 
-      url: "https://lh3.googleusercontent.com/d/" + file.getId() // More reliable for <img> tags
+      url: "https://drive.google.com/thumbnail?id=" + file.getId() + "&sz=w1000"
     });
   } catch(err) {
     return jsonResponse({ error: err.toString() });
