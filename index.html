@@ -2172,7 +2172,41 @@
        IMMIDIT LOGO (base64 placeholder — loads from file path)
     ══════════════════════════════════════════════════════ */
     const LOGO_SRC = 'logo.png';
-    const SHEET_API = 'https://script.google.com/macros/s/AKfycbz0sC-J2AKXP9fLaWUQYLa5aQ-6E6kGTo1-bHCYKBx77PcFV2v7PTlujFeU0xtW4FJXSg/exec'; // Updated to user-provided URL
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbz0sC-J2AKXP9fLaWUQYLa5aQ-6E6kGTo1-bHCYKBx77PcFV2v7PTlujFeU0xtW4FJXSg/exec';
+
+    async function handleImageError(img, src) {
+      console.warn('Image failed to load directly, trying proxy:', src);
+      if (src.includes('data:image')) return;
+      try {
+        const resp = await fetch(SHEET_API, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'proxyFetch', url: src })
+        });
+        const data = await resp.json();
+        if (data.content) {
+          img.src = `data:${data.mimeType};base64,${data.content}`;
+          img.removeAttribute('onerror');
+        } else {
+          img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
+        }
+      } catch(e) {
+        img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
+      }
+    }
+    window.handleImageError = handleImageError;
+
+    async function zoomImage(src) {
+      if (!src) return;
+      const ov = document.getElementById('zoom-overlay');
+      ov.style.display = 'flex';
+      ov.innerHTML = `<div style="color:white;font-size:14px;">Loading high-res image...</div>`;
+      try {
+        ov.innerHTML = `<img src="${src}" crossorigin="anonymous" onerror="handleImageError(this, '${src}')">`;
+      } catch(e) {
+        ov.innerHTML = `<div style="color:white;">Failed to load image.</div>`;
+      }
+    }
+    window.zoomImage = zoomImage;
 
     /* ══════════════════════════════════════════════════════
        PROCEDURE TYPES & TEMPLATES
@@ -4536,43 +4570,6 @@
       if (APP.section === 'new' && APP._pendingDraft) {
         setTimeout(applyDraftToForm, 50);
       }
-
-      async function zoomImage(src) {
-        if (!src) return;
-        const ov = document.getElementById('zoom-overlay');
-        ov.style.display = 'flex';
-        ov.innerHTML = `<div style="color:white;font-size:14px;">Loading high-res image...</div>`;
-        
-        try {
-          // If it's a Drive URL, we can try to proxy it for high-res viewing if needed
-          ov.innerHTML = `<img src="${src}" crossorigin="anonymous" onerror="handleImageError(this, '${src}')">`;
-        } catch(e) {
-          ov.innerHTML = `<div style="color:white;">Failed to load image.</div>`;
-        }
-      }
-
-      async function handleImageError(img, src) {
-        console.warn('Image failed to load directly, trying proxy:', src);
-        // If already proxied, stop
-        if (src.includes('data:image')) return;
-        
-        try {
-          const resp = await fetch(SHEET_API, {
-            method: 'POST',
-            body: JSON.stringify({ action: 'proxyFetch', url: src })
-          });
-          const data = await resp.json();
-          if (data.content) {
-            img.src = `data:${data.mimeType};base64,${data.content}`;
-            img.removeAttribute('onerror');
-          } else {
-            img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
-          }
-        } catch(e) {
-          img.src = 'https://via.placeholder.com/300?text=Image+Unavailable';
-        }
-      }
-      window.handleImageError = handleImageError;
 
       // Start draft auto-save timer
       if (APP.section === 'new') {
