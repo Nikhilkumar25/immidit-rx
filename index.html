@@ -3392,7 +3392,7 @@
       return `
   <div class="page-header">
     <div><h1 class="page-title">Nurse PCR Records</h1><div class="page-sub">Field data collected by nurses — review and start prescriptions</div></div>
-    <button class="btn btn-ghost btn-sm" onclick="SYNC.pull().then(()=>render())">🔄 Refresh</button>
+    ${APP.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="SYNC.pull().then(()=>render())">🔄 Refresh</button>` : ''}
   </div>
   ${cases.length === 0 ? `<div class="empty-state"><div class="icon">🧑‍⚕️</div><p>No active nurse cases yet. Cases will appear here once a nurse starts a visit.</p></div>` :
     cases.map(c => {
@@ -3428,7 +3428,7 @@
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost btn-sm" onclick="APP.viewingCaseId=null;render()">← Back</button>
-      <button class="btn btn-ghost btn-sm" onclick="showRawData('${c.id}')">🛠️ Debug Data</button>
+      ${APP.role === 'admin' ? `<button class="btn btn-ghost btn-sm" onclick="showRawData('${c.id}')">🛠️ Debug Data</button>` : ''}
       <button class="btn btn-warn" onclick="toast('Initiating video call to nurse...','info')">📞 Live Consult</button>
       <button class="btn btn-primary" onclick="startRxFromCase('${c.id}')">📝 Start Prescription</button>
     </div>
