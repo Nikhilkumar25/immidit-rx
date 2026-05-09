@@ -46,9 +46,48 @@ function doGet(e) {
   try {
     var action = (e && e.parameter && e.parameter.action) || 'pull';
     if (action === 'pull') return pullAll();
+    
+    // ── MEET LINK GENERATION ──
+    if (action === 'createMeet') {
+      var id = e.parameter.id || 'visit';
+      return jsonResponse({ success: true, meetUrl: createMeetLink(id) });
+    }
+    
     return jsonResponse({ error: 'Unknown GET action: ' + action });
   } catch(err) {
     return jsonResponse({ error: err.toString() });
+  }
+}
+
+/**
+ * Creates a Google Meet link via Calendar API
+ */
+function createMeetLink(bookingId) {
+  try {
+    var calendarId = 'primary';
+    var now = new Date();
+    var end = new Date(now.getTime() + 60 * 60 * 1000); // 1 hour duration
+
+    var event = {
+      summary: 'immidit Consultation: ' + bookingId,
+      description: 'Tele-consultation between Nurse and Doctor via immidit platform.',
+      start: { dateTime: now.toISOString() },
+      end: { dateTime: end.toISOString() },
+      conferenceData: {
+        createRequest: {
+          requestId: Utilities.getUuid(),
+          conferenceSolutionKey: { type: 'hangoutsMeet' }
+        }
+      }
+    };
+
+    // Note: Requires Calendar API Service to be enabled in Apps Script
+    var createdEvent = Calendar.Events.insert(event, calendarId, { conferenceDataVersion: 1 });
+    return createdEvent.conferenceData.entryPoints[0].uri;
+  } catch (e) {
+    console.error('Meet creation failed:', e);
+    // Fallback: Return a generic meet room link if the API call fails
+    return 'https://meet.google.com/new';
   }
 }
 

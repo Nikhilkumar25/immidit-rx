@@ -2244,42 +2244,19 @@
     ══════════════════════════════════════════════════════ */
     const LOGO_SRC = 'logo.png';
     const ICON_SRC = 'app_icon.png';
-    const SHEET_API = 'https://script.google.com/macros/s/AKfycbz0sC-J2AKXP9fLaWUQYLa5aQ-6E6kGTo1-bHCYKBx77PcFV2v7PTlujFeU0xtW4FJXSg/exec';
+    const SHEET_API = 'https://script.google.com/macros/s/AKfycbyroY2Wx-BASB3BRk7lQ0jbCYdiFGLKxJgfWyP71Sy4E1Ej-ZVsGJya0zncf5DRavAmVg/exec';
 
-    /* ══════════════════════════════════════════════════════
-       CALLING (WebRTC)
-    ══════════════════════════════════════════════════════ */
-    let doctorPeer = null;
+    // ── CALLING (WebRTC -> Google Meet Redirect) ───────────────────────────────────────────
+
     let currentCall = null;
     let localStream = null;
 
-    function initDoctorPeer() {
-      if (doctorPeer) return;
-      const docId = localStorage.getItem('immidit_user_id') || 'admin';
-      doctorPeer = new Peer(`immidit-doctor-${docId}`, {
-        host: '0.peerjs.com',
-        secure: true,
-        port: 443
-      });
-
-      doctorPeer.on('open', (id) => console.log('Doctor Peer ID:', id));
-      doctorPeer.on('error', (err) => console.error('Peer error:', err));
-    }
-
     function endCall() {
-      if (currentCall) {
-        currentCall.close();
-        currentCall = null;
-      }
       if (localStream) {
         localStream.getTracks().forEach(t => t.stop());
         localStream = null;
       }
       document.getElementById('call-modal').style.display = 'none';
-      document.getElementById('local-video').srcObject = null;
-      document.getElementById('remote-video').srcObject = null;
-      
-      // Clear inputs
       document.getElementById('call-tasks').value = '';
       document.getElementById('call-observations').value = '';
       APP._callingCaseId = null;
@@ -2295,29 +2272,22 @@
       modal.style.display = 'flex';
       
       try {
-        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        document.getElementById('local-video').srcObject = localStream;
+        toast(`Generating Google Meet for ${APP._callingCaseId}...`, 'info');
         
-        const targetId = `immidit-nurse-${nurseId}`;
-        toast(`Calling Nurse ${nurseId}...`, 'info');
+        // Fetch the Meet link from the script
+        const res = await fetch(`${SHEET_API}?action=createMeet&id=${APP._callingCaseId}`);
+        const data = await res.json();
         
-        currentCall = doctorPeer.call(targetId, localStream);
-        
-        currentCall.on('stream', (remoteStream) => {
-          document.getElementById('remote-video').srcObject = remoteStream;
-          toast('Nurse connected', 'success');
-        });
-        
-        currentCall.on('close', endCall);
-        currentCall.on('error', (err) => {
-          toast('Connection failed', 'error');
-          endCall();
-        });
+        if (data.meetUrl) {
+          toast('Opening Google Meet...', 'success');
+          window.open(data.meetUrl, '_blank');
+        } else {
+          throw new Error('Failed to generate Meet link');
+        }
 
       } catch (err) {
         console.error('Call failed', err);
-        toast('Camera/Mic permission denied', 'error');
-        endCall();
+        toast('Could not start video call', 'error');
       }
     }
 
